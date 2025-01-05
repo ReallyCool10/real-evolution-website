@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4169E1"/>
+      <stop offset="100%" style="stop-color:#1E90FF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Centered house A with minimal rounding -->
+  <g transform="translate(13, 20)">
+    <path d="M 0,60 L 0,30 L 23,0 L 46,30 L 46,60" 
+          stroke="url(#blueGradient)" 
+          stroke-width="6"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="stroke-miterlimit: 0.1"/>
+  </g>
+</svg>
