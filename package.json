@@ -1,6 +1,6 @@
 {
-"homepage": "https://realevolution.co.uk",
-  "name": "real_evolution_app",
+  "homepage": "https://reallycool10.github.io/real-evolution-website",
+  "name": "real-evolution-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -11,10 +11,8 @@
     "@types/node": "^16.18.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/react-router-dom": "^5.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.1.1",
     "react-scripts": "5.0.1",
     "styled-components": "^6.1.0",
     "typescript": "^4.9.5",
