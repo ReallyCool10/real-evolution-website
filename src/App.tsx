@@ -1,13 +1,14 @@
 import React, { useRef } from 'react';
 import styled from 'styled-components';
-import textLogo from './assets/real-evolution-logo.svg';
+import textLogo from './assets/real-evolution-logo-white.svg';
 import Navigation from './components/Navigation';
 
 const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: linear-gradient(180deg, white 0%, #1E40AF 100%);
+  background: url('./assets/background.jpg') no-repeat center center fixed;
+  background-size: cover;
   color: white;
 `;
 
@@ -25,6 +26,7 @@ const Section = styled.section<SectionProps>`
   position: relative;
   scroll-snap-align: start;
   padding: ${props => props.isFirst ? '2rem 2rem 4rem' : '2rem'};
+  background: rgba(0, 0, 0, 0.5);
 
   @media (max-width: 768px) {
     padding: ${props => props.isFirst ? '1rem 1rem 3rem' : '1rem'};
