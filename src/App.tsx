@@ -1,13 +1,14 @@
 import React, { useRef } from 'react';
 import styled from 'styled-components';
 import textLogo from './assets/real-evolution-logo.svg';
+import backgroundImage from './assets/BackgroundImage.png';
 import Navigation from './components/Navigation';
 
 const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background-image: url('./assets/BackgroundImage.png');
+  background-image: url(${backgroundImage});
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
