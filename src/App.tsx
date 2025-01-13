@@ -1,13 +1,13 @@
 import React, { useRef } from 'react';
 import styled from 'styled-components';
-import textLogo from './assets/real-evolution-logo-white.svg';
+import textLogo from './assets/real-evolution-logo.svg';
 import Navigation from './components/Navigation';
 
 const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: url('./assets/background.jpg') no-repeat center center fixed;
+  background: url('./assets/BackgroundImage.png') no-repeat center center fixed;
   background-size: cover;
   color: white;
 `;
@@ -62,19 +62,10 @@ const ScrollContainer = styled.div`
 `;
 
 const Logo = styled.img`
-  width: 900px;
+  width: 100px;
   height: auto;
-  margin-left: 45px;
-
-  @media (max-width: 1024px) {
-    width: 700px;
-  }
-
-  @media (max-width: 768px) {
-    width: 90vw;
-    max-width: 500px;
-    margin-left: 22px;
-  }
+  filter: brightness(0) invert(1); /* This will make the logo white */
+  margin-bottom: 1rem;
 `;
 
 const TagLine = styled.h1`
