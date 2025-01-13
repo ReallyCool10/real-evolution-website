@@ -12,8 +12,6 @@ const PageContainer = styled.div`
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: rotate(2deg);
-  transform-origin: center center;
   color: white;
   * {
     color: white;
@@ -79,11 +77,11 @@ const TagLine = styled.h1`
   font-size: 3rem;
   text-align: center;
   font-weight: 500;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0;
   text-shadow: 
-    0.5px 0.5px 0 #1E40AF,
-    1px 1px 0 rgba(0,0,0,0.05),
-    0 0 5px rgba(255,255,255,0.075);
+    0.5px 0.5px 0 rgba(255, 255, 255, 0.3),
+    1px 1px 0 rgba(255, 255, 255, 0.2),
+    1.5px 1.5px 0 rgba(255, 255, 255, 0.1);
   line-height: 1.2;
   white-space: nowrap;
   padding: 0 1rem;
@@ -101,6 +99,19 @@ const TagLine = styled.h1`
   @media (max-width: 480px) {
     font-size: 1.75rem;
   }
+`;
+
+const GradientText = styled.span`
+  background: linear-gradient(
+    135deg,
+    white 0%,
+    white 30%,
+    rgba(255, 255, 255, 0.8) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: white;
+  display: inline-block;
 `;
 
 const SubText = styled.p`
@@ -156,11 +167,10 @@ const ScrollArrow = styled.div`
 `;
 
 const Content = styled.div`
-  max-width: 800px;
-  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
   text-align: center;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  padding: 0 1rem;
 
   h2 {
     font-weight: 500;
@@ -170,14 +180,13 @@ const Content = styled.div`
 
     @media (max-width: 768px) {
       font-size: 2rem;
-    }
-
-    @media (max-width: 480px) {
-      font-size: 1.75rem;
+      margin-bottom: 1rem;
     }
   }
 
   p {
+    max-width: 800px;
+    margin: 0 auto;
     font-size: 1.2rem;
     line-height: 1.6;
     font-weight: 300;
@@ -185,10 +194,6 @@ const Content = styled.div`
 
     @media (max-width: 768px) {
       font-size: 1.1rem;
-    }
-
-    @media (max-width: 480px) {
-      font-size: 1rem;
     }
   }
 `;
@@ -198,15 +203,15 @@ const AboutContent = styled.div`
   margin: 0 auto;
   padding: 0 2rem;
   background: linear-gradient(to bottom, 
-    #1E40AF 0%,
-    #1E40AF 30%,
+    white 0%,
+    white 30%,
     rgba(255, 255, 255, 0.95) 30%,
     rgba(255, 255, 255, 0.95) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 
   p {
     margin-bottom: 2rem;
@@ -267,7 +272,7 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: rgba(30, 64, 175, 0.6);
+    border-color: rgba(255, 255, 255, 0.6);
     background: rgba(255, 255, 255, 0.15);
   }
 `;
@@ -296,7 +301,7 @@ const TextArea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: rgba(30, 64, 175, 0.6);
+    border-color: rgba(255, 255, 255, 0.6);
     background: rgba(255, 255, 255, 0.15);
   }
 `;
@@ -315,7 +320,7 @@ const Button = styled.button`
 
   &:hover {
     background: white;
-    color: #1E40AF;
+    color: white;
   }
 `;
 
