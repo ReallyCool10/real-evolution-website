@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import textLogo from './assets/real-evolution-logo.svg';
 import backgroundImage from './assets/BackgroundImage.png';
@@ -8,33 +8,52 @@ const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background-image: url(${backgroundImage});
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  position: relative;
   color: white;
   * {
     color: white;
   }
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
 `;
 
-interface SectionProps {
-  isFirst?: boolean;
-}
+const BackgroundImage = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-image: url(${backgroundImage});
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: -1;
+  will-change: transform;
+`;
 
-const Section = styled.section<SectionProps>`
+const Section = styled.section`
   min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: ${props => props.isFirst ? 'flex-start' : 'center'};
+  justify-content: center;
   position: relative;
   scroll-snap-align: start;
-  padding: ${props => props.isFirst ? '2rem 2rem 4rem' : '2rem'};
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3); /* slight overlay to ensure text readability */
 
   @media (max-width: 768px) {
-    padding: ${props => props.isFirst ? '1rem 1rem 3rem' : '1rem'};
+    padding: 1rem;
+  }
+`;
+
+const FirstSection = styled(Section)`
+  justify-content: flex-start;
+  padding: 2rem 2rem 4rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 3rem;
   }
 `;
 
@@ -325,18 +344,34 @@ const Button = styled.button`
 `;
 
 const App: React.FC = () => {
-  const aboutRef = useRef<HTMLDivElement>(null);
-  const contactRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
+  const [scrollPosition, setScrollPosition] = React.useState(0);
 
-  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const position = window.pageYOffset;
+      setScrollPosition(position);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const backgroundPosition = `center ${scrollPosition * 0.5}px`;
+
+  const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <PageContainer>
+      <BackgroundImage style={{ backgroundPosition }} />
       <Navigation />
       <ScrollContainer>
-        <Section isFirst>
+        <FirstSection>
           <Logo src={textLogo} alt="Real Evolution" />
           <FirstSectionContent>
             <div>
@@ -344,7 +379,7 @@ const App: React.FC = () => {
             </div>
           </FirstSectionContent>
           <ScrollArrow onClick={() => scrollToSection(aboutRef)} />
-        </Section>
+        </FirstSection>
 
         <Section ref={aboutRef}>
           <Content>
