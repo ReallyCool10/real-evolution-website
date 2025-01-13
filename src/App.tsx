@@ -7,7 +7,9 @@ const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: url('./assets/BackgroundImage.png') no-repeat center center fixed;
+  background-image: url('./assets/BackgroundImage.png');
+  background-position: center;
+  background-repeat: no-repeat;
   background-size: cover;
   color: white;
 `;
@@ -26,7 +28,6 @@ const Section = styled.section<SectionProps>`
   position: relative;
   scroll-snap-align: start;
   padding: ${props => props.isFirst ? '2rem 2rem 4rem' : '2rem'};
-  background: rgba(0, 0, 0, 0.5);
 
   @media (max-width: 768px) {
     padding: ${props => props.isFirst ? '1rem 1rem 3rem' : '1rem'};
