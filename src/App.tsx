@@ -12,7 +12,12 @@ const PageContainer = styled.div`
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  transform: rotate(2deg);
+  transform-origin: center center;
   color: white;
+  * {
+    color: white;
+  }
 `;
 
 interface SectionProps {
@@ -64,14 +69,13 @@ const ScrollContainer = styled.div`
 `;
 
 const Logo = styled.img`
-  width: 100px;
+  width: 300px;
   height: auto;
-  filter: brightness(0) invert(1); /* This will make the logo white */
+  filter: brightness(0) invert(1);
   margin-bottom: 1rem;
 `;
 
 const TagLine = styled.h1`
-  color: white;
   font-size: 3rem;
   text-align: center;
   font-weight: 500;
@@ -83,6 +87,7 @@ const TagLine = styled.h1`
   line-height: 1.2;
   white-space: nowrap;
   padding: 0 1rem;
+  color: white;
 
   @media (max-width: 1024px) {
     font-size: 2.5rem;
@@ -96,6 +101,14 @@ const TagLine = styled.h1`
   @media (max-width: 480px) {
     font-size: 1.75rem;
   }
+`;
+
+const SubText = styled.p`
+  font-size: 1.2rem;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  color: white;
 `;
 
 const ScrollArrow = styled.div`
@@ -153,6 +166,7 @@ const Content = styled.div`
     font-weight: 500;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
+    color: white;
 
     @media (max-width: 768px) {
       font-size: 2rem;
@@ -167,6 +181,7 @@ const Content = styled.div`
     font-size: 1.2rem;
     line-height: 1.6;
     font-weight: 300;
+    color: white;
 
     @media (max-width: 768px) {
       font-size: 1.1rem;
@@ -199,6 +214,7 @@ const AboutContent = styled.div`
     line-height: 1.8;
     font-weight: 300;
     text-align: left;
+    color: white;
 
     @media (max-width: 768px) {
       font-size: 1.1rem;
@@ -211,6 +227,7 @@ const AboutContent = styled.div`
     font-size: 2.5rem;
     font-weight: 500;
     margin-bottom: 2rem;
+    color: white;
   }
 `;
 
@@ -231,7 +248,7 @@ const ContactForm = styled.form`
 
 const Input = styled.input`
   padding: 0.8rem;
-  border: 2px solid rgba(30, 64, 175, 0.3);
+  border: 2px solid white;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
@@ -257,7 +274,7 @@ const Input = styled.input`
 
 const TextArea = styled.textarea`
   padding: 0.8rem;
-  border: 2px solid rgba(30, 64, 175, 0.3);
+  border: 2px solid white;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
@@ -286,9 +303,9 @@ const TextArea = styled.textarea`
 
 const Button = styled.button`
   padding: 1rem 2rem;
-  background: rgba(30, 64, 175, 0.3);
+  background: transparent;
+  border: 2px solid white;
   color: white;
-  border: 2px solid rgba(30, 64, 175, 0.3);
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
@@ -297,8 +314,8 @@ const Button = styled.button`
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(30, 64, 175, 0.4);
-    border-color: rgba(30, 64, 175, 0.6);
+    background: white;
+    color: #1E40AF;
   }
 `;
 
@@ -340,7 +357,7 @@ const App: React.FC = () => {
 
         <Section ref={contactRef}>
           <Content>
-            <h2 style={{ color: 'rgba(30, 64, 175, 0.6)', marginBottom: '2rem' }}>Contact Us</h2>
+            <h2 style={{ color: 'white', marginBottom: '2rem' }}>Contact Us</h2>
             <ContactForm onSubmit={(e) => e.preventDefault()}>
               <Input type="text" placeholder="Name" required />
               <Input type="email" placeholder="Email" required />
