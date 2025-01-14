@@ -24,7 +24,7 @@ const BackgroundImage = styled.div`
   width: 100%;
   height: 100vh;
   background-image: url(${backgroundImage});
-  background-position: center top;
+  background-position: center 0;
   background-repeat: no-repeat;
   background-size: cover;
   z-index: -1;
@@ -360,7 +360,7 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const backgroundPosition = `center ${scrollPosition * 0.5}px`;
+  const backgroundPosition = `center ${-scrollPosition * 0.5}px`;
 
   const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' });
