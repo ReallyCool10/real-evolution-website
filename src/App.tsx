@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import textLogo from './assets/real-evolution-logo.svg';
-import backgroundImage from './assets/BackgroundImage.png';
+import backgroundImage from './assets/backgroundImage.png';
 import Navigation from './components/Navigation';
 
 const PageContainer = styled.div`
@@ -13,30 +13,30 @@ const PageContainer = styled.div`
   * {
     color: white;
   }
-  perspective: 1px;
-  height: 100vh;
+  overflow-y: scroll;
   overflow-x: hidden;
-  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  height: 100vh;
 `;
 
-const ParallaxContainer = styled.div`
+const BackgroundContainer = styled.div`
   position: absolute;
   top: 0;
-  right: 0;
-  bottom: 0;
   left: 0;
-  transform-origin: 0 0;
-  transform: translateZ(-1px) scale(2);
-  z-index: -1;
+  width: 100%;
+  height: 300vh; /* Make this 3x viewport height since we have 3 sections */
   background-image: url(${backgroundImage});
   background-position: center top;
   background-repeat: no-repeat;
   background-size: cover;
+  z-index: -1;
 `;
 
 const ContentWrapper = styled.div`
   position: relative;
-  transform-style: preserve-3d;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
 `;
 
 const Section = styled.section`
@@ -48,7 +48,8 @@ const Section = styled.section`
   justify-content: center;
   position: relative;
   padding: 2rem;
-  background: rgba(0, 0, 0, 0.3);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -65,19 +66,8 @@ const FirstSection = styled(Section)`
 `;
 
 const FirstSectionContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  position: relative;
-
-  > div {
-    position: absolute;
-    top: 75%;
-    transform: translateY(-50%);
-  }
+  text-align: center;
+  margin-top: 2rem;
 `;
 
 const ScrollContainer = styled.div`
@@ -95,8 +85,8 @@ const ScrollContainer = styled.div`
 const Logo = styled.img`
   width: 300px;
   height: auto;
+  margin-bottom: 2rem;
   filter: brightness(0) invert(1);
-  margin-bottom: 1rem;
 `;
 
 const TagLine = styled.h1`
@@ -113,39 +103,15 @@ const TagLine = styled.h1`
   padding: 0 1rem;
   color: white;
 
-  @media (max-width: 1024px) {
-    font-size: 2.5rem;
-  }
-
   @media (max-width: 768px) {
     font-size: 2rem;
+    padding: 0 0.5rem;
     white-space: normal;
   }
 
   @media (max-width: 480px) {
     font-size: 1.75rem;
   }
-`;
-
-const GradientText = styled.span`
-  background: linear-gradient(
-    135deg,
-    white 0%,
-    white 30%,
-    rgba(255, 255, 255, 0.8) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: white;
-  display: inline-block;
-`;
-
-const SubText = styled.p`
-  font-size: 1.2rem;
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto;
-  color: white;
 `;
 
 const ScrollArrow = styled.div`
@@ -227,38 +193,22 @@ const Content = styled.div`
 const AboutContent = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 2rem;
-  background: linear-gradient(to bottom, 
-    white 0%,
-    white 30%,
-    rgba(255, 255, 255, 0.95) 30%,
-    rgba(255, 255, 255, 0.95) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
-
+  text-align: justify;
+  font-weight: 500;
+  
   p {
-    margin-bottom: 2rem;
-    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
     line-height: 1.8;
-    font-weight: 300;
-    text-align: left;
-    color: white;
-
-    @media (max-width: 768px) {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   }
 
   h2 {
-    font-size: 2.5rem;
-    font-weight: 500;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     margin-bottom: 2rem;
-    color: white;
   }
 `;
 
@@ -267,31 +217,25 @@ const ContactForm = styled.form`
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 540px;
   margin: 0 auto;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  padding: 0 1rem;
+  margin-top: 40px;
 
-  @media (max-width: 768px) {
-    max-width: 90%;
+  h2 {
+    margin-left: -20px;
   }
 `;
 
 const Input = styled.input`
-  padding: 0.8rem;
-  border: 2px solid white;
-  border-radius: 8px;
+  padding: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 1rem;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  transition: border-color 0.2s, background 0.2s;
-
-  @media (max-width: 480px) {
-    font-size: 16px; /* Prevents zoom on mobile */
-    padding: 0.6rem;
-  }
-
+  width: calc(100% + 50px);
+  margin-left: -35px;
+  
   &::placeholder {
     color: rgba(255, 255, 255, 0.7);
   }
@@ -304,23 +248,17 @@ const Input = styled.input`
 `;
 
 const TextArea = styled.textarea`
-  padding: 0.8rem;
-  border: 2px solid white;
-  border-radius: 8px;
+  padding: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 1rem;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   min-height: 150px;
   resize: vertical;
-  transition: border-color 0.2s, background 0.2s;
-
-  @media (max-width: 480px) {
-    font-size: 16px; /* Prevents zoom on mobile */
-    padding: 0.6rem;
-    min-height: 120px;
-  }
-
+  width: calc(100% + 50px);
+  margin-left: -35px;
+  
   &::placeholder {
     color: rgba(255, 255, 255, 0.7);
   }
@@ -353,23 +291,6 @@ const Button = styled.button`
 const App: React.FC = () => {
   const aboutRef = useRef<HTMLElement>(null);
   const contactRef = useRef<HTMLElement>(null);
-  const [scrollPosition, setScrollPosition] = React.useState(0);
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const position = window.pageYOffset;
-      console.log('Scroll position:', position);
-      setScrollPosition(position);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  const transform = `translateY(${-scrollPosition * 0.3}px)`;
-  console.log('Transform:', transform);
 
   const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' });
@@ -377,46 +298,42 @@ const App: React.FC = () => {
 
   return (
     <PageContainer>
-      <ParallaxContainer />
+      <BackgroundContainer />
       <ContentWrapper>
         <Navigation />
-        <ScrollContainer>
-          <FirstSection>
-            <Logo src={textLogo} alt="Real Evolution" />
-            <FirstSectionContent>
-              <div>
-                <TagLine>Great Homes for Real People in Top Locations</TagLine>
-              </div>
-            </FirstSectionContent>
-            <ScrollArrow onClick={() => scrollToSection(aboutRef)} />
-          </FirstSection>
+        <FirstSection>
+          <Logo src={textLogo} alt="Real Evolution" />
+          <FirstSectionContent>
+            <TagLine>Great Homes for Real People in Top Locations</TagLine>
+          </FirstSectionContent>
+          <ScrollArrow onClick={() => scrollToSection(aboutRef)} />
+        </FirstSection>
 
-          <Section ref={aboutRef}>
-            <Content>
-              <AboutContent>
-                <h2 style={{ marginBottom: '2rem', fontSize: '2.5rem', fontWeight: '500' }}>About Us</h2>
-                <p>At REAL evolution, we envision a future where every building reaches its fullest potential, where derelict spaces transform into vibrant homes, and where iconic architecture finds new purpose for generations to come. Our mission transcends traditional property development – we're creating a digital framework that reimagines how we interact with, develop, and preserve our built environment.</p>
-                
-                <p>In a nation where housing shortages persist and older buildings languish, we're pioneering a technology-driven approach that bridges the gap between preservation and progress. This synthesis of innovation and tradition enables us to optimize existing spaces, revitalize neglected properties, and create homes that enrich communities.</p>
-                
-                <p>We're seeking visionary partners who recognize that the future of real estate lies not just in new construction, but in the intelligent transformation of our existing architectural landscape. Together, we can address housing challenges while preserving the character that makes our cities unique, creating value that extends beyond financial returns to the very fabric of urban life.</p>
-              </AboutContent>
-            </Content>
-            <ScrollArrow onClick={() => scrollToSection(contactRef)} />
-          </Section>
+        <Section ref={aboutRef}>
+          <Content>
+            <AboutContent>
+              <h2 style={{ marginBottom: '2rem', fontSize: '2.5rem', fontWeight: '500' }}>About Us</h2>
+              <p>At REAL evolution, we envision a future where every building reaches its fullest potential, where derelict spaces transform into vibrant homes, and where iconic architecture finds new purpose for generations to come. Our mission transcends traditional property development – we're creating a digital framework that reimagines how we interact with, develop, and preserve our built environment.</p>
+              
+              <p>In a nation where housing shortages persist and older buildings languish, we're pioneering a technology-driven approach that bridges the gap between preservation and progress. This synthesis of innovation and tradition enables us to optimize existing spaces, revitalize neglected properties, and create homes that enrich communities.</p>
+              
+              <p>We're seeking visionary partners who recognize that the future of real estate lies not just in new construction, but in the intelligent transformation of our existing architectural landscape. Together, we can address housing challenges while preserving the character that makes our cities unique, creating value that extends beyond financial returns to the very fabric of urban life.</p>
+            </AboutContent>
+          </Content>
+          <ScrollArrow onClick={() => scrollToSection(contactRef)} />
+        </Section>
 
-          <Section ref={contactRef}>
-            <Content>
+        <Section ref={contactRef}>
+          <Content>
+            <ContactForm onSubmit={(e) => e.preventDefault()}>
               <h2 style={{ color: 'white', marginBottom: '2rem' }}>Contact Us</h2>
-              <ContactForm onSubmit={(e) => e.preventDefault()}>
-                <Input type="text" placeholder="Name" required />
-                <Input type="email" placeholder="Email" required />
-                <TextArea placeholder="Your message" required />
-                <Button type="submit">Send Message</Button>
-              </ContactForm>
-            </Content>
-          </Section>
-        </ScrollContainer>
+              <Input type="text" placeholder="Name" required />
+              <Input type="email" placeholder="Email" required />
+              <TextArea placeholder="Your message" required />
+              <Button type="submit">Send Message</Button>
+            </ContactForm>
+          </Content>
+        </Section>
       </ContentWrapper>
     </PageContainer>
   );
