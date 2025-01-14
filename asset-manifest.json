@@ -1,0 +1,12 @@
+{
+  "files": {
+    "main.js": "./static/js/main.035d0ea5.js",
+    "static/media/backgroundImage.png": "./static/media/backgroundImage.f695f28afde4550bfcbb.png",
+    "static/media/real-evolution-logo.svg": "./static/media/real-evolution-logo.48d184bde76f7597e892a47947cec0ec.svg",
+    "index.html": "./index.html",
+    "main.035d0ea5.js.map": "./static/js/main.035d0ea5.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.035d0ea5.js"
+  ]
+}
