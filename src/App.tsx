@@ -24,7 +24,7 @@ const BackgroundImage = styled.div`
   width: 100%;
   height: 100vh;
   background-image: url(${backgroundImage});
-  background-position: center 0;
+  background-position: center top;
   background-repeat: no-repeat;
   background-size: cover;
   z-index: -1;
@@ -351,6 +351,7 @@ const App: React.FC = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       const position = window.pageYOffset;
+      console.log('Scroll position:', position);
       setScrollPosition(position);
     };
 
@@ -360,7 +361,8 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const backgroundPosition = `center ${-scrollPosition * 0.5}px`;
+  const transform = `translateY(${-scrollPosition * 0.3}px)`;
+  console.log('Transform:', transform);
 
   const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth' });
@@ -368,7 +370,7 @@ const App: React.FC = () => {
 
   return (
     <PageContainer>
-      <BackgroundImage style={{ backgroundPosition }} />
+      <BackgroundImage style={{ transform }} />
       <Navigation />
       <ScrollContainer>
         <FirstSection>
