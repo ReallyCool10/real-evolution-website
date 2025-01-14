@@ -13,22 +13,30 @@ const PageContainer = styled.div`
   * {
     color: white;
   }
+  perspective: 1px;
+  height: 100vh;
+  overflow-x: hidden;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
 `;
 
-const BackgroundImage = styled.div`
-  position: fixed;
+const ParallaxContainer = styled.div`
+  position: absolute;
   top: 0;
+  right: 0;
+  bottom: 0;
   left: 0;
-  width: 100%;
-  height: 100vh;
+  transform-origin: 0 0;
+  transform: translateZ(-1px) scale(2);
+  z-index: -1;
   background-image: url(${backgroundImage});
   background-position: center top;
   background-repeat: no-repeat;
   background-size: cover;
-  z-index: -1;
-  will-change: transform;
+`;
+
+const ContentWrapper = styled.div`
+  position: relative;
+  transform-style: preserve-3d;
 `;
 
 const Section = styled.section`
@@ -39,9 +47,8 @@ const Section = styled.section`
   align-items: center;
   justify-content: center;
   position: relative;
-  scroll-snap-align: start;
   padding: 2rem;
-  background: rgba(0, 0, 0, 0.3); /* slight overlay to ensure text readability */
+  background: rgba(0, 0, 0, 0.3);
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -370,45 +377,47 @@ const App: React.FC = () => {
 
   return (
     <PageContainer>
-      <BackgroundImage style={{ transform }} />
-      <Navigation />
-      <ScrollContainer>
-        <FirstSection>
-          <Logo src={textLogo} alt="Real Evolution" />
-          <FirstSectionContent>
-            <div>
-              <TagLine>Great Homes for Real People in Top Locations</TagLine>
-            </div>
-          </FirstSectionContent>
-          <ScrollArrow onClick={() => scrollToSection(aboutRef)} />
-        </FirstSection>
+      <ParallaxContainer />
+      <ContentWrapper>
+        <Navigation />
+        <ScrollContainer>
+          <FirstSection>
+            <Logo src={textLogo} alt="Real Evolution" />
+            <FirstSectionContent>
+              <div>
+                <TagLine>Great Homes for Real People in Top Locations</TagLine>
+              </div>
+            </FirstSectionContent>
+            <ScrollArrow onClick={() => scrollToSection(aboutRef)} />
+          </FirstSection>
 
-        <Section ref={aboutRef}>
-          <Content>
-            <AboutContent>
-              <h2 style={{ marginBottom: '2rem', fontSize: '2.5rem', fontWeight: '500' }}>About Us</h2>
-              <p>At REAL evolution, we envision a future where every building reaches its fullest potential, where derelict spaces transform into vibrant homes, and where iconic architecture finds new purpose for generations to come. Our mission transcends traditional property development – we're creating a digital framework that reimagines how we interact with, develop, and preserve our built environment.</p>
-              
-              <p>In a nation where housing shortages persist and older buildings languish, we're pioneering a technology-driven approach that bridges the gap between preservation and progress. This synthesis of innovation and tradition enables us to optimize existing spaces, revitalize neglected properties, and create homes that enrich communities.</p>
-              
-              <p>We're seeking visionary partners who recognize that the future of real estate lies not just in new construction, but in the intelligent transformation of our existing architectural landscape. Together, we can address housing challenges while preserving the character that makes our cities unique, creating value that extends beyond financial returns to the very fabric of urban life.</p>
-            </AboutContent>
-          </Content>
-          <ScrollArrow onClick={() => scrollToSection(contactRef)} />
-        </Section>
+          <Section ref={aboutRef}>
+            <Content>
+              <AboutContent>
+                <h2 style={{ marginBottom: '2rem', fontSize: '2.5rem', fontWeight: '500' }}>About Us</h2>
+                <p>At REAL evolution, we envision a future where every building reaches its fullest potential, where derelict spaces transform into vibrant homes, and where iconic architecture finds new purpose for generations to come. Our mission transcends traditional property development – we're creating a digital framework that reimagines how we interact with, develop, and preserve our built environment.</p>
+                
+                <p>In a nation where housing shortages persist and older buildings languish, we're pioneering a technology-driven approach that bridges the gap between preservation and progress. This synthesis of innovation and tradition enables us to optimize existing spaces, revitalize neglected properties, and create homes that enrich communities.</p>
+                
+                <p>We're seeking visionary partners who recognize that the future of real estate lies not just in new construction, but in the intelligent transformation of our existing architectural landscape. Together, we can address housing challenges while preserving the character that makes our cities unique, creating value that extends beyond financial returns to the very fabric of urban life.</p>
+              </AboutContent>
+            </Content>
+            <ScrollArrow onClick={() => scrollToSection(contactRef)} />
+          </Section>
 
-        <Section ref={contactRef}>
-          <Content>
-            <h2 style={{ color: 'white', marginBottom: '2rem' }}>Contact Us</h2>
-            <ContactForm onSubmit={(e) => e.preventDefault()}>
-              <Input type="text" placeholder="Name" required />
-              <Input type="email" placeholder="Email" required />
-              <TextArea placeholder="Your message" required />
-              <Button type="submit">Send Message</Button>
-            </ContactForm>
-          </Content>
-        </Section>
-      </ScrollContainer>
+          <Section ref={contactRef}>
+            <Content>
+              <h2 style={{ color: 'white', marginBottom: '2rem' }}>Contact Us</h2>
+              <ContactForm onSubmit={(e) => e.preventDefault()}>
+                <Input type="text" placeholder="Name" required />
+                <Input type="email" placeholder="Email" required />
+                <TextArea placeholder="Your message" required />
+                <Button type="submit">Send Message</Button>
+              </ContactForm>
+            </Content>
+          </Section>
+        </ScrollContainer>
+      </ContentWrapper>
     </PageContainer>
   );
 };
