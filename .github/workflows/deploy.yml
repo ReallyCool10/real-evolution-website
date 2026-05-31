@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
+# Note: This workflow is superseded by static.yml which deploys directly via Actions.
+# It is kept here only for manual deployments to the gh-pages branch if needed.
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
