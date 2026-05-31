@@ -1,0 +1,83 @@
+﻿
+Buying, selling and renting in the UK market
+
+Low quantity of homes (434 homes per 1000. OECD average = 487 per 1000)
+Low quality of housing, due in part to age and protection of listed buildings.
+ Gap between average house price and average earnings continues to grow.
+ The process of buying a home is complex, lengthy and uncertain. 
+ People are left waiting due to onward chains. The system is not well optimized.
+ Costs incurred in a transaction that falls through are not recoverable.
+ Around 30% of purchase / sale attempts fall through.
+ Low levels of trust exist between all parties.
+ Selling a property is expensive. Average agency fees are ~£3000 (conservative estimate).
+ Arranging a mortgage can be difficult, despite an expectation that homes increase in value over time.
+ A building survey can cost between £400 and >£1000. Although not always necessary, it gives a buyer some clarity about the condition of a building. 
+
+Who has the problem:
+Potentially around 1 million purchasers of homes in the UK per year.
+Potentially 1 million sellers of homes in the UK per year.
+300,000 sellers and buyers, where transactions collapse before completion. 
+Mortgage lenders, who spend time on unsuccessful transactions.
+Millions of people unable to buy.
+
+The main pain points:
+Sales that fall through due to a mortgage not being approved.
+Problems with the building quality uncovered during a survey can halt a sale.
+Time needed to close a transaction. Onward chains hold up buyers and sellers.
+
+How can these problems be addressed?
+A platform that prequalifies the buyer by integrating lenders, open-banking and credit reference agencies. 
+A platform providing a digital twin that includes past survey data and can be updated with maintenance records. 
+Optimize the process, ensuring transparency and trust. Step in to guarantee a sale where onward chains are holding things up.
+
+
+
+
+Problems in detail:
+England has far fewer dwellings relative to its population than other developed nations, with 434 homes per thousand inhabitants, significantly fewer than France (590), Italy (587) and the OECD average of 487.
+
+
+The UK also has amongst the oldest housing in Europe, with 78% of homes having been built before 1980, compared with an EU average of 61%, and 38% of the UK’s housing stock being built before 1946, compared with an EU average of 18%. 
+This has an impact on the condition of homes: 15% of English homes failed to meet the Decent Homes Standard in 2020. This is the highest proportion of substandard homes in Europe, and significantly higher than many other countries including Germany (12%), Bulgaria (11%), Lithuania (11%) and Poland (6%).
+
+Over 30 years, from 1995 to 2025, the average home has increased in price by at least 600%. In that same time, the average salary has increased just 100%. In 1995 a teacher could buy a family home for 3 years of their salary. Now a teacher pays around 10 years’ salary for a family home.
+
+Homebuying is stressful for many people. Finding the right home, securing a mortgage, surveying, conveyancing and property chain issues are among the difficulties.
+
+Onward chains can be a real sticking point. This is where a buyer can only complete the purchase of a new home when they have completed the sale of their existing home. 
+
+When a sale falls through, there are often irrecoverable costs for both parties. An estimated 300,000 transactions fail per year with losses ranging from £500 to £3500. Millions of pounds are spent on unsuccessful purchase attempts.
+
+
+Buyers pointed to problems uncovered during the survey as the main reason for not completing the sale. More recently, failure to secure a mortgage has accounted for ~40% of failed purchases. Sellers considered the personal circumstances of the buyer to be the main reason for sales falling through.
+
+Low levels of trust between buyers and sellers in property transactions have multiple causes: hidden problems and undisclosed defects, complexity of the process, financial stakes, legal complexities.
+A typical real estate agent fee is between 1% and 2% of the sale price. Although small in percentage terms, this is still a large amount, averaging £3000 in the UK. A conservative estimate of £3 billion is paid in estate agent fees in the UK per year. This is based on ~1 million home sales with an average price of ~£300,000 and an assumed percentage fee of 1% which is on the low end.
+
+The high price to earnings ratio (10:1 on average) means that many people struggle to get approved for a mortgage. 
+
+
+Research and data:
+Volume of UK property transactions:
+
+
+
+
+
+
+
+
+
+
+
+
+Percentage of Property sales that fall through:
+ 
+
+
+
+
+
+
+
+
