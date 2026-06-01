@@ -13,7 +13,7 @@
       <!-- R -->
       <path d="M 0,0 L 0,60 M 0,0 L 32,0 C 41,0 41,7 41,15 L 41,20 C 41,28 41,30 32,30 L 0,30 M 32,34 C 41,60 41,60 41,60" 
             stroke="url(#blueGradient)" 
-            stroke-width="8"
+            stroke-width="11.2"
             fill="none"
             stroke-linecap="square" 
             stroke-linejoin="miter"/>
@@ -21,7 +21,7 @@
       <!-- E -->
       <path d="M 68,0 L 68,60 M 68,0 L 108,0 M 68,30 L 98,30 M 68,60 L 108,60" 
             stroke="url(#blueGradient)" 
-            stroke-width="8"
+            stroke-width="11.2"
             fill="none"
             stroke-linecap="square"
             stroke-linejoin="miter"/>
@@ -29,7 +29,7 @@
       <!-- A -->
       <path d="M 133,60 L 133,30 L 156,0 L 179,30 L 179,60" 
             stroke="url(#blueGradient)" 
-            stroke-width="8"
+            stroke-width="11.2"
             fill="none"
             stroke-linecap="square"
             stroke-linejoin="miter"/>
@@ -37,7 +37,7 @@
       <!-- L -->
       <path d="M 204,0 L 204,60 L 244,60" 
             stroke="url(#blueGradient)" 
-            stroke-width="8"
+            stroke-width="11.2"
             fill="none"
             stroke-linecap="square"
             stroke-linejoin="miter"/>
