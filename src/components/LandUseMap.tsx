@@ -19,9 +19,9 @@ const MapContainer = styled.div`
 
 const HeaderSection = styled.div`
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 1.5rem;
   margin-bottom: 2.5rem;
+  margin-top: -40px;
 
   span {
     font-family: 'Outfit', sans-serif;
@@ -42,9 +42,8 @@ const HeaderSection = styled.div`
 `;
 
 const Figure1Section = styled.div`
-  margin-top: 5rem;
-  padding-top: 3.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 3rem;
+  padding-top: 1rem;
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -337,7 +336,7 @@ const CITIES: City[] = [
 
 // Regional ONS/UKCEH 2024 Land Cover Statistics Dictionary
 const REGIONAL_DATA: { [key: string]: any } = {
-  unitedkingdom: { name: 'United Kingdom (Total)', developed: '6.0%', agriculture: '50.3%', woodland: '13.6%', grassland: '27.0%', water: '3.1%', area: '24,271,100 ha' },
+  unitedkingdom: { name: 'United Kingdom (Total)', developed: '7.2%', agriculture: '49.0%', woodland: '12.0%', grassland: '28.7%', water: '3.1%', area: '24,271,100 ha' },
   london: { name: 'London', developed: '40.6%', agriculture: '35.0%', woodland: '10.2%', grassland: '12.2%', water: '2.0%', area: '157,200 ha' },
   southeast: { name: 'South East', developed: '9.9%', agriculture: '58.1%', woodland: '18.2%', grassland: '11.8%', water: '2.0%', area: '1,909,600 ha' },
   southwest: { name: 'South West', developed: '7.0%', agriculture: '71.1%', woodland: '11.0%', grassland: '9.4%', water: '1.5%', area: '2,382,900 ha' },
@@ -352,251 +351,122 @@ const REGIONAL_DATA: { [key: string]: any } = {
   northernireland: { name: 'Northern Ireland', developed: '3.5%', agriculture: '68.0%', woodland: '6.5%', grassland: '16.0%', water: '6.0%', area: '1,356,200 ha' }
 };
 
-// UK-wide Land Cover Breakdown (UKCEH LCM 2024 Statistics)
+// UK-wide Land Cover Breakdown (UKCEH Land Cover Map UK averages)
 const UK_LAND_COVER = [
   { name: 'Arable & Horticulture', pct: 25.0, ha: '6,068,000 ha', type: 'Agriculture' },
   { name: 'Improved Grassland', pct: 24.0, ha: '5,825,000 ha', type: 'Agriculture' },
   { name: 'Semi-natural Grassland & Heath', pct: 15.0, ha: '3,641,000 ha', type: 'Natural' },
   { name: 'Broadleaved & Mixed Woodland', pct: 7.0, ha: '1,699,000 ha', type: 'Natural' },
   { name: 'Coniferous Woodland', pct: 5.0, ha: '1,214,000 ha', type: 'Natural' },
-  { name: 'Suburban (Residential & Gardens)', pct: 5.1, ha: '1,238,000 ha', type: 'Built-Up' },
+  { name: 'Residential (Homes & Gardens)', pct: 5.6, ha: '1,359,000 ha', type: 'Built-Up' },
   { name: 'Bog, Marsh & Fen', pct: 5.0, ha: '1,214,000 ha', type: 'Natural' },
   { name: 'Freshwater & Coastal', pct: 3.1, ha: '752,000 ha', type: 'Natural' },
-  { name: 'Urban (Transport, Commercial & Industrial)', pct: 1.7, ha: '413,000 ha', type: 'Built-Up' },
-  { name: 'Other (Bare Ground, Scrub, etc.)', pct: 9.1, ha: '2,208,000 ha', type: 'Natural' },
+  { name: 'Urban (Transport, Commercial & Industrial)', pct: 1.6, ha: '388,000 ha', type: 'Built-Up' },
+  { name: 'Other (Bare Ground, Scrub, etc.)', pct: 8.7, ha: '2,111,000 ha', type: 'Natural' },
 ];
 
 export const LandUseMap: React.FC = () => {
-  const [selectedRegion, setSelectedRegion] = useState<string>('unitedkingdom');
-  const selectedRegionRef = useRef<string>('unitedkingdom');
+  const [ukSvgPaths, setUkSvgPaths] = useState<string[]>([]);
+  const [ukSvgSize, setUkSvgSize] = useState({ w: 300, h: 450 });
+  const [bandYPositions, setBandYPositions] = useState<number[]>([]);
 
-  // Keep selectedRegionRef in sync to prevent stale Leaflet event closures
+  // Fetch GeoJSON and project to SVG paths for the proportional fill visualization
   useEffect(() => {
-    selectedRegionRef.current = selectedRegion;
-  }, [selectedRegion]);
-
-  const [layers, setLayers] = useState({
-    regions: true,
-    cities: true,
-  });
-
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [leafletError, setLeafletError] = useState(false);
-
-  const mapRef = useRef<any>(null);
-  const geojsonGroupRef = useRef<any>(null);
-  const markersGroupRef = useRef<any>(null);
-
-  const toggleLayer = (key: 'regions' | 'cities') => {
-    setLayers(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  // Dynamically load Leaflet resources
-  useEffect(() => {
-    const loadLeafletAssets = async () => {
-      try {
-        if ((window as any).L) {
-          setMapLoaded(true);
-          return;
-        }
-
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = () => {
-          setMapLoaded(true);
+    const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/united-kingdom.geojson';
+    fetch(GEOJSON_URL)
+      .then(r => r.json())
+      .then(data => {
+        let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+        const extractCoords = (geometry: any, callback: (lon: number, lat: number) => void) => {
+          const rings = geometry.type === 'Polygon' ? geometry.coordinates : geometry.type === 'MultiPolygon' ? geometry.coordinates.flat() : [];
+          rings.forEach((ring: number[][]) => ring.forEach((c: number[]) => callback(c[0], c[1])));
         };
-        script.onerror = () => {
-          setLeafletError(true);
+        data.features.forEach((f: any) => extractCoords(f.geometry, (lon, lat) => {
+          if (lon < minLon) minLon = lon;
+          if (lon > maxLon) maxLon = lon;
+          if (lat < minLat) minLat = lat;
+          if (lat > maxLat) maxLat = lat;
+        }));
+
+        const midLat = (minLat + maxLat) / 2;
+        const cosLat = Math.cos(midLat * Math.PI / 180);
+        const geoW = (maxLon - minLon) * cosLat;
+        const geoH = maxLat - minLat;
+
+        const pad = 15;
+        const svgH = 450;
+        const usableH = svgH - 2 * pad;
+        const scale = usableH / geoH;
+        const usableW = geoW * scale;
+        const svgW = usableW + 2 * pad;
+
+        setUkSvgSize({ w: Math.round(svgW), h: svgH });
+
+        const project = (lon: number, lat: number): string => {
+          const x = pad + (lon - minLon) * cosLat * scale;
+          const y = pad + (maxLat - lat) * scale;
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
         };
-        document.body.appendChild(script);
-      } catch (err) {
-        setLeafletError(true);
-      }
-    };
 
-    loadLeafletAssets();
-  }, []);
+        const paths: string[] = [];
+        data.features.forEach((f: any) => {
+          const rings = f.geometry.type === 'Polygon' ? f.geometry.coordinates : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates.flat() : [];
+          rings.forEach((ring: number[][]) => {
+            const d = ring.map((c: number[], i: number) => `${i === 0 ? 'M' : 'L'}${project(c[0], c[1])}`).join(' ') + ' Z';
+            paths.push(d);
+          });
+        });
+        setUkSvgPaths(paths);
 
-  // Initialize Map
-  useEffect(() => {
-    if (!mapLoaded || mapRef.current) return;
-
-    const L = (window as any).L;
-    if (!L) return;
-
-    const mapInstance = L.map('leaflet-map', {
-      center: [54.78, -2.8],
-      zoom: 6,
-      zoomControl: false,
-      attributionControl: false,
-      scrollWheelZoom: false,
-    });
-
-    // Positron premium light-gray tile styling
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd',
-    }).addTo(mapInstance);
-
-    geojsonGroupRef.current = L.layerGroup().addTo(mapInstance);
-    markersGroupRef.current = L.layerGroup().addTo(mapInstance);
-    mapRef.current = mapInstance;
-
-    // Load actual ONS GeoJSON Boundaries dynamically!
-    fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/united-kingdom.geojson')
-      .then(response => response.json())
-      .then(geoJsonData => {
-        const geojson = L.geoJSON(geoJsonData, {
-          style: (feature: any) => {
-            const name = feature.properties.name || feature.properties.NAME || '';
-            const key = name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
-            const isSelected = key === selectedRegion;
-
-            return {
-              color: isSelected ? 'hsl(46, 65%, 52%)' : 'rgba(10, 13, 20, 0.15)',
-              weight: isSelected ? 2.5 : 1.2,
-              fillColor: isSelected ? 'hsl(46, 65%, 52%)' : 'rgba(10, 13, 20, 0.03)',
-              fillOpacity: isSelected ? 0.28 : 0.05,
-            };
-          },
-          onEachFeature: (feature: any, layer: any) => {
-            const name = feature.properties.name || feature.properties.NAME || '';
-            const key = name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
-            const data = REGIONAL_DATA[key];
-
-            // Render interactive popups containing exact statistics
-            if (data) {
-              layer.bindPopup(`
-                <div style="font-family: 'Outfit', sans-serif; min-width: 160px; line-height: 1.4;">
-                  <strong style="font-size: 1rem; color: #ffffff;">${data.name}</strong><br/>
-                  <span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Area: ${data.area}</span>
-                  <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 8px; padding-top: 8px;">
-                    <strong>Land Cover Profile (2024):</strong><br/>
-                    🌾 Agriculture: ${data.agriculture}<br/>
-                    🌳 Forestry: ${data.woodland}<br/>
-                    🏘️ Developed: ${data.developed}<br/>
-                    🌿 Grassland: ${data.grassland}<br/>
-                    💧 Waterways: ${data.water}
-                  </div>
-                </div>
-              `);
-            }
-
-            layer.on({
-              mouseover: (e: any) => {
-                const target = e.target;
-                target.setStyle({
-                  color: 'hsl(46, 65%, 52%)',
-                  fillOpacity: 0.25,
-                  weight: 2
-                });
-              },
-              mouseout: (e: any) => {
-                const target = e.target;
-                const isSelected = key === selectedRegionRef.current;
-                target.setStyle({
-                  color: isSelected ? 'hsl(46, 65%, 52%)' : 'rgba(10, 13, 20, 0.15)',
-                  fillOpacity: isSelected ? 0.28 : 0.05,
-                  weight: isSelected ? 2.5 : 1.2
-                });
-              },
-              click: () => {
-                if (REGIONAL_DATA[key]) {
-                  setSelectedRegion(key);
-                }
-              }
+        // Compute area-proportional band y-positions via offscreen canvas
+        try {
+          const canvasScale = 2;
+          const cW = Math.round(svgW) * canvasScale;
+          const cH = svgH * canvasScale;
+          const canvas = document.createElement('canvas');
+          canvas.width = cW;
+          canvas.height = cH;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.scale(canvasScale, canvasScale);
+            ctx.fillStyle = '#000';
+            paths.forEach(pathStr => {
+              const path2d = new Path2D(pathStr);
+              ctx.fill(path2d);
             });
+            const imageData = ctx.getImageData(0, 0, cW, cH);
+            const rowCounts = new Array(cH).fill(0);
+            for (let row = 0; row < cH; row++) {
+              for (let col = 0; col < cW; col++) {
+                if (imageData.data[(row * cW + col) * 4 + 3] > 128) rowCounts[row]++;
+              }
+            }
+            const totalPixels = rowCounts.reduce((a, b) => a + b, 0);
+            const cumulative = new Array(cH);
+            cumulative[0] = rowCounts[0];
+            for (let row = 1; row < cH; row++) {
+              cumulative[row] = cumulative[row - 1] + rowCounts[row];
+            }
+            // 6 bands: Agriculture 49%, Grassland 28.7%, Forestry 12%, Residential 5.6%, Urban 1.6%, Water 3.1%
+            // Source: UKCEH Land Cover Map UK averages (DAERA/UKCEH LCM2015)
+            const thresholds = [0.490, 0.777, 0.897, 0.953, 0.969, 1.0];
+            const yPositions = thresholds.map(t => {
+              const target = t * totalPixels;
+              for (let row = 0; row < cH; row++) {
+                if (cumulative[row] >= target) return row / canvasScale;
+              }
+              return svgH;
+            });
+            setBandYPositions(yPositions);
           }
-        });
-
-        geojson.eachLayer((layer: any) => {
-          geojsonGroupRef.current.addLayer(layer);
-        });
+        } catch (e) {
+          setBandYPositions([svgH * 0.490, svgH * 0.777, svgH * 0.897, svgH * 0.953, svgH * 0.969, svgH]);
+        }
       })
-      .catch(() => {
-        setLeafletError(true);
-      });
+      .catch(() => {});
+  }, []);
+  const currentRegionStats = REGIONAL_DATA['unitedkingdom'];
 
-    // Initial markers draw
-    drawMarkers();
-  }, [mapLoaded]);
-
-  // Synchronize GeoJSON styling when selectedRegion or layers change
-  useEffect(() => {
-    if (!mapRef.current || !geojsonGroupRef.current) return;
-
-    const L = (window as any).L;
-    if (!L) return;
-
-    geojsonGroupRef.current.eachLayer((layer: any) => {
-      if (typeof layer.setStyle === 'function' && layer.feature) {
-        const feature = layer.feature;
-        const name = feature.properties.name || feature.properties.NAME || '';
-        const key = name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
-        const isSelected = key === selectedRegion;
-
-        layer.setStyle({
-          color: isSelected ? 'hsl(46, 65%, 52%)' : 'rgba(10, 13, 20, 0.15)',
-          weight: isSelected ? 2.5 : 1.2,
-          fillColor: isSelected ? 'hsl(46, 65%, 52%)' : 'rgba(10, 13, 20, 0.03)',
-          fillOpacity: isSelected ? 0.28 : 0.05,
-        });
-      }
-    });
-
-    drawMarkers();
-  }, [selectedRegion, layers, mapLoaded]);
-
-  const drawMarkers = () => {
-    if (!mapRef.current || !markersGroupRef.current) return;
-
-    const L = (window as any).L;
-    if (!L) return;
-
-    markersGroupRef.current.clearLayers();
-
-    if (layers.cities) {
-      CITIES.forEach((city: City) => {
-        L.circleMarker([city.lat, city.lon], {
-          radius: 6,
-          color: '#f43f5e',
-          fillColor: '#f43f5e',
-          fillOpacity: 0.9,
-          weight: 1.5
-        })
-        .bindPopup(`
-          <div style="font-family: 'Outfit', sans-serif; line-height: 1.3;">
-            <strong style="color: #ffffff;">${city.name}</strong><br/>
-            Pop: ${city.pop}<br/>
-            Local Developed Ratio: ${city.developed}<br/>
-          </div>
-        `)
-        .addTo(markersGroupRef.current);
-      });
-    }
-  };
-
-  const handleZoomIn = () => {
-    if (mapRef.current) mapRef.current.zoomIn();
-  };
-
-  const handleZoomOut = () => {
-    if (mapRef.current) mapRef.current.zoomOut();
-  };
-
-  const handleResetView = () => {
-    if (mapRef.current) {
-      mapRef.current.setView([54.78, -2.8], 6);
-      setSelectedRegion('unitedkingdom');
-    }
-  };
-
-  const currentRegionStats = REGIONAL_DATA[selectedRegion] || REGIONAL_DATA['unitedkingdom'];
 
   return (
     <MapContainer>
@@ -604,130 +474,56 @@ export const LandUseMap: React.FC = () => {
         <h2>UK Land Use & Spatial Metrics</h2>
       </HeaderSection>
 
-      <Grid>
-        {/* Map Section */}
-        <VisualColumn>
-          {leafletError ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontFamily: 'Inter' }}>
-              Geospatial data could not load. Please verify your internet connection.
-            </div>
-          ) : !mapLoaded ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontFamily: 'Outfit', fontWeight: 500 }}>
-              Retrieving Geographic ONS Boundaries & Map Layers...
-            </div>
-          ) : null}
-
-          {mapLoaded && !leafletError && (
-            <div style={{ position: 'relative', width: '100%', height: '770px' }}>
-              <MapViewport id="leaflet-map" />
-              <FloatingMapControls>
-                <MapButton onClick={handleZoomIn} title="Zoom In">+</MapButton>
-                <MapButton onClick={handleZoomOut} title="Zoom Out">−</MapButton>
-                <MapButton onClick={handleResetView} title="Reset Center">⌖</MapButton>
-              </FloatingMapControls>
-            </div>
-          )}
-        </VisualColumn>
-
-        {/* Sidebar Section */}
-        <SidebarConsole>
-          <ConsoleCard>
-            <InfoBox>
-              <h4>Selected Region profile (UKCEH 2024)</h4>
-              <p style={{ fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-                Click on any boundary region (e.g. Wales, South West, Scotland) on the live map to extract accurate geographical statistics.
-              </p>
-            </InfoBox>
-
-            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h3 style={{ fontFamily: 'Outfit', color: '#ffffff', margin: '0 0 0.25rem 0', fontSize: '1.4rem', fontWeight: 500 }}>
-                {currentRegionStats.name}
-              </h3>
-              <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Total area: {currentRegionStats.area}
-              </span>
-
-              <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {/* Stats Progress Bars */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontFamily: 'Outfit' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>🌾 Agricultural land</span>
-                    <strong style={{ color: 'hsl(46, 65%, 52%)' }}>{currentRegionStats.agriculture}</strong>
-                  </div>
-                  <ProgressBarContainer>
-                    <ProgressBarFill pct={parseFloat(currentRegionStats.agriculture)} />
-                  </ProgressBarContainer>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontFamily: 'Outfit' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>🌿 Grassland & Natural Open Space</span>
-                    <strong style={{ color: '#84cc16' }}>{currentRegionStats.grassland}</strong>
-                  </div>
-                  <ProgressBarContainer>
-                    <ProgressBarFill pct={parseFloat(currentRegionStats.grassland)} style={{ background: '#84cc16' }} />
-                  </ProgressBarContainer>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontFamily: 'Outfit' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>🌳 Forestry & Woodland</span>
-                    <strong style={{ color: '#10b981' }}>{currentRegionStats.woodland}</strong>
-                  </div>
-                  <ProgressBarContainer>
-                    <ProgressBarFill pct={parseFloat(currentRegionStats.woodland)} style={{ background: '#10b981' }} />
-                  </ProgressBarContainer>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontFamily: 'Outfit' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>🏘️ Developed (Urban & Suburban)</span>
-                    <strong style={{ color: '#f43f5e' }}>{currentRegionStats.developed}</strong>
-                  </div>
-                  <ProgressBarContainer>
-                    <ProgressBarFill pct={parseFloat(currentRegionStats.developed)} style={{ background: '#f43f5e' }} />
-                  </ProgressBarContainer>
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontFamily: 'Outfit' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>💧 Water & Wetlands</span>
-                    <strong style={{ color: '#38bdf8' }}>{currentRegionStats.water}</strong>
-                  </div>
-                  <ProgressBarContainer>
-                    <ProgressBarFill pct={parseFloat(currentRegionStats.water)} style={{ background: '#38bdf8' }} />
-                  </ProgressBarContainer>
-                </div>
-              </div>
-            </div>
-          </ConsoleCard>
-
-          <ConsoleCard style={{ padding: '1.25rem' }}>
-            <h4 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.05rem', margin: '0 0 1rem 0' }}>Map Overlays</h4>
-            <ToggleRow active={layers.cities} accentColor="#f43f5e">
-              <div className="label-group">
-                <div className="indicator" />
-                <span className="title">Major Urban Cities</span>
-              </div>
-              <Switch
-                active={layers.cities}
-                accentColor="#f43f5e"
-                onClick={() => toggleLayer('cities')}
-              />
-            </ToggleRow>
-          </ConsoleCard>
-        </SidebarConsole>
-      </Grid>
-
       <Figure1Section>
-        <InfoBox style={{ maxWidth: '850px', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.5rem', fontWeight: 500, margin: '0 0 0.5rem 0' }}>
-            UK Land Cover Breakdown (UKCEH 2024)
-          </h3>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
-            UK-wide land cover classified by the UKCEH Land Cover Map 2024 into habitat types. Just 6.8% of the UK is built-up, split between suburban residential areas (5.1%) and dense urban land including transport, commercial, and industrial use (1.7%).
-          </p>
-        </InfoBox>
+        {/* Proportional Fill UK Silhouette — area-proportional bands from real GeoJSON */}
+        {ukSvgPaths.length > 0 && bandYPositions.length > 0 && (
+          <div style={{ display: 'flex', gap: '5rem', alignItems: 'center', marginBottom: '3rem', marginTop: '-60px', flexWrap: 'wrap', justifyContent: 'flex-start', marginLeft: '-100px' }}>
+            <svg viewBox={`0 0 ${ukSvgSize.w} ${ukSvgSize.h}`} width="588" style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.4))' }}>
+              <defs>
+                <clipPath id="uk-silhouette">
+                  {ukSvgPaths.map((d, i) => <path key={i} d={d} />)}
+                </clipPath>
+              </defs>
+
+              {/* Filled bands clipped to real UK shape — area-proportional positions */}
+              <g clipPath="url(#uk-silhouette)">
+                <rect x="0" y="0" width={ukSvgSize.w} height={bandYPositions[0]} fill="hsl(46, 65%, 52%)" />
+                <rect x="0" y={bandYPositions[0]} width={ukSvgSize.w} height={bandYPositions[1] - bandYPositions[0]} fill="#84cc16" />
+                <rect x="0" y={bandYPositions[1]} width={ukSvgSize.w} height={bandYPositions[2] - bandYPositions[1]} fill="#10b981" />
+                <rect x="0" y={bandYPositions[2]} width={ukSvgSize.w} height={bandYPositions[3] - bandYPositions[2]} fill="#f59e0b" />
+                <rect x="0" y={bandYPositions[3]} width={ukSvgSize.w} height={bandYPositions[4] - bandYPositions[3]} fill="#f43f5e" />
+                <rect x="0" y={bandYPositions[4]} width={ukSvgSize.w} height={bandYPositions[5] - bandYPositions[4]} fill="#38bdf8" />
+              </g>
+
+              {/* Outline stroke */}
+              {ukSvgPaths.map((d, i) => <path key={i} d={d} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" />)}
+            </svg>
+
+            {/* Legend */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {[
+                { emoji: '🌾', name: 'Agricultural Land', pct: '49.0%', color: 'hsl(46, 65%, 52%)' },
+                { emoji: '🌿', name: 'Grassland & Natural Open Space', pct: '28.7%', color: '#84cc16' },
+                { emoji: '🌳', name: 'Forestry & Woodland', pct: '12.0%', color: '#10b981' },
+                { emoji: '🏠', name: 'Residential (Homes & Gardens)', pct: '5.6%', color: '#f59e0b' },
+                { emoji: '🌉', name: 'Urban (Transport & Commercial)', pct: '1.6%', color: '#f43f5e' },
+                { emoji: '💧', name: 'Water & Wetlands', pct: '3.1%', color: '#38bdf8' },
+              ].map((cat, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: '14px', height: '14px', borderRadius: '3px', background: cat.color, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontFamily: 'Outfit', fontSize: '0.95rem', color: '#ffffff', fontWeight: 500 }}>
+                      {cat.emoji} {cat.name}
+                    </div>
+                    <div style={{ fontFamily: 'Outfit', fontSize: '1.1rem', fontWeight: 600, color: cat.color }}>
+                      {cat.pct}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <TableGrid style={{ width: '100%', maxWidth: '850px' }}>
           {UK_LAND_COVER.map((group, idx) => (
