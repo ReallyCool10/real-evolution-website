@@ -220,7 +220,7 @@ export const ResearchHub: React.FC = () => {
 
               <ArticleBody>
                 <p>
-                  England has far fewer dwellings relative to its population than other developed nations, with just 434 homes per thousand inhabitants, significantly fewer than France (590), Italy (587), and the OECD average of 487 <sup>[1]</sup>. Looking at the United Kingdom as a whole, the gap is even more severe: Statista research indicates the UK has just <strong>374 dwellings per 1,000 inhabitants</strong> <sup>[2]</sup>.
+                  The United Kingdom has far fewer dwellings relative to its population than other developed nations, with just <strong>446 homes per thousand inhabitants</strong>, significantly fewer than France (590), Italy (587), and the OECD average of 487 <sup>[1]</sup>. Looking at the EU average of <strong>500 dwellings per 1,000 inhabitants</strong>, the UK's deficit is stark: closing that gap alone would require approximately <strong>3.7 million additional homes</strong> <sup>[2]</sup>.
                 </p>
 
                 <blockquote>
@@ -243,7 +243,7 @@ export const ResearchHub: React.FC = () => {
 
                <CitationList>
                 <li>[1] <a href="https://www.oecd.org/housing/data/affordable-housing-database/" target="_blank" rel="noopener noreferrer">OECD Affordable Housing Database</a>, Comparative Housing Stock Indicators.</li>
-                <li>[2] <a href="https://www.statista.com/statistics/867687/total-housing-stock-per-1000-inhabitants-in-europe/" target="_blank" rel="noopener noreferrer">Statista Research</a>, Total Housing Stock per 1,000 Inhabitants (Europe Comparisons, 2023).</li>
+                <li>[2] Deficit calculation: (500 − 446) × 68.3m ÷ 1,000 ≈ 3,688,200 homes. Population: <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates" target="_blank" rel="noopener noreferrer">ONS Mid-Year Population Estimates</a> (68.3m, 2023).</li>
                 <li>[3] <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/housingstocklevelsbytenureandregioninenglandandwales" target="_blank" rel="noopener noreferrer">ONS Housing Stock & Completion Records</a>, Q3 2023.</li>
                 <li>[4] <a href="https://www.cbre.co.uk/insights/articles/uk-real-estate-market-outlook-2024" target="_blank" rel="noopener noreferrer">UK Commercial Real Estate Market Report</a>, Vacancy Metrics (Q3 2024).</li>
               </CitationList>
@@ -253,8 +253,8 @@ export const ResearchHub: React.FC = () => {
           {activeArticle === 'quality' && (
             <ArticleContainer>
               <ArticleHeader>
-                <Category>Quality & Energy Gaps</Category>
-                <ArticleTitle>Europe's Oldest Hearth: Quality and Carbon in the UK Grid</ArticleTitle>
+                <Category>Quality & Housing Age</Category>
+                <ArticleTitle>Europe's Oldest Hearth: The UK's Housing Quality Gap</ArticleTitle>
                 <MetaRow>
                   <span>Published: Q2 2026</span>
                   <span>Reading Time: 6 mins</span>
@@ -263,12 +263,12 @@ export const ResearchHub: React.FC = () => {
 
               <ArticleBody>
                 <p>
-                  Beyond absolute scarcity, the UK has amongst the oldest and least energy-efficient housing stocks in Europe. A staggering <strong>78% of UK homes</strong> were built before 1980, compared to an EU average of 61%. Even more critical, <strong>38% of the UK’s housing stock</strong> was built before 1946, compared to an EU average of just 18% <sup>[1]</sup>.
+                  Beyond absolute scarcity, the UK has amongst the oldest and least energy-efficient housing stocks in Europe. <strong>78% of homes</strong> were built before 1980, compared to an EU average of 61%. And <strong>38% of the housing stock</strong> was built before 1946, compared to the EU average of 18% <sup>[1]</sup>.
                 </p>
 
                 <blockquote>
                   <p>
-                    "Living in an old house shouldn't mean living in drafty discomfort. The UK's failure to update its historical housing envelope has direct public health and environmental consequences."
+                    The failure to update the historical housing envelope has direct public health and environmental consequences.
                   </p>
                 </blockquote>
 
@@ -276,22 +276,23 @@ export const ResearchHub: React.FC = () => {
 
                 <h3>Failure to Meet Basic Decency</h3>
                 <p>
-                  This historical legacy has had a severe impact on the livability of homes: <strong>15% of English homes failed to meet the Decent Homes Standard</strong> as of recent surveys <sup>[2]</sup>. This is the highest proportion of substandard housing in Europe, significantly higher than peer nations like Germany (12%), Bulgaria (11%), and Poland (6%) <sup>[3]</sup>.
+                  This historical legacy has had a severe impact on the livability of homes: <strong>14% of English homes (3.5 million households) failed to meet the Decent Homes Standard</strong> in the most recent English Housing Survey <sup>[2]</sup>. Private renters are hit hardest, with 21% living in non-decent conditions. While the Decent Homes Standard is an England-specific metric, broader Eurostat and WHO housing deprivation indicators consistently place the UK among the worst-performing Western European nations for overall housing quality <sup>[3]</sup>.
                 </p>
 
-                <h3>The Macro Drag: NHS and Net-Zero</h3>
+                <h3>The Downstream Cost of an Ageing Stock</h3>
                 <p>
-                  Substandard housing is not just a personal inconvenience; it is a major macroeconomic anchor. Damp, cold, and poorly insulated homes cost the NHS billions of pounds annually in treatable respiratory and cardiovascular conditions. 
+                  Homes built before modern insulation standards tend to be significantly less energy-efficient. The BRE Trust estimates that poor housing conditions in England cost the NHS approximately <strong>£1.4 billion per year</strong> in first-year treatment costs for conditions linked to cold, damp, and hazardous homes <sup>[4]</sup>. Excess cold alone accounts for £857 million of that figure.
                 </p>
                 <p>
-                  Additionally, in an era of global energy price volatility, poorly insulated historic houses render households extremely vulnerable to energy price shocks. Retrofitting existing urban assets and utilizing high-performance building materials is therefore the most direct pathway to achieving both energy security and domestic carbon net-zero commitments.
+                  These are structural characteristics of the existing housing grid, not individual choices. Understanding the scale of this quality deficit is a prerequisite for any serious conversation about housing reform in the UK.
                 </p>
               </ArticleBody>
 
               <CitationList>
                 <li>[1] <a href="https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20230222-1" target="_blank" rel="noopener noreferrer">European Housing Stock Age and Composition Report</a>, Eurostat Comparisons.</li>
-                <li>[2] <a href="https://www.gov.uk/government/statistics/english-housing-survey-2020-to-2021-headline-report" target="_blank" rel="noopener noreferrer">English Housing Survey</a>, Ministry of Housing, Communities & Local Government (2020).</li>
-                <li>[3] <a href="https://www.who.int/europe/publications/i/item/9789289052993" target="_blank" rel="noopener noreferrer">WHO European Housing and Health Database</a> (Substandard Stock Index).</li>
+                <li>[2] <a href="https://www.gov.uk/government/statistics/english-housing-survey-2022-to-2023-headline-report" target="_blank" rel="noopener noreferrer">English Housing Survey</a>, Ministry of Housing, Communities & Local Government (2022-23).</li>
+                <li>[3] <a href="https://www.who.int/europe/publications/i/item/9789289052993" target="_blank" rel="noopener noreferrer">WHO European Housing and Health Database</a> (Housing Deprivation Indicators).</li>
+                <li>[4] <a href="https://www.bregroup.com/press-releases/bre-report-finds-poor-housing-is-costing-nhs-1-4bn-a-year/" target="_blank" rel="noopener noreferrer">BRE Trust</a>, The Cost of Poor Housing to the NHS (2021).</li>
               </CitationList>
             </ArticleContainer>
           )}

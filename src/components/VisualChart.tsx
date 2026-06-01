@@ -86,17 +86,17 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
   };
 
   if (type === 'deficit') {
-    // Dwellings per 1,000 people
+    // Dwellings per 1,000 inhabitants (source: REAL Numbers page)
     const data = [
-      { country: 'United Kingdom', value: 374, highlighted: true },
-      { country: 'England (Stat)', value: 434, highlighted: false },
-      { country: 'Netherlands', value: 457, highlighted: false },
+      { country: 'United Kingdom', value: 446, highlighted: true },
+      { country: 'Netherlands', value: 456, highlighted: false },
       { country: 'OECD Average', value: 487, highlighted: false },
-      { country: 'Denmark', value: 516, highlighted: false },
-      { country: 'Germany', value: 516, highlighted: false },
-      { country: 'France', value: 553, highlighted: false },
-      { country: 'Spain', value: 559, highlighted: false },
-      { country: 'Bulgaria', value: 668, highlighted: false },
+      { country: 'EU Average', value: 500, highlighted: false },
+      { country: 'Germany', value: 521, highlighted: false },
+      { country: 'Japan', value: 523, highlighted: false },
+      { country: 'Spain', value: 550, highlighted: false },
+      { country: 'Italy', value: 587, highlighted: false },
+      { country: 'France', value: 590, highlighted: false },
     ];
 
     const chartHeight = 240;
@@ -105,7 +105,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
     const paddingLeft = 140;
     const paddingRight = 40;
     const chartWidth = 500;
-    const scale = (chartWidth - paddingLeft - paddingRight) / 668;
+    const scale = (chartWidth - paddingLeft - paddingRight) / 590;
 
     return (
       <ChartContainer style={{ position: 'relative' }}>
@@ -138,7 +138,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
                 <rect
                   x={paddingLeft}
                   y={y}
-                  width={668 * scale}
+                  width={590 * scale}
                   height={barHeight}
                   rx="4"
                   fill="rgba(255, 255, 255, 0.02)"
@@ -191,34 +191,34 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
   }
 
   if (type === 'quality') {
-    // English homes failing Decent Homes Standard vs Europe
+    // English Housing Survey 2022-23: Non-decent homes by tenure
     const data = [
-      { country: 'England', value: 15, highlighted: true },
-      { country: 'Germany', value: 12, highlighted: false },
-      { country: 'Bulgaria', value: 11, highlighted: false },
-      { country: 'Lithuania', value: 11, highlighted: false },
-      { country: 'Poland', value: 6, highlighted: false },
+      { country: 'Private Rented', label: ['Private', 'Rented'], value: 21, highlighted: true },
+      { country: 'Local Authority', label: ['Local', 'Authority'], value: 15, highlighted: false },
+      { country: 'All Tenures', label: ['All', 'Tenures'], value: 14, highlighted: false },
+      { country: 'Owner Occupied', label: ['Owner', 'Occupied'], value: 13, highlighted: false },
+      { country: 'Housing Assoc.', label: ['Housing', 'Assoc.'], value: 9, highlighted: false },
     ];
 
-    const chartHeight = 220;
-    const paddingBottom = 40;
+    const chartHeight = 235;
+    const paddingBottom = 55;
     const paddingTop = 30;
     const chartWidth = 500;
     const colWidth = 45;
     const colSpacing = 40;
     const startX = 60;
-    const maxVal = 20; // max pct
+    const maxVal = 25;
     const scale = (chartHeight - paddingTop - paddingBottom) / maxVal;
 
     return (
       <ChartContainer style={{ position: 'relative' }}>
-        <ChartTitle>Homes Failing Decent Homes Standard (%)</ChartTitle>
+        <ChartTitle>Homes Failing Decent Homes Standard by Tenure (%)</ChartTitle>
         <ChartSubtitle>
-          A reflection of having the oldest housing stock in Europe (78% built pre-1980), England leads in substandard home rates.
+          Private renters face the worst conditions, with over 1 in 5 homes failing to meet basic decency standards (EHS 2022-23).
         </ChartSubtitle>
         <SVGContainer viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%">
           {/* Grid lines */}
-          {[0, 5, 10, 15, 20].map((v) => {
+          {[0, 5, 10, 15, 20, 25].map((v) => {
             const y = chartHeight - paddingBottom - v * scale;
             return (
               <g key={v}>
@@ -249,8 +249,8 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
             const x = startX + i * (colWidth + colSpacing) + 20;
             const barHeight = d.value * scale;
             const y = chartHeight - paddingBottom - barHeight;
-            const fill = d.highlighted ? 'url(#gold-gradient-v)' : 'rgba(255, 255, 255, 0.12)';
-            const border = d.highlighted ? 'hsl(46, 65%, 52%)' : 'rgba(255, 255, 255, 0.1)';
+            const fill = 'url(#gold-gradient-v)';
+            const border = 'hsl(46, 65%, 52%)';
 
             return (
               <g key={d.country}>
@@ -265,7 +265,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
                   stroke={border}
                   strokeWidth={d.highlighted ? '1.5' : '0.5'}
                   style={{ transition: 'all 0.3s ease', cursor: 'pointer' }}
-                  onMouseMove={(e) => handleMouseMove(e, d.country, `${d.value}% substandard`)}
+                  onMouseMove={(e) => handleMouseMove(e, d.country, `${d.value}% non-decent`)}
                   onMouseLeave={handleMouseLeave}
                 />
                 {/* Value Text */}
@@ -280,17 +280,18 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
                 >
                   {d.value}%
                 </text>
-                {/* X-axis Label */}
+                {/* X-axis Label (two rows) */}
                 <text
                   x={x + colWidth / 2}
-                  y={chartHeight - paddingBottom + 20}
+                  y={chartHeight - paddingBottom + 16}
                   textAnchor="middle"
                   fill={d.highlighted ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'}
                   fontFamily="Inter"
-                  fontSize="11"
+                  fontSize="10"
                   fontWeight={d.highlighted ? '600' : '400'}
                 >
-                  {d.country}
+                  <tspan x={x + colWidth / 2} dy="0">{d.label[0]}</tspan>
+                  <tspan x={x + colWidth / 2} dy="13">{d.label[1]}</tspan>
                 </text>
               </g>
             );
@@ -345,7 +346,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
 
           {/* Continuous Bar: 100% Addressable */}
           <rect x="285" y="60" width="180" height="16" rx="4" fill="url(#gold-gradient)" stroke="hsl(46, 65%, 52%)" strokeWidth="1" />
-          <text x="375" y="71" fill="#0a0d14" fontSize="8" fontFamily="Inter" fontWeight="700" textAnchor="middle">100% Addressable Assets</text>
+          <text x="375" y="71" fill="#ffffff" fontSize="8" fontFamily="Inter" fontWeight="700" textAnchor="middle">100% Addressable Assets</text>
 
           {/* Continuous Metrics */}
           <text x="285" y="100" fill="rgba(255,255,255,0.85)" fontSize="10" fontFamily="Inter">• Instant Bid-Ask Discovery</text>

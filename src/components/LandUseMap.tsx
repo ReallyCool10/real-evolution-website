@@ -352,21 +352,18 @@ const REGIONAL_DATA: { [key: string]: any } = {
   northernireland: { name: 'Northern Ireland', developed: '3.5%', agriculture: '68.0%', woodland: '6.5%', grassland: '16.0%', water: '6.0%', area: '1,356,200 ha' }
 };
 
-// DLUHC Figure 1 Land Use Groups Statistics (April 2022 Stock)
-const DLUHC_GROUPS = [
-  { name: 'Agriculture', pct: 63.1, ha: '8,230,000 ha', type: 'Non-Developed' },
-  { name: 'Forestry, open land and water', pct: 20.1, ha: '2,622,000 ha', type: 'Non-Developed' },
-  { name: 'Residential gardens', pct: 4.9, ha: '639,000 ha', type: 'Non-Developed' },
-  { name: 'Undeveloped land', pct: 3.5, ha: '457,000 ha', type: 'Non-Developed' },
-  { name: 'Outdoor recreation', pct: 3.2, ha: '417,000 ha', type: 'Non-Developed' },
-  { name: 'Transport and utilities', pct: 2.1, ha: '274,000 ha', type: 'Developed' },
-  { name: 'Residential buildings', pct: 1.1, ha: '143,000 ha', type: 'Developed' },
-  { name: 'Industry and commerce', pct: 0.6, ha: '78,000 ha', type: 'Developed' },
-  { name: 'Other developed use', pct: 0.5, ha: '65,000 ha', type: 'Developed' },
-  { name: 'Community services', pct: 0.4, ha: '52,000 ha', type: 'Developed' },
-  { name: 'Minerals and landfill', pct: 0.2, ha: '26,000 ha', type: 'Developed' },
-  { name: 'Defence', pct: 0.1, ha: '13,000 ha', type: 'Developed' },
-  { name: 'Vacant land', pct: 0.2, ha: '26,000 ha', type: 'Vacant' }
+// UK-wide Land Cover Breakdown (UKCEH LCM 2024 Statistics)
+const UK_LAND_COVER = [
+  { name: 'Arable & Horticulture', pct: 25.0, ha: '6,068,000 ha', type: 'Agriculture' },
+  { name: 'Improved Grassland', pct: 24.0, ha: '5,825,000 ha', type: 'Agriculture' },
+  { name: 'Semi-natural Grassland & Heath', pct: 15.0, ha: '3,641,000 ha', type: 'Natural' },
+  { name: 'Broadleaved & Mixed Woodland', pct: 7.0, ha: '1,699,000 ha', type: 'Natural' },
+  { name: 'Coniferous Woodland', pct: 5.0, ha: '1,214,000 ha', type: 'Natural' },
+  { name: 'Suburban (Residential & Gardens)', pct: 5.1, ha: '1,238,000 ha', type: 'Built-Up' },
+  { name: 'Bog, Marsh & Fen', pct: 5.0, ha: '1,214,000 ha', type: 'Natural' },
+  { name: 'Freshwater & Coastal', pct: 3.1, ha: '752,000 ha', type: 'Natural' },
+  { name: 'Urban (Transport, Commercial & Industrial)', pct: 1.7, ha: '413,000 ha', type: 'Built-Up' },
+  { name: 'Other (Bare Ground, Scrub, etc.)', pct: 9.1, ha: '2,208,000 ha', type: 'Natural' },
 ];
 
 export const LandUseMap: React.FC = () => {
@@ -725,30 +722,30 @@ export const LandUseMap: React.FC = () => {
       <Figure1Section>
         <InfoBox style={{ maxWidth: '850px', marginBottom: '1.5rem' }}>
           <h3 style={{ fontFamily: 'Outfit', color: '#ffffff', fontSize: '1.5rem', fontWeight: 500, margin: '0 0 0.5rem 0' }}>
-            Land Use by Land Use Group (England 2022)
+            UK Land Cover Breakdown (UKCEH 2024)
           </h3>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem' }}>
-            Official government statistics dividing England into developed, non-developed, and vacant groups. Out of England's 13,046,000 total hectares, over 91% remains completely open, non-developed country.
+            UK-wide land cover classified by the UKCEH Land Cover Map 2024 into habitat types. Just 6.8% of the UK is built-up, split between suburban residential areas (5.1%) and dense urban land including transport, commercial, and industrial use (1.7%).
           </p>
         </InfoBox>
 
         <TableGrid style={{ width: '100%', maxWidth: '850px' }}>
-          {DLUHC_GROUPS.map((group, idx) => (
+          {UK_LAND_COVER.map((group, idx) => (
             <TableRow key={idx}>
               <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginRight: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="label">{group.name}</span>
-                  <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: group.type === 'Developed' ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)', color: group.type === 'Developed' ? '#f43f5e' : '#10b981', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: group.type === 'Built-Up' ? 'rgba(244,63,94,0.1)' : group.type === 'Agriculture' ? 'rgba(212,175,55,0.1)' : 'rgba(16,185,129,0.1)', color: group.type === 'Built-Up' ? '#f43f5e' : group.type === 'Agriculture' ? 'hsl(46, 65%, 52%)' : '#10b981', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
                     {group.type}
                   </span>
                 </div>
                 <ProgressBarContainer style={{ height: '4px', marginTop: '0.5rem' }}>
-                  <ProgressBarFill pct={group.pct} style={{ background: group.type === 'Developed' ? '#f43f5e' : 'hsl(46, 65%, 52%)' }} />
+                  <ProgressBarFill pct={group.pct} style={{ background: group.type === 'Built-Up' ? '#f43f5e' : group.type === 'Agriculture' ? 'hsl(46, 65%, 52%)' : '#10b981' }} />
                 </ProgressBarContainer>
               </div>
               <div className="value-group">
                 <span className="ha-val">{group.ha}</span>
-                <span className="pct-val" style={{ color: group.type === 'Developed' ? '#f43f5e' : 'hsl(46, 65%, 52%)' }}>{group.pct}%</span>
+                <span className="pct-val" style={{ color: group.type === 'Built-Up' ? '#f43f5e' : group.type === 'Agriculture' ? 'hsl(46, 65%, 52%)' : '#10b981' }}>{group.pct}%</span>
               </div>
             </TableRow>
           ))}
@@ -756,7 +753,7 @@ export const LandUseMap: React.FC = () => {
       </Figure1Section>
 
       <LicenseNotice>
-        Contains public sector information licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" target="_blank" rel="noreferrer">Open Government Licence v3.0</a>. Reference sources: <a href="https://www.gov.uk/government/statistics/land-use-in-england-2022/land-use-statistics-england-2022" target="_blank" rel="noreferrer">DLUHC Land Use Statistics England 2022 (Figure 1)</a> & ONS/UKCEH Land Cover Maps (2024).
+        Contains public sector information licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" target="_blank" rel="noreferrer">Open Government Licence v3.0</a>. Reference sources: <a href="https://www.ceh.ac.uk/data/ukceh-land-cover-maps" target="_blank" rel="noreferrer">UKCEH Land Cover Map 2024 (UK Land Cover Statistics)</a> & ONS Standard Area Measurements.
       </LicenseNotice>
     </MapContainer>
   );
