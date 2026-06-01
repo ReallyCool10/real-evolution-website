@@ -334,7 +334,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
           {/* Traditional Metrics */}
           <text x="35" y="100" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• 6-Month Average Sale Time</text>
           <text x="35" y="120" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• 30% Chain Collapse Risk</text>
-          <text x="35" y="140" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• £3.0B Estate Agent Drag</text>
+          <text x="35" y="140" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• £9B+ Transactional Drag</text>
           <text x="35" y="160" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• Locked "Shadow Inventory"</text>
           
           <text x="35" y="195" fill="rgba(255,255,255,0.3)" fontSize="9" fontFamily="Outfit" fontWeight="600" letterSpacing="0.5">BINARY LISTING LIMBO</text>
@@ -362,11 +362,11 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
   // default to affordability: 1995 vs 2025 comparison
   const wagesData = [
     { year: '1995', value: 100, label: 'Average Wage: 1.0x' },
-    { year: '2025', value: 200, label: 'Average Wage: 2.0x (+100%)' },
+    { year: '2025', value: 212, label: 'Average Wage: 2.1x (+112%)' },
   ];
   const houseData = [
     { year: '1995', value: 100, label: 'Average House Price: 1.0x' },
-    { year: '2025', value: 700, label: 'Average House Price: 7.0x (+600%)' },
+    { year: '2025', value: 525, label: 'Average House Price: 5.3x (+425%)' },
   ];
 
   const chartHeight = 220;
@@ -375,7 +375,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
   const chartWidth = 500;
   const startX = 60;
   const endX = chartWidth - 80;
-  const maxVal = 800;
+  const maxVal = 600;
   const scale = (chartHeight - paddingTop - paddingBottom) / maxVal;
 
   const yWages95 = chartHeight - paddingBottom - wagesData[0].value * scale;
@@ -387,11 +387,11 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
     <ChartContainer style={{ position: 'relative' }}>
       <ChartTitle>Wage Growth vs. House Price Inflation (1995 - 2025)</ChartTitle>
       <ChartSubtitle>
-        The systemic affordability crisis: in 1995, a teacher paid 3 years of salary for a home; today, they pay 10 years of salary.
+        The systemic affordability crisis: in 1995, a newly qualified teacher could buy a home for 3.4x their salary; today, it costs over 8.1x.
       </ChartSubtitle>
       <SVGContainer viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%">
         {/* Y Axis grid */}
-        {[100, 200, 400, 600, 800].map((v) => {
+        {[100, 200, 300, 400, 500, 600].map((v) => {
           const y = chartHeight - paddingBottom - v * scale;
           return (
             <g key={v}>
@@ -455,11 +455,11 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
           stroke="rgba(255, 255, 255, 0.8)"
           strokeWidth="1"
           style={{ cursor: 'pointer' }}
-          onMouseMove={(e) => handleMouseMove(e, 'Wages 2025', '200% (+100% growth)')}
+          onMouseMove={(e) => handleMouseMove(e, 'Wages 2025', '212% (+112% growth)')}
           onMouseLeave={handleMouseLeave}
         />
         <text x={endX - 25} y={yWages25 + 4} fill="rgba(255, 255, 255, 0.6)" fontFamily="Inter" fontSize="11" textAnchor="start">
-          Wages (2.0x)
+          Wages (2.1x)
         </text>
 
         {/* HOUSE PRICES LINE */}
@@ -491,11 +491,11 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
           stroke="#ffffff"
           strokeWidth="1.5"
           style={{ cursor: 'pointer' }}
-          onMouseMove={(e) => handleMouseMove(e, 'House Prices 2025', '700% (+600% growth)')}
+          onMouseMove={(e) => handleMouseMove(e, 'House Prices 2025', '525% (+425% growth)')}
           onMouseLeave={handleMouseLeave}
         />
         <text x={endX - 25} y={yHouse25 + 4} fill="hsl(46, 65%, 52%)" fontFamily="Inter" fontSize="11" fontWeight="600" textAnchor="start">
-          House Prices (7.0x)
+          House Prices (5.3x)
         </text>
       </SVGContainer>
       {hoveredBar && (

@@ -309,7 +309,7 @@ export const ResearchHub: React.FC = () => {
 
               <ArticleBody>
                 <p>
-                  Over a 30-year span, from 1995 to 2025, the average UK home has <strong>increased in price by at least 600%</strong>, while the average salary rose by only 100% <sup>[1]</sup>. In 1995, a teacher could purchase a standard family home using just 3 years of salary. Today, a teacher must allocate <strong>10 years' salary</strong> for an equivalent dwelling <sup>[2]</sup>. This represents an unsustainable high price-to-earnings ratio of 10:1.
+                  Over a 30-year span, from 1995 to 2025, the average UK home has <strong>increased in price by over 425%</strong>, while the average salary rose by just 112% <sup>[1]</sup>. In 1995, a newly qualified teacher could purchase a standard family home for just 3.4x their salary. Today, that same teacher must allocate <strong>over 8x their annual salary</strong> for an equivalent dwelling <sup>[2]</sup>.
                 </p>
 
                 <blockquote>
@@ -329,15 +329,15 @@ export const ResearchHub: React.FC = () => {
                   The leading drivers of transaction collapses are problems uncovered during building surveys (which surprises buyers) and failures to secure final mortgages (~40% of recent failures). This extreme friction is compounded by a lack of trust: undisclosed defects and complex onward chains hold buyers and sellers hostage.
                 </p>
 
-                <h3>The Parasitic Middleman Drag</h3>
+                <h3>The Transactional Drag</h3>
                 <p>
-                  To make matters worse, selling property is exceptionally expensive. A typical real estate agent fee ranges between 1% and 2% of the sale price, averaging <strong>£3,000</strong> per transaction. In aggregate, this extracts a conservative <strong>£3 billion per year</strong> in estate agent fees across the UK’s ~1 million annual home sales <sup>[4]</sup>, capital that is drained directly out of the productive economy.
+                  Beyond the stress of failed sales, the cost of successfully transacting is itself a major economic drag. The UK estate agency sector alone generates <strong>£5.7 billion per year</strong> in commission revenue. On top of this, conveyancing solicitor fees add approximately <strong>£2.5 billion</strong>, and mortgage broker charges a further <strong>£0.7 billion</strong> annually. In total, over <strong>£9 billion per year</strong> is extracted in intermediary transaction fees across the UK's ~1.1 million annual home sales <sup>[4]</sup>, capital that is diverted away from the productive economy.
                 </p>
               </ArticleBody>
 
               <CitationList>
                 <li>[1] <a href="https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/housepriceindex/previousReleases" target="_blank" rel="noopener noreferrer">ONS House Price Index & Annual Survey of Hours and Earnings (ASHE)</a> 1995-2025.</li>
-                <li>[2] <a href="https://www.gov.uk/government/organisations/land-registry" target="_blank" rel="noopener noreferrer">HM Land Registry Records & Teacher Salary Scale Multipliers</a>.</li>
+                <li>[2] <a href="https://www.gov.uk/government/organisations/land-registry" target="_blank" rel="noopener noreferrer">HM Land Registry Records & Salary Scale Multipliers</a>.</li>
                 <li>[3] <a href="https://www.conveyancingassociation.org.uk/white-papers/" target="_blank" rel="noopener noreferrer">Conveyancing Association Transaction Survey Report</a>.</li>
                 <li>[4] <a href="https://www.gov.uk/government/statistics/monthly-property-transactions-completed-in-the-uk-with-value-40000-or-above" target="_blank" rel="noopener noreferrer">UK Property Transaction Statistics & Agent Commission Index</a>.</li>
               </CitationList>
@@ -350,7 +350,7 @@ export const ResearchHub: React.FC = () => {
                 <Category>Behavioral Economics</Category>
                 <ArticleTitle>The Continuous Market: Rory Sutherland’s Universal Registry</ArticleTitle>
                 <MetaRow>
-                  <span>Published: Q3 2026</span>
+                  <span>Published: Q2 2026</span>
                   <span>Reading Time: 8 mins</span>
                 </MetaRow>
               </ArticleHeader>

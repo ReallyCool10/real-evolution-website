@@ -92,7 +92,7 @@ const MetricCard = styled.div`
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 1.5rem 2rem;
+  padding: 2rem 2rem;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
@@ -103,21 +103,23 @@ const MetricCard = styled.div`
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     letter-spacing: 1.5px;
+    line-height: 1.6;
   }
 
   .number {
+    display: block;
     font-family: 'Outfit', sans-serif;
-    font-size: 2.4rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: hsl(46, 65%, 52%);
-    margin: 0.25rem 0;
+    margin: 0.75rem 0;
   }
 
   .desc {
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.7);
-    line-height: 1.4;
+    line-height: 1.7;
   }
 `;
 
@@ -159,7 +161,7 @@ export const RealProblem: React.FC = () => {
 
           <h3>2. The Quality Decay</h3>
           <p>
-            The quality of UK housing stock is failing. Because the UK possesses the oldest, least insulated housing stock in Europe, it is deeply vulnerable to climatic changes and energy supply shocks.
+            The quality of UK housing stock is failing. The UK possesses the oldest, least insulated housing stock in Europe, leaving families deeply vulnerable to rising energy costs and supply shocks.
           </p>
           <p>
             Cold, drafty, and damp buildings lead directly to significant public health expenses, placing a multi-billion-pound burden on the NHS for treatable cardiovascular and respiratory illnesses. Furthermore, the massive carbon footprint of these uninsulated shells represents the single greatest obstacle to achieving structural carbon net-zero.
@@ -188,9 +190,9 @@ export const RealProblem: React.FC = () => {
           </MetricCard>
 
           <MetricCard>
-            <span className="label">The Parasitic Drag</span>
-            <span className="number">£3.0 Billion</span>
-            <span className="desc">Extracted annually in estate agent transaction fees, locking productive capital away from the economy.</span>
+            <span className="label">The Transactional Drag</span>
+            <span className="number">£9 Billion+</span>
+            <span className="desc">Extracted annually in estate agent commissions, conveyancing fees, and mortgage broker charges, diverting capital away from the productive economy.</span>
           </MetricCard>
         </SidebarMetrics>
       </ContentGrid>

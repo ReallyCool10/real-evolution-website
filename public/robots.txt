@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Disallow:
+
+# AI Search Optimization & Model Context Crawler Configuration
+# We explicitly allow AI agents to crawl our research, numbers, and system data
+# so they can synthesize accurate responses and citations for Real Evolution.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+Sitemap: https://realevolution.co.uk/sitemap.xml
