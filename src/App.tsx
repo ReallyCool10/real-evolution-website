@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import textLogo from './assets/real-evolution-logo.svg';
+
 import backgroundImage from './assets/BackgroundImage.png';
 import Navigation from './components/Navigation';
 import { RealProblem } from './components/RealProblem';
@@ -132,13 +132,7 @@ const HeroArea = styled.section`
   margin-bottom: 2rem;
 `;
 
-const Logo = styled.img`
-  width: 180px;
-  height: auto;
-  margin-bottom: 2.5rem;
-  filter: brightness(0) invert(1);
-  opacity: 0.95;
-`;
+
 
 const MainTagline = styled.h1`
   font-family: 'Outfit', sans-serif;
@@ -241,7 +235,7 @@ const SectionDesc = styled.p`
   font-family: 'Inter', sans-serif;
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.6);
-  max-width: 700px;
+  max-width: 820px;
   margin: 0 auto 3rem auto;
   text-align: center;
   line-height: 1.5;
@@ -315,12 +309,11 @@ const App: React.FC = () => {
           <ViewWrapper>
             <HomeContainer>
               <HeroArea>
-                <Logo src={textLogo} alt="Real Evolution Logo" />
                 <MainTagline>
                   Evolving the UK Built Environment.
                 </MainTagline>
                 <HeroSubtitle>
-                  Explore the UK's housing supply, quality, and productivity gaps to find out about next-generation built environment models.
+                  Examining the data behind the UK's housing shortage and the untapped opportunities to transform it.
                 </HeroSubtitle>
                 <ButtonGroup>
                   <PrimaryButton onClick={() => setActiveTab('problem')}>
@@ -334,7 +327,7 @@ const App: React.FC = () => {
 
               <SectionTitle>The Systemic Drag</SectionTitle>
               <SectionDesc>
-                The housing crisis acts as a systemic anchor on the UK economy, stalling GDP and productivity growth. We pioneer research and strategy focusing on these critical macroeconomic gaps:
+                The housing crisis acts as a systemic anchor on the UK economy, stalling GDP and productivity growth. We pioneer research and strategy in order to find REAL solutions.
               </SectionDesc>
 
               <GapGrid>
@@ -346,7 +339,7 @@ const App: React.FC = () => {
                     The GDP & Prosperity Drag
                   </h3>
                   <p>
-                    With average house prices up 600% over 30 years vs only 100% wage growth, families allocate up to 50% of disposable income to rent and mortgages, draining local businesses, services, and the real economy.
+                    With average house prices up over 400% in 30 years vs stagnant real wage growth, families allocate up to 50% of disposable income to rent and mortgages, draining local businesses, services, and the real economy.
                   </p>
                 </GapCard>
 
@@ -358,7 +351,7 @@ const App: React.FC = () => {
                     The Productivity & Talent Gap
                   </h3>
                   <p>
-                    Skilled workers are priced out of high-productivity urban employment hubs. Grueiling commutes and spatial mismatch exhaust the workforce, acting as a direct driver of the UK’s productivity trap.
+                    Skilled workers are priced out of high-productivity urban employment hubs. Gruelling commutes and spatial mismatch exhaust the workforce, acting as a direct driver of the UK's productivity trap.
                   </p>
                 </GapCard>
 
@@ -382,7 +375,7 @@ const App: React.FC = () => {
                     The Transactional Friction Drag
                   </h3>
                   <p>
-                    Buying a home takes six months on average, with 30% of all transactions collapsing before completion. Outdated onward chains and hidden defects result in 300,000 aborted sales annually, wasting millions in legal fees.
+                    Buying a home takes six months on average, with around 24% of all transactions collapsing before completion. Outdated onward chains and hidden defects result in approximately 250,000 aborted sales annually, wasting millions in legal fees.
                   </p>
                 </GapCard>
               </GapGrid>
