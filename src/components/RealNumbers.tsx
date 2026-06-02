@@ -545,7 +545,7 @@ export const RealNumbers: React.FC = () => {
             </svg>
           </div>
           <div className="text-content">
-            <strong>The Newly Qualified Teacher's Scenario:</strong> In 1995, a newly qualified teacher earning <strong>£15,000</strong> could purchase a family home for <strong>£51,000</strong> (just <span className="highlight">3.4x</span> salary). Today, a newly qualified teacher earning <strong>£33,000</strong> must pay <strong>£268,000</strong> for an equivalent home (a staggering <span className="highlight">8.1x</span> salary).
+            In 1995, someone on an average salary of <strong>£16,500</strong> could purchase a family home for <strong>£51,000</strong> (<span className="highlight">3.1x</span> salary). Today, someone on an average salary of <strong>£35,000</strong> must pay at least <strong>£268,000</strong> for an equivalent home (<span className="highlight">7.7x</span> salary).
           </div>
         </ComparisonSummary>
       </div>
