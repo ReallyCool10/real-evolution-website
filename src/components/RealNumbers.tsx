@@ -85,30 +85,6 @@ const SVGContainer = styled.svg`
   overflow: visible;
 `;
 
-const Tooltip = styled.div<{ visible: boolean; x: number; y: number }>`
-  position: absolute;
-  top: ${props => props.y - 45}px;
-  left: ${props => props.x}px;
-  transform: translateX(-50%);
-  background: rgba(10, 13, 20, 0.95);
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  pointer-events: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  color: #ffffff;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  opacity: ${props => (props.visible ? 1 : 0)};
-  transition: opacity 0.2s ease, top 0.2s ease, left 0.2s ease;
-  white-space: nowrap;
-
-  strong {
-    color: hsl(46, 65%, 52%);
-  }
-`;
-
 const CitationsContainer = styled.section`
   text-align: left;
   margin-top: 5rem;
@@ -256,24 +232,12 @@ const StatRow = styled.div`
 `;
 
 export const RealNumbers: React.FC = () => {
-  const [hoveredData, setHoveredData] = useState<{ id: string; val: string; x: number; y: number } | null>(null);
-
-  const handleMouseMove = (e: React.MouseEvent, id: string, val: string) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const parentRect = e.currentTarget.parentElement?.getBoundingClientRect();
-    if (rect && parentRect) {
-      setHoveredData({
-        id,
-        val,
-        x: rect.left - parentRect.left + rect.width / 2,
-        y: rect.top - parentRect.top,
-      });
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredData(null);
-  };
+  // Both charts render their hover labels natively inside their own SVG, positioned with
+  // the exact same coordinate math used to draw the bar/node - see the "hover label"
+  // comments below. This avoids an HTML-overlay tooltip ever drifting relative to the
+  // element it's meant to describe.
+  const [hoveredBar, setHoveredBar] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<{ series: 'wage' | 'price'; year: number } | null>(null);
 
   // 1. Scarcity Data (dwellings per 100 citizens). England and OECD average are from HBF
   // Housing Horizons (Oct 2023, 2020 data). All other countries are from the OECD
@@ -296,24 +260,29 @@ export const RealNumbers: React.FC = () => {
   const sSpacing = 6;
   const sPaddingLeft = 140;
   const sWidth = 500;
-  // Scale to the actual max in the dataset, not a hardcoded value - a hardcoded scale
-  // silently overflows once the underlying data changes (this happened when Italy's
-  // corrected figure became the new max instead of the old France value).
-  const sMaxVal = Math.max(...scarcityData.map(d => d.val));
+  // Scale against the metric's true denominator (100, since this is "per 100 citizens"),
+  // not the highest value in the dataset. Scaling to the data's own max stretches the bars
+  // to fill the width regardless of what the numbers actually are, which exaggerates the
+  // visual gap between countries - e.g. 42.8 vs 59.8 looks dramatic filling the full width,
+  // but is a modest ~17-point difference out of 100. This also means the chart no longer
+  // needs rescaling every time a value changes, since 100 is fixed by definition.
+  const sMaxVal = 100;
   const sScale = (sWidth - sPaddingLeft - 40) / sMaxVal;
 
   // 2. Affordability data: England average house price (Land Registry/ONS UK HPI, January
   // of each year) vs UK median full-time weekly earnings (ONS ASHE, annualised as weekly x 52).
   // Source: ONS "Earnings time series of median gross weekly earnings from 1968 to 2025"
-  // and Land Registry UK HPI region/england/month series.
+  // (UK) and Land Registry UK HPI region/united-kingdom/month series (UK). Both series
+  // are UK-wide so the two are properly comparable - an earlier version paired UK wages
+  // with England-only house prices, which mismatched geographies.
   const affordabilityData = [
-    { year: 1997, wageWeekly: 320.5, housePrice: 52672 },
-    { year: 2000, wageWeekly: 359.0, housePrice: 71017 },
-    { year: 2005, wageWeekly: 431.2, housePrice: 149713 },
-    { year: 2010, wageWeekly: 498.5, housePrice: 164711 },
-    { year: 2015, wageWeekly: 527.1, housePrice: 191523 },
-    { year: 2020, wageWeekly: 585.7, housePrice: 234049 },
-    { year: 2025, wageWeekly: 766.6, housePrice: 287264 },
+    { year: 1997, wageWeekly: 320.5, housePrice: 55914 },
+    { year: 2000, wageWeekly: 359.0, housePrice: 77950 },
+    { year: 2005, wageWeekly: 431.2, housePrice: 138759 },
+    { year: 2010, wageWeekly: 498.5, housePrice: 154268 },
+    { year: 2015, wageWeekly: 527.1, housePrice: 175636 },
+    { year: 2020, wageWeekly: 585.7, housePrice: 213657 },
+    { year: 2025, wageWeekly: 766.6, housePrice: 264936 },
   ].map(d => ({
     ...d,
     wageAnnual: Math.round(d.wageWeekly * 52),
@@ -397,8 +366,8 @@ Compared to most European counterparts, England operates under significant struc
                   stroke={border}
                   strokeWidth={d.highlighted ? '1.5' : '0.5'}
                   style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
-                  onMouseMove={(e) => handleMouseMove(e, d.country, `${d.val} per 100 people`)}
-                  onMouseLeave={handleMouseLeave}
+                  onMouseEnter={() => setHoveredBar(d.country)}
+                  onMouseLeave={() => setHoveredBar(null)}
                 />
                 <text
                   x={sPaddingLeft + barWidth + 8}
@@ -407,9 +376,27 @@ Compared to most European counterparts, England operates under significant struc
                   fontFamily="Inter"
                   fontSize="11"
                   fontWeight={d.highlighted ? '600' : '400'}
+                  style={{ pointerEvents: 'none' }}
                 >
                   {d.val}
                 </text>
+                {/* On hover, show the value natively inside the bar's own filled area -
+                    drawn in the same SVG coordinate space as the bar itself, so it can
+                    never drift relative to it the way an HTML overlay tooltip could. */}
+                {hoveredBar === d.country && (
+                  <text
+                    x={sPaddingLeft + barWidth / 2}
+                    y={y + sBarHeight / 2 + 4}
+                    textAnchor="middle"
+                    fill={d.highlighted ? '#0a0d14' : '#ffffff'}
+                    fontFamily="Inter"
+                    fontSize="11"
+                    fontWeight="700"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {d.val}
+                  </text>
+                )}
               </g>
             );
           })}
@@ -429,7 +416,7 @@ Compared to most European counterparts, England operates under significant struc
       <ChartWrapper style={{ position: 'relative' }}>
         <ChartTitle>House Price Growth vs. Wage Growth (1997 - 2025)</ChartTitle>
         <ChartDesc>
-          Indexed to 100 at 1997. House prices in England have grown far faster than UK median earnings at every check-in point since <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
+          Indexed to 100 at 1997. UK house prices have grown far faster than UK median earnings at every check-in point since <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
         </ChartDesc>
         <SVGContainer viewBox={`0 0 ${aChartW} ${aChartH}`}>
           {/* Y Grid lines + axis */}
@@ -453,7 +440,7 @@ Compared to most European counterparts, England operates under significant struc
           <line x1={aPadLeft} y1={aPadTop + aPlotH} x2={aChartW - aPadRight} y2={aPadTop + aPlotH} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
 
           {/* Wages line */}
-          <polyline points={wagePoints} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeDasharray="3 3" />
+          <polyline points={wagePoints} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
           {affordabilityIndexed.map(d => (
             <circle
               key={`wage-${d.year}`}
@@ -462,8 +449,8 @@ Compared to most European counterparts, England operates under significant struc
               r="3.5"
               fill="#c0c0c0"
               style={{ cursor: 'pointer' }}
-              onMouseMove={(e) => handleMouseMove(e, `Median wage, ${d.year}`, `£${d.wageAnnual.toLocaleString()}/yr (${d.wageIndex.toFixed(0)}%)`)}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={() => setHoveredNode({ series: 'wage', year: d.year })}
+              onMouseLeave={() => setHoveredNode(null)}
             />
           ))}
           <text x={aChartW - aPadRight} y={aY(affordabilityIndexed[affordabilityIndexed.length - 1].wageIndex) - 8} fill="rgba(255,255,255,0.6)" fontFamily="Inter" fontSize="10" textAnchor="end">Wages</text>
@@ -480,14 +467,53 @@ Compared to most European counterparts, England operates under significant struc
               stroke="#ffffff"
               strokeWidth="1"
               style={{ cursor: 'pointer' }}
-              onMouseMove={(e) => handleMouseMove(e, `England house price, ${d.year}`, `£${d.housePrice.toLocaleString()} (${d.priceIndex.toFixed(0)}%)`)}
-              onMouseLeave={handleMouseLeave}
+              onMouseEnter={() => setHoveredNode({ series: 'price', year: d.year })}
+              onMouseLeave={() => setHoveredNode(null)}
             />
           ))}
           <text x={aChartW - aPadRight} y={aY(affordabilityIndexed[affordabilityIndexed.length - 1].priceIndex) - 8} fill="hsl(46, 65%, 52%)" fontFamily="Inter" fontSize="10" fontWeight="600" textAnchor="end">House Prices</text>
+
+          {/* Hover label - drawn in the same SVG coordinate space as the nodes themselves
+              (cx/cy below reuse the exact aX/aY used to place the circles), so it is
+              pinned exactly to whichever node is hovered with no HTML/SVG conversion. */}
+          {hoveredNode && (() => {
+            const d = affordabilityIndexed.find(p => p.year === hoveredNode.year);
+            if (!d) return null;
+            const isPrice = hoveredNode.series === 'price';
+            const cx = aX(d.year);
+            const cy = aY(isPrice ? d.priceIndex : d.wageIndex);
+            const label = isPrice
+              ? `£${d.housePrice.toLocaleString()} (${d.priceIndex.toFixed(0)}%)`
+              : `£${d.wageAnnual.toLocaleString()}/yr (${d.wageIndex.toFixed(0)}%)`;
+            const labelWidth = label.length * 5.6 + 16;
+            const halfW = labelWidth / 2;
+            let labelX = cx;
+            if (labelX - halfW < aPadLeft) labelX = aPadLeft + halfW;
+            if (labelX + halfW > aChartW - aPadRight) labelX = aChartW - aPadRight - halfW;
+            const showBelow = cy - aPadTop < 24;
+            const textY = showBelow ? cy + 24 : cy - 10;
+            const rectY = textY - 14;
+            return (
+              <g style={{ pointerEvents: 'none' }}>
+                <rect
+                  x={labelX - halfW}
+                  y={rectY}
+                  width={labelWidth}
+                  height={20}
+                  rx="4"
+                  fill="rgba(10,13,20,0.95)"
+                  stroke={isPrice ? 'hsl(46, 65%, 52%)' : 'rgba(255,255,255,0.4)'}
+                  strokeWidth="1"
+                />
+                <text x={labelX} y={textY} textAnchor="middle" fill="#ffffff" fontFamily="Inter" fontSize="10" fontWeight="600">
+                  {label}
+                </text>
+              </g>
+            );
+          })()}
         </SVGContainer>
         <div style={{ marginTop: '1.2rem', padding: '0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
-          Between 1997 and 2025, England house prices rose from £52,672 to £287,264 (+445%), while UK median full-time earnings rose from £16,666 to £39,863 (+139%) &ndash; the price-to-earnings ratio nearly doubled, from {affordabilityIndexed[0].ratio.toFixed(1)}x to {affordabilityIndexed[affordabilityIndexed.length - 1].ratio.toFixed(1)}x.
+          Between 1997 and 2025, UK house prices rose from £55,914 to £264,936 (+374%), while UK median full-time earnings rose from £16,666 to £39,863 (+139%) &ndash; the price-to-earnings ratio nearly doubled, from {affordabilityIndexed[0].ratio.toFixed(1)}x to {affordabilityIndexed[affordabilityIndexed.length - 1].ratio.toFixed(1)}x.
         </div>
       </ChartWrapper>
 
@@ -495,7 +521,7 @@ Compared to most European counterparts, England operates under significant struc
       <div style={{ marginBottom: '3rem' }}>
         <ChartTitle>The Worked Example: How the Numbers Affect a Family</ChartTitle>
         <ChartDesc>
-          A concrete comparison of England house prices against UK median full-time earnings in 1997 vs 2025, using the same ONS/Land Registry data as the chart above.
+          A concrete comparison of UK house prices against UK median full-time earnings in 1997 vs 2025, using the same ONS/Land Registry data as the chart above.
         </ChartDesc>
 
         <ExampleGrid>
@@ -508,8 +534,8 @@ Compared to most European counterparts, England operates under significant struc
               <div className="value">£16,666</div>
             </StatRow>
             <StatRow>
-              <div className="label">England Average Home</div>
-              <div className="value">£52,672</div>
+              <div className="label">UK Average Home</div>
+              <div className="value">£55,914</div>
             </StatRow>
             <StatRow className="multiplier-row">
               <div className="label">Price-to-Earnings Ratio</div>
@@ -526,8 +552,8 @@ Compared to most European counterparts, England operates under significant struc
               <div className="value">£39,863 (+139%)</div>
             </StatRow>
             <StatRow>
-              <div className="label">England Average Home</div>
-              <div className="value">£287,264 (+445%)</div>
+              <div className="label">UK Average Home</div>
+              <div className="value">£264,936 (+374%)</div>
             </StatRow>
             <StatRow className="multiplier-row">
               <div className="label">Price-to-Earnings Ratio</div>
@@ -536,13 +562,6 @@ Compared to most European counterparts, England operates under significant struc
           </EraCard>
         </ExampleGrid>
       </div>
-
-
-      {hoveredData && (
-        <Tooltip visible={true} x={hoveredData.x} y={hoveredData.y}>
-          {hoveredData.id}: <strong>{hoveredData.val}</strong>
-        </Tooltip>
-      )}
 
       {/* CITATION LISTING */}
       <CitationsContainer>
@@ -563,7 +582,7 @@ Compared to most European counterparts, England operates under significant struc
 
           <div className="index" id="cit-3">[3]</div>
           <div className="text">
-            HM Land Registry / ONS UK House Price Index. Average house price for England, January snapshot of each year shown (1997, 2000, 2005, 2010, 2015, 2020, 2025).
+            HM Land Registry / ONS UK House Price Index. Average house price for the United Kingdom, January snapshot of each year shown (1997, 2000, 2005, 2010, 2015, 2020, 2025).
             View index: <a href="https://landregistry.data.gov.uk/app/ukhpi" target="_blank" rel="noreferrer">UK House Price Index</a>
           </div>
           <div className="source">Land Registry / ONS UK HPI</div>

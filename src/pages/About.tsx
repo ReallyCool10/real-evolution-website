@@ -41,28 +41,20 @@ const About: React.FC = () => {
     <AboutContainer>
       <Content>
         <TextSection>
-          <h2>Our Vision</h2>
+          <h2>Purpose</h2>
           <p>
-            At REAL evolution, we envision a future where every building reaches its fullest potential, 
-            where derelict spaces transform into vibrant homes, and where iconic architecture finds 
-            new purpose for generations to come. Our mission transcends traditional property development – 
-            we're creating a digital framework that reimagines how we interact with, develop, and 
-            preserve our built environment.
+            Addressing the UK's housing shortage isn't only about getting new homes built. It's also
+            about the utilisation of the existing built environment. REAL evolution researches the
+            potential of bringing underused and vacant assets into productive use.
           </p>
           <p>
-            In a nation where housing shortages persist and older buildings sit unused, we're pioneering
-            a technology-driven approach that bridges the gap between preservation and progress. Our
-            digital twin platform doesn't just map buildings; it shows what they could become, guiding
-            intelligent development decisions that honor architectural heritage while meeting modern
-            housing needs. This combination of innovation and tradition lets us optimize existing
-            spaces, revitalize neglected properties, and create homes that enrich communities.
+            Our work spans research and modelling, tracking vacant commercial stock suited to
+            residential use, and mapping land use against demographic pressure.
           </p>
           <p>
-            We're seeking partners who recognize that the future of real estate lies not
-            just in new construction, but in the intelligent transformation of our existing buildings.
-            Together, we can address housing challenges while preserving the character that
-            makes our cities unique, creating value that extends beyond financial returns to the
-            fabric of urban life.
+            We're looking for partners: property owners, investors, and policymakers who see the same
+            opportunity &ndash; that solving the housing crisis depends as much on using what already
+            exists as it does on building new.
           </p>
         </TextSection>
       </Content>

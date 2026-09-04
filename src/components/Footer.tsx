@@ -33,19 +33,20 @@ const FooterLeft = styled.div`
 
 const Copyright = styled.span`
   font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.02rem;
+  color: hsl(46, 65%, 52%);
 `;
 
 const PhotoCredit = styled.a`
   font-family: 'Inter', sans-serif;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: hsl(46, 65%, 52%);
   text-decoration: none;
   transition: color 0.2s ease;
 
   &:hover {
-    color: rgba(255, 255, 255, 0.5);
+    color: #ffffff;
   }
 `;
 
@@ -59,9 +60,9 @@ const FooterLink = styled.button`
   font-family: 'Outfit', sans-serif;
   background: transparent;
   border: none;
-  font-size: 0.85rem;
+  font-size: 1.02rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
+  color: hsl(46, 65%, 52%);
   cursor: pointer;
   padding: 0;
   transition: color 0.2s ease;
@@ -86,8 +87,9 @@ const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
         </PhotoCredit>
       </FooterLeft>
       <FooterLinks>
-        <FooterLink onClick={() => handleClick('solutions')}>Solutions</FooterLink>
-        <FooterLink onClick={() => handleClick('partners')}>Partners</FooterLink>
+        {/* Solutions and Partners pages are parked for now (need more work before
+            they're public) - not linked from anywhere, but left in App.tsx/components
+            rather than deleted so they're easy to bring back. */}
         <FooterLink onClick={() => handleClick('about')}>About</FooterLink>
       </FooterLinks>
     </FooterContainer>

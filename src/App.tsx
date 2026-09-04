@@ -19,6 +19,8 @@ import Footer from './components/Footer';
 const PageContainer = styled.div`
   min-height: 100vh;
   width: 100%;
+  display: flex;
+  flex-direction: column;
   font-family: 'Inter', sans-serif;
   position: relative;
   color: #ffffff;
@@ -105,6 +107,7 @@ const BackgroundOverlay = styled.div<{ activeTab: string }>`
 const MainContent = styled.main<{ activeTab: string }>`
   position: relative;
   z-index: 2;
+  flex: 1 0 auto;
   padding-top: ${props => (props.activeTab === 'home' ? '100px' : '2.5rem')};
   padding-bottom: ${props => (props.activeTab === 'home' ? '5rem' : '3.5rem')};
   padding-left: ${props => (props.activeTab === 'home' ? '0' : '1.5rem')};
@@ -167,40 +170,25 @@ const HeroArea = styled.section`
   padding: 3rem 0 4rem 0;
 `;
 
-const HeroBottomGroup = styled.div`
+const HeroTextGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
-
-
-const MainTagline = styled.h1`
-  font-family: 'Outfit', sans-serif;
-  font-size: 3.2rem;
-  line-height: 1.25;
-  font-weight: 500;
-  color: #ffffff;
-  max-width: 850px;
-  margin: 0 0 1.5rem 0;
-
-  @media (max-width: 768px) {
-    font-size: 2.2rem;
-  }
-`;
-
 const HeroSubtitle = styled.p`
   font-family: 'Inter', sans-serif;
-  font-size: 1.25rem;
-  line-height: 1.6;
+  font-size: 2rem;
+  line-height: 1.5;
   color: hsl(46, 65%, 52%);
-  max-width: 650px;
+  max-width: 850px;
   margin: 0 0 3rem 0;
-  font-weight: 300;
+  font-weight: 700;
   text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
 
   @media (max-width: 768px) {
-    font-size: 1.1rem;
+    font-size: 1.75rem;
     margin-bottom: 2rem;
   }
 `;
@@ -242,9 +230,9 @@ const PrimaryButton = styled.button`
 
 const SecondaryButton = styled.button`
   font-family: 'Outfit', sans-serif;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  color: #0a0d14;
   padding: 1rem 2rem;
   font-size: 1rem;
   font-weight: 500;
@@ -253,8 +241,7 @@ const SecondaryButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.85);
     transform: translateY(-2px);
   }
 
@@ -266,21 +253,23 @@ const SecondaryButton = styled.button`
 const SectionTitle = styled.h2`
   font-family: 'Outfit', sans-serif;
   font-size: 2.2rem;
-  color: #ffffff;
-  font-weight: 500;
+  color: hsl(46, 65%, 52%);
+  font-weight: 700;
   margin-top: 10rem;
   margin-bottom: 1rem;
   text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
 `;
 
 const SectionDesc = styled.p`
   font-family: 'Inter', sans-serif;
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: hsl(46, 65%, 52%);
   max-width: 820px;
   margin: 0 auto 3rem auto;
   text-align: center;
   line-height: 1.5;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
 `;
 
 const GapGrid = styled.section`
@@ -364,10 +353,7 @@ const App: React.FC = () => {
           <ViewWrapper>
             <HomeContainer>
               <HeroArea>
-                <MainTagline>
-                  Evolving the UK's Built Environment.
-                </MainTagline>
-                <HeroBottomGroup>
+                <HeroTextGroup>
                   <HeroSubtitle>
                     Examining the data behind the UK's housing shortage and the untapped opportunities to transform it.
                   </HeroSubtitle>
@@ -379,7 +365,7 @@ const App: React.FC = () => {
                       View The REAL Numbers
                     </SecondaryButton>
                   </ButtonGroup>
-                </HeroBottomGroup>
+                </HeroTextGroup>
               </HeroArea>
 
               <SectionTitle>The Systemic Issues</SectionTitle>
