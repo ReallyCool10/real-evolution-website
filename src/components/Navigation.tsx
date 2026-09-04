@@ -183,6 +183,9 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab }) => {
           <NavLink active={activeTab === 'landuse'} onClick={() => handleTabClick('landuse')}>
             Land Use
           </NavLink>
+          <NavLink active={activeTab === 'contact'} onClick={() => handleTabClick('contact')}>
+            Contact
+          </NavLink>
         </NavLinks>
 
         <BurgerMenu onClick={() => setMenuOpen(!menuOpen)}>
@@ -216,6 +219,9 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab }) => {
         </MobileLink>
         <MobileLink active={activeTab === 'landuse'} onClick={() => handleTabClick('landuse')}>
           Land Use
+        </MobileLink>
+        <MobileLink active={activeTab === 'contact'} onClick={() => handleTabClick('contact')}>
+          Contact
         </MobileLink>
       </MobileDropdown>
     </>

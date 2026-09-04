@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const NumbersContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem 2rem;
   animation: fadeIn 0.5s ease-out;
@@ -255,52 +255,6 @@ const StatRow = styled.div`
   }
 `;
 
-const ComparisonSummary = styled.div`
-  margin-top: 2rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-
-  @media (max-width: 580px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .icon-wrapper {
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: hsl(46, 65%, 52%);
-    flex-shrink: 0;
-  }
-
-  .text-content {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.85);
-
-    strong {
-      color: #ffffff;
-    }
-    
-    span.highlight {
-      color: hsl(46, 65%, 52%);
-      font-weight: 600;
-    }
-  }
-`;
-
 export const RealNumbers: React.FC = () => {
   const [hoveredData, setHoveredData] = useState<{ id: string; val: string; x: number; y: number } | null>(null);
 
@@ -321,31 +275,80 @@ export const RealNumbers: React.FC = () => {
     setHoveredData(null);
   };
 
-  // 1. Scarcity Data (converted to per 100 citizens, 2023 verified)
+  // 1. Scarcity Data (dwellings per 100 citizens). England and OECD average are from HBF
+  // Housing Horizons (Oct 2023, 2020 data). All other countries are from the OECD
+  // Affordable Housing Database, Table HM1.1.A1 (latest available year: 2022, except
+  // Japan which is 2018). Sorted ascending by value.
   const scarcityData = [
-    { country: 'United Kingdom', val: 44.6, highlighted: true },
-    { country: 'Netherlands', val: 45.6, highlighted: false },
+    { country: 'United States', val: 42.8, highlighted: false },
+    { country: 'England', val: 43.4, highlighted: true },
+    { country: 'Netherlands', val: 45.4, highlighted: false },
     { country: 'OECD Average', val: 48.7, highlighted: false },
-    { country: 'EU Average', val: 50.0, highlighted: false },
-    { country: 'Germany', val: 52.1, highlighted: false },
-    { country: 'Japan', val: 52.3, highlighted: false },
-    { country: 'Spain', val: 55.0, highlighted: false },
-    { country: 'Italy', val: 58.7, highlighted: false },
-    { country: 'France', val: 59.0, highlighted: false },
+    { country: 'Japan', val: 49.3, highlighted: false },
+    { country: 'Germany', val: 51.8, highlighted: false },
+    { country: 'Spain', val: 56.3, highlighted: false },
+    { country: 'France', val: 59.1, highlighted: false },
+    { country: 'Italy', val: 59.8, highlighted: false },
   ];
 
-  const sHeight = 280;
+  const sHeight = 310;
   const sBarHeight = 16;
   const sSpacing = 6;
   const sPaddingLeft = 140;
   const sWidth = 500;
-  const sScale = (sWidth - sPaddingLeft - 40) / 59.0;
+  // Scale to the actual max in the dataset, not a hardcoded value - a hardcoded scale
+  // silently overflows once the underlying data changes (this happened when Italy's
+  // corrected figure became the new max instead of the old France value).
+  const sMaxVal = Math.max(...scarcityData.map(d => d.val));
+  const sScale = (sWidth - sPaddingLeft - 40) / sMaxVal;
 
+  // 2. Affordability data: England average house price (Land Registry/ONS UK HPI, January
+  // of each year) vs UK median full-time weekly earnings (ONS ASHE, annualised as weekly x 52).
+  // Source: ONS "Earnings time series of median gross weekly earnings from 1968 to 2025"
+  // and Land Registry UK HPI region/england/month series.
+  const affordabilityData = [
+    { year: 1997, wageWeekly: 320.5, housePrice: 52672 },
+    { year: 2000, wageWeekly: 359.0, housePrice: 71017 },
+    { year: 2005, wageWeekly: 431.2, housePrice: 149713 },
+    { year: 2010, wageWeekly: 498.5, housePrice: 164711 },
+    { year: 2015, wageWeekly: 527.1, housePrice: 191523 },
+    { year: 2020, wageWeekly: 585.7, housePrice: 234049 },
+    { year: 2025, wageWeekly: 766.6, housePrice: 287264 },
+  ].map(d => ({
+    ...d,
+    wageAnnual: Math.round(d.wageWeekly * 52),
+  }));
+
+  const baseWage = affordabilityData[0].wageAnnual;
+  const basePrice = affordabilityData[0].housePrice;
+  const affordabilityIndexed = affordabilityData.map(d => ({
+    ...d,
+    wageIndex: (d.wageAnnual / baseWage) * 100,
+    priceIndex: (d.housePrice / basePrice) * 100,
+    ratio: d.housePrice / d.wageAnnual,
+  }));
+
+  const aChartW = 560;
+  const aChartH = 260;
+  const aPadLeft = 55;
+  const aPadRight = 15;
+  const aPadTop = 15;
+  const aPadBottom = 35;
+  const aPlotW = aChartW - aPadLeft - aPadRight;
+  const aPlotH = aChartH - aPadTop - aPadBottom;
+  const aYMax = 600;
+  const aYearMin = affordabilityIndexed[0].year;
+  const aYearMax = affordabilityIndexed[affordabilityIndexed.length - 1].year;
+
+  const aX = (year: number) => aPadLeft + ((year - aYearMin) / (aYearMax - aYearMin)) * aPlotW;
+  const aY = (indexVal: number) => aPadTop + aPlotH - (indexVal / aYMax) * aPlotH;
+
+  const wagePoints = affordabilityIndexed.map(d => `${aX(d.year)},${aY(d.wageIndex)}`).join(' ');
+  const pricePoints = affordabilityIndexed.map(d => `${aX(d.year)},${aY(d.priceIndex)}`).join(' ');
 
   return (
     <NumbersContainer>
       <HeaderSection>
-        <span>Data Graphed & Grounded</span>
         <h2>The REAL Numbers</h2>
       </HeaderSection>
 
@@ -353,7 +356,7 @@ export const RealNumbers: React.FC = () => {
       <ChartWrapper style={{ position: 'relative' }}>
         <ChartTitle>Dwellings per 100 Citizens</ChartTitle>
         <ChartDesc>
-          Compared to European and G7 developed counterparts, the UK operates under severe, chronic structural undersupply. <sup><a href="#cit-1">[1]</a></sup><sup><a href="#cit-2">[2]</a></sup>.
+Compared to most European counterparts, England operates under significant structural undersupply &ndash; only the United States has a lower ratio among the nations shown here <sup><a href="#cit-1">[1]</a></sup><sup><a href="#cit-2">[2]</a></sup>.
         </ChartDesc>
         <SVGContainer viewBox={`0 0 ${sWidth} ${sHeight}`}>
           {scarcityData.map((d, i) => {
@@ -378,7 +381,7 @@ export const RealNumbers: React.FC = () => {
                 <rect
                   x={sPaddingLeft}
                   y={y}
-                  width={59.0 * sScale}
+                  width={sMaxVal * sScale}
                   height={sBarHeight}
                   rx="3"
                   fill="rgba(255, 255, 255, 0.01)"
@@ -418,104 +421,99 @@ export const RealNumbers: React.FC = () => {
           </defs>
         </SVGContainer>
         <div style={{ marginTop: '1.2rem', padding: '0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
-            To match the EU average of <strong style={{ color: '#fff' }}>50.0</strong> dwellings per 100 citizens, the UK (at <strong style={{ color: '#fff' }}>44.6</strong>) would need approximately <span style={{ color: 'hsl(46, 65%, 52%)', fontWeight: 700 }}>3.7 million</span> additional homes <span style={{ opacity: 0.5 }}>((50.0 − 44.6) × 68.3m ÷ 100 = 3,688,200)</span>.
+            To match the OECD average of <strong style={{ color: '#fff' }}>48.7</strong> dwellings per 100 citizens, England (at <strong style={{ color: '#fff' }}>43.4</strong>) would need approximately <span style={{ color: 'hsl(46, 65%, 52%)', fontWeight: 700 }}>3.1 million</span> additional homes <span style={{ opacity: 0.5 }}>((48.7 − 43.4) × 57.69m ÷ 100 = 3,057,586)</span>.
         </div>
       </ChartWrapper>
 
       {/* 2. AFFORDABILITY PATHWAY CHART */}
       <ChartWrapper style={{ position: 'relative' }}>
-        <ChartTitle>The 30-Year Price-to-Earnings Growth Matrix (1995 - 2025)</ChartTitle>
+        <ChartTitle>House Price Growth vs. Wage Growth (1997 - 2025)</ChartTitle>
         <ChartDesc>
-          A line graph tracking UK home price growth (+425%) against average wage growth (+112%). The median house price-to-earnings ratio has climbed from 3.1x (1995) to 7.7x (2025) <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
+          Indexed to 100 at 1997. House prices in England have grown far faster than UK median earnings at every check-in point since <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
         </ChartDesc>
-        <SVGContainer viewBox="0 0 500 200">
-          {/* Y Grid lines */}
-          {[100, 200, 300, 400, 500, 600].map((v) => {
-            const y = 160 - (v * 130) / 600;
-            return (
-              <g key={v}>
-                <line x1="60" y1={y} x2="420" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                <text x="45" y={y + 4} fill="rgba(255,255,255,0.4)" fontSize="9" fontFamily="Inter" textAnchor="end">{v}%</text>
-              </g>
-            );
-          })}
+        <SVGContainer viewBox={`0 0 ${aChartW} ${aChartH}`}>
+          {/* Y Grid lines + axis */}
+          {[0, 100, 200, 300, 400, 500, 600].map((v) => (
+            <g key={v}>
+              <line x1={aPadLeft} y1={aY(v)} x2={aChartW - aPadRight} y2={aY(v)} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+              <text x={aPadLeft - 8} y={aY(v) + 3} fill="rgba(255,255,255,0.45)" fontSize="9" fontFamily="Inter" textAnchor="end">{v}%</text>
+            </g>
+          ))}
 
-          <text x="80" y="185" fill="#ffffff" fontFamily="Inter" fontSize="11">1995 (Baseline: 100%)</text>
-          <text x="400" y="185" fill="#ffffff" fontFamily="Inter" fontSize="11" textAnchor="end">2025</text>
+          {/* X axis ticks + year labels */}
+          {affordabilityIndexed.map(d => (
+            <g key={d.year}>
+              <line x1={aX(d.year)} y1={aPadTop + aPlotH} x2={aX(d.year)} y2={aPadTop + aPlotH + 4} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+              <text x={aX(d.year)} y={aPadTop + aPlotH + 16} fill="rgba(255,255,255,0.6)" fontSize="9" fontFamily="Inter" textAnchor="middle">{d.year}</text>
+            </g>
+          ))}
 
-          {/* Wages Line */}
-          <line x1="100" y1="138" x2="380" y2="114" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeDasharray="3 3" />
-          <circle
-            cx="100"
-            cy="138"
-            r="4"
-            fill="#c0c0c0"
-            style={{ cursor: 'pointer' }}
-            onMouseMove={(e) => handleMouseMove(e, 'Wages 1995', 'Baseline: £16,500')}
-            onMouseLeave={handleMouseLeave}
-          />
-          <circle
-            cx="380"
-            cy="114"
-            r="4"
-            fill="#c0c0c0"
-            style={{ cursor: 'pointer' }}
-            onMouseMove={(e) => handleMouseMove(e, 'Wages 2025', '212% (+112% wage growth)')}
-            onMouseLeave={handleMouseLeave}
-          />
-          <text x="390" y="117" fill="rgba(255,255,255,0.5)" fontFamily="Inter" fontSize="10">Wages (2.1x)</text>
+          {/* Axis lines */}
+          <line x1={aPadLeft} y1={aPadTop} x2={aPadLeft} y2={aPadTop + aPlotH} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+          <line x1={aPadLeft} y1={aPadTop + aPlotH} x2={aChartW - aPadRight} y2={aPadTop + aPlotH} stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
 
-          {/* House Prices Line */}
-          <line x1="100" y1="138" x2="380" y2="46" stroke="hsl(46, 65%, 52%)" strokeWidth="3" />
-          <circle
-            cx="100"
-            cy="138"
-            r="5"
-            fill="hsl(46, 65%, 52%)"
-            stroke="#ffffff"
-            strokeWidth="1"
-            style={{ cursor: 'pointer' }}
-            onMouseMove={(e) => handleMouseMove(e, 'House Prices 1995', 'Baseline: £51,000')}
-            onMouseLeave={handleMouseLeave}
-          />
-          <circle
-            cx="380"
-            cy="46"
-            r="5"
-            fill="hsl(46, 65%, 52%)"
-            stroke="#ffffff"
-            strokeWidth="1"
-            style={{ cursor: 'pointer' }}
-            onMouseMove={(e) => handleMouseMove(e, 'House Prices 2025', '525% (+425% price surge)')}
-            onMouseLeave={handleMouseLeave}
-          />
-          <text x="390" y="49" fill="hsl(46, 65%, 52%)" fontFamily="Inter" fontSize="10" fontWeight="600">House Prices (5.3x)</text>
+          {/* Wages line */}
+          <polyline points={wagePoints} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeDasharray="3 3" />
+          {affordabilityIndexed.map(d => (
+            <circle
+              key={`wage-${d.year}`}
+              cx={aX(d.year)}
+              cy={aY(d.wageIndex)}
+              r="3.5"
+              fill="#c0c0c0"
+              style={{ cursor: 'pointer' }}
+              onMouseMove={(e) => handleMouseMove(e, `Median wage, ${d.year}`, `£${d.wageAnnual.toLocaleString()}/yr (${d.wageIndex.toFixed(0)}%)`)}
+              onMouseLeave={handleMouseLeave}
+            />
+          ))}
+          <text x={aChartW - aPadRight} y={aY(affordabilityIndexed[affordabilityIndexed.length - 1].wageIndex) - 8} fill="rgba(255,255,255,0.6)" fontFamily="Inter" fontSize="10" textAnchor="end">Wages</text>
+
+          {/* House prices line */}
+          <polyline points={pricePoints} fill="none" stroke="hsl(46, 65%, 52%)" strokeWidth="3" />
+          {affordabilityIndexed.map(d => (
+            <circle
+              key={`price-${d.year}`}
+              cx={aX(d.year)}
+              cy={aY(d.priceIndex)}
+              r="4.5"
+              fill="hsl(46, 65%, 52%)"
+              stroke="#ffffff"
+              strokeWidth="1"
+              style={{ cursor: 'pointer' }}
+              onMouseMove={(e) => handleMouseMove(e, `England house price, ${d.year}`, `£${d.housePrice.toLocaleString()} (${d.priceIndex.toFixed(0)}%)`)}
+              onMouseLeave={handleMouseLeave}
+            />
+          ))}
+          <text x={aChartW - aPadRight} y={aY(affordabilityIndexed[affordabilityIndexed.length - 1].priceIndex) - 8} fill="hsl(46, 65%, 52%)" fontFamily="Inter" fontSize="10" fontWeight="600" textAnchor="end">House Prices</text>
         </SVGContainer>
+        <div style={{ marginTop: '1.2rem', padding: '0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
+          Between 1997 and 2025, England house prices rose from £52,672 to £287,264 (+445%), while UK median full-time earnings rose from £16,666 to £39,863 (+139%) &ndash; the price-to-earnings ratio nearly doubled, from {affordabilityIndexed[0].ratio.toFixed(1)}x to {affordabilityIndexed[affordabilityIndexed.length - 1].ratio.toFixed(1)}x.
+        </div>
       </ChartWrapper>
 
       {/* WORKED EXAMPLE: REAL NUMBERS CASE STUDY */}
       <div style={{ marginBottom: '3rem' }}>
         <ChartTitle>The Worked Example: How the Numbers Affect a Family</ChartTitle>
         <ChartDesc>
-          A concrete mathematical comparison of the average UK family home price against average individual salaries in 1995 vs 2025, using ONS verified data.
+          A concrete comparison of England house prices against UK median full-time earnings in 1997 vs 2025, using the same ONS/Land Registry data as the chart above.
         </ChartDesc>
-        
+
         <ExampleGrid>
           <EraCard>
             <EraHeader>
-              <h4>1995</h4>
+              <h4>1997</h4>
             </EraHeader>
             <StatRow>
-              <div className="label">Average UK Salary</div>
-              <div className="value">£16,500</div>
+              <div className="label">UK Median Earnings (Annualised)</div>
+              <div className="value">£16,666</div>
             </StatRow>
             <StatRow>
-              <div className="label">Average UK Family Home</div>
-              <div className="value">£51,000</div>
+              <div className="label">England Average Home</div>
+              <div className="value">£52,672</div>
             </StatRow>
             <StatRow className="multiplier-row">
               <div className="label">Price-to-Earnings Ratio</div>
-              <div className="value">3.1x</div>
+              <div className="value">{affordabilityIndexed[0].ratio.toFixed(1)}x</div>
             </StatRow>
           </EraCard>
 
@@ -524,30 +522,19 @@ export const RealNumbers: React.FC = () => {
               <h4>2025</h4>
             </EraHeader>
             <StatRow>
-              <div className="label">Average UK Salary</div>
-              <div className="value">£35,000 (+112%)</div>
+              <div className="label">UK Median Earnings (Annualised)</div>
+              <div className="value">£39,863 (+139%)</div>
             </StatRow>
             <StatRow>
-              <div className="label">Average UK Family Home</div>
-              <div className="value">£268,000 (+425%)</div>
+              <div className="label">England Average Home</div>
+              <div className="value">£287,264 (+445%)</div>
             </StatRow>
             <StatRow className="multiplier-row">
               <div className="label">Price-to-Earnings Ratio</div>
-              <div className="value">7.7x</div>
+              <div className="value">{affordabilityIndexed[affordabilityIndexed.length - 1].ratio.toFixed(1)}x</div>
             </StatRow>
           </EraCard>
         </ExampleGrid>
-
-        <ComparisonSummary>
-          <div className="icon-wrapper">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div className="text-content">
-            In 1995, someone on an average salary of <strong>£16,500</strong> could purchase a family home for <strong>£51,000</strong> (<span className="highlight">3.1x</span> salary). Today, someone on an average salary of <strong>£35,000</strong> must pay at least <strong>£268,000</strong> for an equivalent home (<span className="highlight">7.7x</span> salary).
-          </div>
-        </ComparisonSummary>
       </div>
 
 
@@ -563,30 +550,30 @@ export const RealNumbers: React.FC = () => {
         <CitationTable>
           <div className="index" id="cit-1">[1]</div>
           <div className="text">
-            OECD Affordable Housing Database (HM1.1). Housing stock per 1,000 inhabitants across OECD member states.
-            View dataset: <a href="https://www.oecd.org/housing/data/affordable-housing-database/" target="_blank" rel="noreferrer">OECD Housing Database</a>
+            Home Builders Federation, Housing Horizons: Examining UK Housing Stock in an International Context. England at 434 dwellings per 1,000 inhabitants against an OECD benchmark of 487 (2020 data).
+            View report: <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noreferrer">HBF Housing Horizons</a>
           </div>
-          <div className="source">OECD (2023)</div>
+          <div className="source">HBF (Oct 2023)</div>
 
           <div className="index" id="cit-2">[2]</div>
           <div className="text">
-            National statistical offices: ONS/DLUHC Housing Stock (UK, 2023); CBS Housing Statistics (Netherlands, 2022); Destatis Census of Buildings (Germany, 2023); Statistics Bureau of Japan Housing and Land Survey (2023); INE Census/Bank of Spain (Spain, 2021); ISTAT (Italy); INSEE (France).
+            OECD Affordable Housing Database, <a href="https://webfs.oecd.org/els-com/Affordable_Housing_Database/HM1-1-Housing-stock-and-construction.xlsx" target="_blank" rel="noreferrer">Table HM1.1.A1</a>: total housing stock in OECD and EU countries. Netherlands, Germany, Spain, Italy, France and the United States are 2022 figures; Japan is 2018, the latest year available.
           </div>
-          <div className="source">National Statistics (2021–2023)</div>
+          <div className="source">OECD HM1.1.A1</div>
 
           <div className="index" id="cit-3">[3]</div>
           <div className="text">
-            ONS UK House Price Index. Average house prices for England and Wales from January 1995 to present.
-            View index: <a href="https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/housepriceindex/previousReleases" target="_blank" rel="noreferrer">ONS HPI Archive</a>
+            HM Land Registry / ONS UK House Price Index. Average house price for England, January snapshot of each year shown (1997, 2000, 2005, 2010, 2015, 2020, 2025).
+            View index: <a href="https://landregistry.data.gov.uk/app/ukhpi" target="_blank" rel="noreferrer">UK House Price Index</a>
           </div>
-          <div className="source">ONS UK HPI (2025)</div>
+          <div className="source">Land Registry / ONS UK HPI</div>
 
           <div className="index" id="cit-4">[4]</div>
           <div className="text">
-            ONS Annual Survey of Hours and Earnings (ASHE). Median gross annual earnings for full-time employees, April 2025 provisional.
-            View data: <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours" target="_blank" rel="noreferrer">ONS Earnings</a>
+            ONS earnings time series of median gross weekly earnings, UK, adult full-time employees (male &amp; female), 1997&ndash;2025; annualised as weekly figure &times; 52.
+            View data: <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/earningstimeseriesofmediangrossweeklyearningsfrom1968to2022/current" target="_blank" rel="noreferrer">ONS Earnings Time Series</a>
           </div>
-          <div className="source">ONS ASHE (2025)</div>
+          <div className="source">ONS ASHE / NES (2025)</div>
 
           <div className="index" id="cit-5">[5]</div>
           <div className="text">

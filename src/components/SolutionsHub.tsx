@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 const SolutionsContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem 2rem;
 
@@ -199,7 +199,7 @@ export const SolutionsHub: React.FC = () => {
       <IntroSection>
         <h2>Strategic Explorations & Pathways</h2>
         <p>
-          Our team investigates, models, and strategises how to maximize the utility of existing built assets. We analyze structural conversion and subdivision mechanisms as potential pathways to bypass traditional development gridlocks.
+          Our team investigates, models, and strategises how to maximize the utility of existing built assets. We analyze structural conversion and subdivision mechanisms as potential pathways around traditional development constraints.
         </p>
       </IntroSection>
 
@@ -279,10 +279,10 @@ export const SolutionsHub: React.FC = () => {
       <DetailContent>
         <DetailText>
           <p>
-            Traditional UK housing development is anchored on outdated room models. Homes are often sold purely based on "bedroom counts" rather than spatial quality. This forces developers to subdivide apartments into multiple, tiny, dark bedrooms linked by inefficient corridors.
+            Traditional UK housing development relies on older room models. Homes are often sold purely based on "bedroom counts" rather than spatial quality, which pushes developers toward subdividing apartments into multiple small, dark bedrooms linked by narrow corridors.
           </p>
           <p>
-            Our strategic modeling explores **Volumetric Spatial Reconfiguration** as a theoretical design framework:
+            Our strategic modeling explores <strong>Volumetric Spatial Reconfiguration</strong> as a theoretical design framework:
           </p>
           <ul>
             <li>

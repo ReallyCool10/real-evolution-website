@@ -7,10 +7,12 @@ const fadeIn = keyframes`
 `;
 
 const ProblemContainer = styled.div`
-  max-width: 1000px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem 2rem;
   animation: ${fadeIn} 0.5s ease-out;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
     padding: 0.5rem 1rem;
@@ -44,7 +46,7 @@ const HeaderSection = styled.div`
 const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 3.5rem;
+  gap: 7rem;
   text-align: left;
 
   @media (max-width: 768px) {
@@ -69,16 +71,6 @@ const MainText = styled.div`
     color: #ffffff;
     margin: 2.5rem 0 1rem 0;
     font-weight: 500;
-  }
-
-  blockquote {
-    border-left: 3px solid hsl(46, 65%, 52%);
-    background: rgba(255, 255, 255, 0.02);
-    padding: 1.25rem 1.75rem;
-    margin: 2.5rem 0;
-    border-radius: 0 8px 8px 0;
-    font-style: italic;
-    color: #ffffff;
   }
 `;
 
@@ -107,19 +99,20 @@ const MetricCard = styled.div`
   }
 
   .number {
-    display: block;
     font-family: 'Outfit', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.35rem;
+    font-weight: 700;
     color: hsl(46, 65%, 52%);
-    margin: 0.75rem 0;
+    margin-right: 0.4rem;
   }
 
   .desc {
+    display: block;
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.7);
-    line-height: 1.7;
+    line-height: 1.75;
+    margin: 0.75rem 0 0 0;
   }
 `;
 
@@ -134,65 +127,57 @@ export const RealProblem: React.FC = () => {
   return (
     <ProblemContainer>
       <HeaderSection>
-        <span>The Systemic Crisis</span>
         <h2>The REAL Problem</h2>
       </HeaderSection>
 
       <ContentGrid>
         <MainText>
           <p>
-            The UK housing sector is in the grip of a quiet stagnation. For decades, political and economic debates have treated housing as a simple commodity market, ignoring the systemic architectural, legal, and operational gridlocks that stifle our built environment. 
+            The UK housing sector has stagnated for decades. Political and economic debates have treated housing as a simple commodity market, overlooking the architectural, legal, and operational constraints that limit our built environment.
           </p>
           <p>
-            This crisis is characterized not only by high prices, but by a deeper, structural failure of supply, quality, and transactional trust that drains the lifeblood out of families, businesses, and the entire nation.
+            This isn't only about high prices. It reflects a deeper failure of supply, quality, and transactional trust, one that costs families, businesses, and the wider economy every year.
           </p>
-
-          <blockquote>
-            "The housing crisis is not a singular event - it is a continuous systemic drag. It devalues wages, locks talent out of high-productivity areas, and anchors our national GDP growth."
-          </blockquote>
 
           <h3>1. The Scarcity Matrix</h3>
           <p>
-            The most immediate symptom of this broken system is absolute supply scarcity. The UK built environment is severely under-built compared to its European counterparts. This manufactured scarcity acts as an artificial price support mechanism, forcing citizens into high-density, low-quality arrangements simply to secure shelter.
+            The most immediate symptom is straightforward supply scarcity. The UK builds fewer homes than its European counterparts. That shortage is one lever keeping prices high; the UK's limited supply of developable land is another. Together they leave many households with less space, or fewer options, than they would otherwise choose.
           </p>
           <p>
             With completions lagging behind demographic growth, the gap between home seekers and available dwellings continues to widen, creating a permanent seller's market that isolates families from housing security.
           </p>
 
-          <h3>2. The Quality Decay</h3>
+          <h3>2. The Quality Gap</h3>
           <p>
-            The quality of UK housing stock is failing. The UK possesses the oldest, least insulated housing stock in Europe, leaving families deeply vulnerable to rising energy costs and supply shocks.
+            UK housing quality lags behind. The UK has the oldest, least insulated housing stock in Europe, leaving families exposed to rising energy costs and supply shocks.
           </p>
           <p>
-            Cold, drafty, and damp buildings lead directly to significant public health expenses, placing a multi-billion-pound burden on the NHS for treatable cardiovascular and respiratory illnesses. Furthermore, the massive carbon footprint of these uninsulated shells represents the single greatest obstacle to achieving structural carbon net-zero.
+            Cold, damp buildings drive significant public health costs, placing a multi-billion-pound burden on the NHS for treatable cardiovascular and respiratory illness. Their carbon footprint is also one of the biggest obstacles to reaching carbon net-zero.
           </p>
 
-          <h3>3. The Conveyancing Collapse</h3>
+          <h3>3. The Conveyancing Bottleneck</h3>
           <p>
-            The process of buying and selling a home in the UK is characterized by extreme friction and a structural lack of trust. The typical transaction is slow, manual, and highly adversarial.
+            Buying and selling a home in the UK involves significant friction and a structural lack of trust. The typical transaction is slow, largely manual, and gives neither side binding commitment until exchange.
           </p>
           <p>
-            Approximately 30% of all sales fall through before completion, trapping buyers and sellers in stressful onward chains and causing hundreds of thousands of pounds in non-recoverable losses every year. This friction is compounded by a parasitic middleman network that extracts billions in transactional fees for low-value, administrative tasks.
+            Roughly a quarter of agreed sales fall through before completion, with more than 300,000 failed transactions recorded across 2025. Each failure leaves buyers and sellers with non-recoverable survey, legal, and mortgage fees, and across the market those costs run into hundreds of millions of pounds a year. A fragmented intermediary system adds further cost for largely administrative work.
           </p>
         </MainText>
 
         <SidebarMetrics>
           <MetricCard>
             <span className="label">Transaction Failures</span>
-            <span className="number">30%</span>
-            <span className="desc">Of all property purchases collapse before completion, wasting millions in unrecoverable legal and survey fees.</span>
+            <p className="desc"><span className="number">~24%</span>of agreed sales collapse before completion, wasting millions in unrecoverable legal and survey fees.</p>
           </MetricCard>
 
           <MetricCard>
             <span className="label">Housing Stock Quality</span>
-            <span className="number">15%</span>
-            <span className="desc">Of English homes fail to meet the Decent Homes Standard, representing the highest proportion of substandard stock in Europe.</span>
+            <p className="desc"><span className="number">15%</span>of English homes fail to meet the Decent Homes Standard, with private renters worst affected at 21%.</p>
           </MetricCard>
 
           <MetricCard>
             <span className="label">The Transactional Drag</span>
-            <span className="number">£9 Billion+</span>
-            <span className="desc">Extracted annually in estate agent commissions, conveyancing fees, and mortgage broker charges, diverting capital away from the productive economy.</span>
+            <p className="desc"><span className="number">£9 Billion+</span>in estate agent commissions, conveyancing fees, and mortgage broker charges divert capital away from the productive economy.</p>
           </MetricCard>
         </SidebarMetrics>
       </ContentGrid>

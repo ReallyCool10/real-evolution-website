@@ -7,16 +7,8 @@ const AboutContainer = styled.div`
 `;
 
 const Content = styled.div`
-  max-width: 1200px;
+  max-width: 820px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  padding: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const TextSection = styled.div`
@@ -44,29 +36,6 @@ const TextSection = styled.div`
   }
 `;
 
-const ImageSection = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-`;
-
-const ImagePlaceholder = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  aspect-ratio: 4/3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(5px);
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.02);
-  }
-`;
-
 const About: React.FC = () => {
   return (
     <AboutContainer>
@@ -81,27 +50,21 @@ const About: React.FC = () => {
             preserve our built environment.
           </p>
           <p>
-            In a nation where housing shortages persist and older buildings languish, we're pioneering 
-            a technology-driven approach that bridges the gap between preservation and progress. Our 
-            digital twin platform doesn't just map buildings; it unlocks their potential, guiding 
-            intelligent development decisions that honor architectural heritage while meeting modern 
-            housing needs. This synthesis of innovation and tradition enables us to optimize existing 
+            In a nation where housing shortages persist and older buildings sit unused, we're pioneering
+            a technology-driven approach that bridges the gap between preservation and progress. Our
+            digital twin platform doesn't just map buildings; it shows what they could become, guiding
+            intelligent development decisions that honor architectural heritage while meeting modern
+            housing needs. This combination of innovation and tradition lets us optimize existing
             spaces, revitalize neglected properties, and create homes that enrich communities.
           </p>
           <p>
-            We're seeking visionary partners who recognize that the future of real estate lies not 
-            just in new construction, but in the intelligent transformation of our existing architectural 
-            landscape. Together, we can address housing challenges while preserving the character that 
-            makes our cities unique, creating value that extends beyond financial returns to the very 
+            We're seeking partners who recognize that the future of real estate lies not
+            just in new construction, but in the intelligent transformation of our existing buildings.
+            Together, we can address housing challenges while preserving the character that
+            makes our cities unique, creating value that extends beyond financial returns to the
             fabric of urban life.
           </p>
         </TextSection>
-        <ImageSection>
-          <ImagePlaceholder>Building 1</ImagePlaceholder>
-          <ImagePlaceholder>Building 2</ImagePlaceholder>
-          <ImagePlaceholder>Building 3</ImagePlaceholder>
-          <ImagePlaceholder>Building 4</ImagePlaceholder>
-        </ImageSection>
       </Content>
     </AboutContainer>
   );

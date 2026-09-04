@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { VisualChart } from './VisualChart';
 
 const HubContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem 2rem;
 
@@ -214,18 +214,18 @@ export const ResearchHub: React.FC = () => {
                 <ArticleTitle>The Deficit in Brick & Mortar: UK's Housing Scarcity</ArticleTitle>
                 <MetaRow>
                   <span>Published: Q1 2026</span>
-                  <span>Reading Time: 5 mins</span>
+                  <span>Reading Time: 1 min</span>
                 </MetaRow>
               </ArticleHeader>
 
               <ArticleBody>
                 <p>
-                  The United Kingdom has far fewer dwellings relative to its population than other developed nations, with just <strong>446 homes per thousand inhabitants</strong>, significantly fewer than France (590), Italy (587), and the OECD average of 487 <sup>[1]</sup>. Looking at the EU average of <strong>500 dwellings per 1,000 inhabitants</strong>, the UK's deficit is stark: closing that gap alone would require approximately <strong>3.7 million additional homes</strong> <sup>[2]</sup>.
+                  England has far fewer dwellings relative to its population than other developed nations, with just <strong>434 homes per thousand inhabitants</strong>, fewer than France (591), Italy (598), and the OECD average of 487 <sup>[1]</sup>. Closing the gap to the OECD average alone would require approximately <strong>3.1 million additional homes</strong> <sup>[2]</sup>.
                 </p>
 
                 <blockquote>
                   <p>
-                    "The persistent undersupply of housing in the UK has created a system built around manufactured scarcity. Demand continues to grow rapidly from both homeowners seeking stability and investors targeting appreciating assets, yet the housing stock fails to keep pace."
+                    The persistent undersupply of housing in the UK has created a system built around structural scarcity. Demand keeps growing, from both homeowners seeking stability and investors targeting appreciating assets, but the housing stock hasn't kept pace.
                   </p>
                 </blockquote>
 
@@ -233,19 +233,19 @@ export const ResearchHub: React.FC = () => {
 
                 <h3>completions and Local Disparities</h3>
                 <p>
-                  The housing scarcity is exacerbated by low annual construction completions. As of 2023, the housing completion rate in Great Britain stood at a mere <strong>2.8 dwellings per 1,000 people</strong> in England, 1.49 in Wales, and 3.81 in Scotland <sup>[3]</sup>. This represents a significant lag behind European counterparts who consistently replace and expand their housing grids to match demographic growth.
+                  Completion rates remain modest relative to the size of the existing stock. In 2024-25, new-build completions ran at <strong>33 per 10,000 people in England</strong>, 35 in Scotland, 32 in Northern Ireland and 15 in Wales <sup>[3]</sup>. At roughly three homes per thousand people a year, the per-capita gap described above closes over decades rather than years.
                 </p>
 
                 <p>
-                  Furthermore, commercial real estate patterns indicate an intriguing structural shift. While traditional development languishes, the commercial vacancy rate in London's urban core has climbed to <strong>15.59% (Central London East, Q3 2024)</strong> <sup>[4]</sup>. This represents a massive opportunity to transition empty office space into prime family housing.
+                  Commercial real estate points to a parallel structural shift. Central London office vacancy stood at <strong>10.1% in Q3 2024</strong>, above its ten-year average of 9.0%, with the City higher still at 11.8% <sup>[4]</sup>. That is a meaningful pool of underused floorspace, some of which could be suitable for conversion to housing.
                 </p>
               </ArticleBody>
 
                <CitationList>
-                <li>[1] <a href="https://www.oecd.org/housing/data/affordable-housing-database/" target="_blank" rel="noopener noreferrer">OECD Affordable Housing Database</a>, Comparative Housing Stock Indicators.</li>
-                <li>[2] Deficit calculation: (500 − 446) × 68.3m ÷ 1,000 ≈ 3,688,200 homes. Population: <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates" target="_blank" rel="noopener noreferrer">ONS Mid-Year Population Estimates</a> (68.3m, 2023).</li>
-                <li>[3] <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/housingstocklevelsbytenureandregioninenglandandwales" target="_blank" rel="noopener noreferrer">ONS Housing Stock & Completion Records</a>, Q3 2023.</li>
-                <li>[4] <a href="https://www.cbre.co.uk/insights/articles/uk-real-estate-market-outlook-2024" target="_blank" rel="noopener noreferrer">UK Commercial Real Estate Market Report</a>, Vacancy Metrics (Q3 2024).</li>
+                <li>[1] Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023). Dwellings per thousand inhabitants, 2020 data; England figure benchmarked against OECD.</li>
+                <li>[2] Deficit calculation: (487 − 434) × 57,690,300 ÷ 1,000 ≈ 3,057,586 homes. England population: <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/bulletins/annualmidyearpopulationestimates/mid2023" target="_blank" rel="noopener noreferrer">ONS mid-2023 population estimates</a> (57,690,300).</li>
+                <li>[3] Scottish Government, <a href="https://www.gov.scot/publications/quarterly-housing-statistics-december-2025/pages/housing-supply-including-affordable-across-the-uk/" target="_blank" rel="noopener noreferrer">Housing supply across the UK</a>. New-build completions per 10,000 population, financial year 2024-25.</li>
+                <li>[4] BNP Paribas Real Estate, <a href="https://www.realestate.bnpparibas.co.uk/sites/default/files/2024-10/CentralLondonMarketUpdateQ32024.pdf" target="_blank" rel="noopener noreferrer">Central London Offices Update, Q3 2024</a>. Central London vacancy 10.1%; City 11.82%; ten-year average 9.0%.</li>
               </CitationList>
             </ArticleContainer>
           )}
@@ -257,7 +257,7 @@ export const ResearchHub: React.FC = () => {
                 <ArticleTitle>Europe's Oldest Hearth: The UK's Housing Quality Gap</ArticleTitle>
                 <MetaRow>
                   <span>Published: Q2 2026</span>
-                  <span>Reading Time: 6 mins</span>
+                  <span>Reading Time: 1 min</span>
                 </MetaRow>
               </ArticleHeader>
 
@@ -268,7 +268,7 @@ export const ResearchHub: React.FC = () => {
 
                 <blockquote>
                   <p>
-                    The failure to update the historical housing envelope has direct public health and environmental consequences.
+                    Leaving the historical housing envelope unmodernized has direct public health and environmental consequences.
                   </p>
                 </blockquote>
 
@@ -276,7 +276,7 @@ export const ResearchHub: React.FC = () => {
 
                 <h3>Failure to Meet Basic Decency</h3>
                 <p>
-                  This historical legacy has had a severe impact on the livability of homes: <strong>14% of English homes (3.5 million households) failed to meet the Decent Homes Standard</strong> in the most recent English Housing Survey <sup>[2]</sup>. Private renters are hit hardest, with 21% living in non-decent conditions. While the Decent Homes Standard is an England-specific metric, broader Eurostat and WHO housing deprivation indicators consistently place the UK among the worst-performing Western European nations for overall housing quality <sup>[3]</sup>.
+                  This historical legacy has a direct impact on the livability of homes: <strong>15%, or 3.7 million dwellings, failed to meet the Decent Homes Standard</strong> in 2022 <sup>[2]</sup>. Private renters are worst affected, with 21% living in non-decent conditions, against 14% of owner-occupied and 10% of social rented homes. The Home Builders Federation puts England's proportion of substandard homes as the highest in Europe on this measure, ahead of Germany (12%), Bulgaria (11%), Lithuania (11%) and Poland (6%) <sup>[3]</sup>.
                 </p>
 
                 <h3>The Downstream Cost of an Ageing Stock</h3>
@@ -289,9 +289,9 @@ export const ResearchHub: React.FC = () => {
               </ArticleBody>
 
               <CitationList>
-                <li>[1] <a href="https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20230222-1" target="_blank" rel="noopener noreferrer">European Housing Stock Age and Composition Report</a>, Eurostat Comparisons.</li>
-                <li>[2] <a href="https://www.gov.uk/government/statistics/english-housing-survey-2022-to-2023-headline-report" target="_blank" rel="noopener noreferrer">English Housing Survey</a>, Ministry of Housing, Communities & Local Government (2022-23).</li>
-                <li>[3] <a href="https://www.who.int/europe/publications/i/item/9789289052993" target="_blank" rel="noopener noreferrer">WHO European Housing and Health Database</a> (Housing Deprivation Indicators).</li>
+                <li>[1] Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023), housing stock age against EU averages.</li>
+                <li>[2] <a href="https://assets.publishing.service.gov.uk/media/657c3ff691864e001308bdba/2022-23_EHS_Headline_Report.pdf" target="_blank" rel="noopener noreferrer">English Housing Survey 2022-23, Headline Report</a>, Department for Levelling Up, Housing &amp; Communities. "In 2022, 15% or 3.7 million dwellings failed to meet the Decent Homes Standard."</li>
+                <li>[3] Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023), European comparison based on 2020 data.</li>
                 <li>[4] <a href="https://www.bregroup.com/press-releases/bre-report-finds-poor-housing-is-costing-nhs-1-4bn-a-year/" target="_blank" rel="noopener noreferrer">BRE Trust</a>, The Cost of Poor Housing to the NHS (2021).</li>
               </CitationList>
             </ArticleContainer>
@@ -301,21 +301,21 @@ export const ResearchHub: React.FC = () => {
             <ArticleContainer>
               <ArticleHeader>
                 <Category>Financial Friction</Category>
-                <ArticleTitle>The Cost of Systemic Friction: A Broken Buying Cycle</ArticleTitle>
+                <ArticleTitle>The Cost of Friction: A Slow, Fragile Buying Cycle</ArticleTitle>
                 <MetaRow>
                   <span>Published: Q2 2026</span>
-                  <span>Reading Time: 7 mins</span>
+                  <span>Reading Time: 2 mins</span>
                 </MetaRow>
               </ArticleHeader>
 
               <ArticleBody>
                 <p>
-                  Over a 30-year span, from 1995 to 2025, the average UK home has <strong>increased in price by over 425%</strong>, while the average salary rose by just 112% <sup>[1]</sup>. In 1995, a newly qualified teacher could purchase a standard family home for just 3.4x their salary. Today, that same teacher must allocate <strong>over 8x their annual salary</strong> for an equivalent dwelling <sup>[2]</sup>.
+                  House prices have risen far faster than earnings for three decades. In 2025 the median home in England cost <strong>7.6 times median annual earnings</strong> (£300,000 against £39,300), roughly double the ratio when the ONS affordability series began in 1997 <sup>[1]</sup>.
                 </p>
 
                 <blockquote>
                   <p>
-                    "The transaction process itself is outdated. Onward chains, hidden property defects, and lack of upfront mortgage clarity keep buyers and sellers in a state of high-stress limbo."
+                    The transaction process itself hasn't kept up. Onward chains, hidden property defects, and a lack of upfront mortgage clarity leave buyers and sellers stuck in limbo.
                   </p>
                 </blockquote>
 
@@ -323,23 +323,23 @@ export const ResearchHub: React.FC = () => {
 
                 <h3>Collapsing Chains and Wasted Capital</h3>
                 <p>
-                  Buying a home in the UK is characterized by extreme uncertainty. Approximately <strong>30% of all purchase attempts collapse</strong> before completion. This gridlock results in an estimated <strong>300,000 failed transactions per year</strong>, with buyers and sellers losing between £500 and £3,500 in non-recoverable survey, legal, and mortgage fees per failed attempt <sup>[3]</sup>.
+                  Buying a home in the UK involves a lot of uncertainty. Published fall-through rates vary by source and by quarter, but cluster around a quarter of agreed sales: TwentyCi put the national rate at <strong>23.7% in Q1 2026</strong>, little changed from 24% a year earlier, while Quick Move Now recorded over a quarter of sales collapsing across 2024 with individual quarters peaking above 30% <sup>[3]</sup>. In absolute terms TwentyCi counted <strong>303,538 failed transactions in 2025</strong>, up 4.5% on the previous year. Buyers and sellers lose between £500 and £3,500 in non-recoverable survey, legal, and mortgage fees per failed attempt.
                 </p>
 
                 <p>
-                  The leading drivers of transaction collapses are problems uncovered during building surveys (which surprises buyers) and failures to secure final mortgages (~40% of recent failures). This extreme friction is compounded by a lack of trust: undisclosed defects and complex onward chains hold buyers and sellers hostage.
+                  The leading causes of transaction collapse are problems uncovered during building surveys and difficulty securing a mortgage. In Quick Move Now's Q2 2026 analysis, buyer mortgage or lending issues accounted for 33% of fall-throughs and survey issues for 27% <sup>[3]</sup>. This friction is compounded by a lack of trust: undisclosed defects and complex onward chains leave buyers and sellers stuck.
                 </p>
 
                 <h3>The Transactional Drag</h3>
                 <p>
-                  Beyond the stress of failed sales, the cost of successfully transacting is itself a major economic drag. The UK estate agency sector alone generates <strong>£5.7 billion per year</strong> in commission revenue. On top of this, conveyancing solicitor fees add approximately <strong>£2.5 billion</strong>, and mortgage broker charges a further <strong>£0.7 billion</strong> annually. In total, over <strong>£9 billion per year</strong> is extracted in intermediary transaction fees across the UK's ~1.1 million annual home sales <sup>[4]</sup>, capital that is diverted away from the productive economy.
+                  Beyond the stress of failed sales, the cost of successfully transacting is itself a major economic drag. The UK estate agency sector alone generates <strong>£5.7 billion per year</strong> in commission revenue. On top of this, conveyancing solicitor fees add approximately <strong>£2.5 billion</strong>, and mortgage broker charges a further <strong>£0.7 billion</strong> annually. In total, over <strong>£9 billion per year</strong> goes to intermediary transaction fees across the UK's ~1.1 million annual home sales <sup>[4]</sup>, capital that is diverted away from the productive economy.
                 </p>
               </ArticleBody>
 
               <CitationList>
-                <li>[1] <a href="https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/housepriceindex/previousReleases" target="_blank" rel="noopener noreferrer">ONS House Price Index & Annual Survey of Hours and Earnings (ASHE)</a> 1995-2025.</li>
-                <li>[2] <a href="https://www.gov.uk/government/organisations/land-registry" target="_blank" rel="noopener noreferrer">HM Land Registry Records & Salary Scale Multipliers</a>.</li>
-                <li>[3] <a href="https://www.conveyancingassociation.org.uk/white-papers/" target="_blank" rel="noopener noreferrer">Conveyancing Association Transaction Survey Report</a>.</li>
+                <li>[1] <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/bulletins/housingaffordabilityinenglandandwales/2025" target="_blank" rel="noopener noreferrer">ONS, Housing affordability in England and Wales: 2025</a>. Median house price to median gross annual earnings, full-time employees; series begins 1997.</li>
+                <li>[2] <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/ratioofhousepricetoworkplacebasedearningslowerquartileandmedian" target="_blank" rel="noopener noreferrer">ONS, Ratio of house price to workplace-based earnings</a> (median and lower quartile), 1997&ndash;2025.</li>
+                <li>[3] <a href="https://www.twentyci.co.uk/phmr/" target="_blank" rel="noopener noreferrer">TwentyCi Property &amp; Homemover Report</a> (national fall-through rate and failed-transaction counts); reasons-for-failure breakdown from <a href="https://www.quickmovenow.com/media-centre/property-sale-fall-through-indexes" target="_blank" rel="noopener noreferrer">Quick Move Now's fall-through index</a>.</li>
                 <li>[4] <a href="https://www.gov.uk/government/statistics/monthly-property-transactions-completed-in-the-uk-with-value-40000-or-above" target="_blank" rel="noopener noreferrer">UK Property Transaction Statistics & Agent Commission Index</a>.</li>
               </CitationList>
             </ArticleContainer>
@@ -352,30 +352,30 @@ export const ResearchHub: React.FC = () => {
                 <ArticleTitle>The Continuous Market: Rory Sutherland’s Universal Registry</ArticleTitle>
                 <MetaRow>
                   <span>Published: Q2 2026</span>
-                  <span>Reading Time: 8 mins</span>
+                  <span>Reading Time: 2 mins</span>
                 </MetaRow>
               </ArticleHeader>
 
               <ArticleBody>
                 <p>
-                  In a provocative thought experiment published in <em>The Spectator</em> (November 2024), Rory Sutherland (Vice Chairman of Ogilvy Group and behavioral economist) proposed a radical psychological solution to housing gridlocks: <strong>what if every home in the country was listed for sale all the time?</strong> <sup>[1]</sup>.
+                  In a thought experiment published in <em>The Spectator</em> (November 2024), Rory Sutherland (Vice Chairman of Ogilvy Group and behavioral economist) proposed a psychological solution to the housing market's illiquidity: <strong>what if every home in the country was listed for sale all the time?</strong> <sup>[1]</sup>.
                 </p>
 
                 <blockquote>
                   <p>
-                    "In most markets, liquidity and 'promiscuity' are signs of health. The housing market is frozen because listing a home is treated as a binary crisis - you are either completely in your home, or suspended in the high-stress limbo of being 'on the market'."
+                    "It would be a disaster if we applied the same principle to dating &ndash; it would lead to massive promiscuity and family breakdown. But in all other markets, we call promiscuity 'liquidity', and it's exactly what families need."
                   </p>
                 </blockquote>
 
                 <p>
-                  Sutherland argues that the UK housing gridlock is as much a behavioral and cognitive crisis as it is a physical supply constraint. Millions of homeowners live in properties that are structurally ill-suited for their needs - such as empty-nester retirees holding large 4-bedroom detached family homes - but avoid moving simply because the administrative, marketing, and psychological friction of active listing is too daunting.
+                  Sutherland argues that the UK's illiquid housing market is as much a behavioral question as a physical supply constraint. Millions of homeowners live in properties that no longer suit their needs, such as empty-nester retirees holding large 4-bedroom detached family homes, but avoid moving simply because the administrative, marketing, and psychological friction of active listing is too daunting.
                 </p>
 
                 <VisualChart type="sutherland" />
 
                 <h3>The Psychology of Unsolicited Bids</h3>
                 <p>
-                  Under Sutherland's continuous registry framework, rather than actively managing estate agents, homeowners simply specify a public "reserve price" (which could be set at a 30% to 50% premium over fair market value if they are highly content with their current residence). Prospective buyers can browse the postal district and submit unsolicited bids directly on any property in the country <sup>[1]</sup>.
+                  Sutherland's proposal is deliberately simple: government "mandates that all homes are for sale all the time", with "no obligation to sell &ndash; you could simply quote a ridiculously high price" <sup>[1]</sup>. An owner content where they are names a figure high enough to make a sale unlikely; buyers can then approach any property directly, rather than choosing only from the small fraction actively listed.
                 </p>
                 <p>
                   This shifts the seller's mindset from an active, anxious seeker to a passive decision-maker. Receiving a concrete, highly attractive out-of-the-blue offer bypasses the dread of listing limbo, open viewings, and real estate middleman fees, serving as a powerful behavioral trigger for downsizing and strategic family relocation.
@@ -394,7 +394,7 @@ export const ResearchHub: React.FC = () => {
                   <li>
                     <strong>Onward Chain Mismatch</strong>: Accepting an unsolicited bid is useless if the seller has nowhere to go. In a high-scarcity housing grid, the transaction velocity is capped by physical supply.
                     <br />
-                    <em>Mitigation</em>: The platform must support delayed possession or leaseback options. Sellers should be legally entitled to a 6-month rent-free residency period post-transaction to source their onward home, decoupling transaction execution from physical move-in dates.
+                    <em>Mitigation</em>: The platform must support delayed possession or leaseback options. Sellers could be legally entitled to a 6-month rent-free residency period post-transaction to source their onward home, decoupling transaction execution from physical move-in dates.
                   </li>
                   <li>
                     <strong>Municipal Rate Revaluations</strong>: Speculative offers could lead to local tax reassessment traps, penalizing owners for bids they never requested.
@@ -405,8 +405,7 @@ export const ResearchHub: React.FC = () => {
               </ArticleBody>
 
               <CitationList>
-                <li>[1] Rory Sutherland, "<a href="https://www.spectator.co.uk/article/how-to-buy-a-house-that-isnt-on-the-market/" target="_blank" rel="noopener noreferrer">How to buy a house that isn't on the market</a>," <em>The Spectator</em> (November 2024).</li>
-                <li>[2] <a href="https://www.ogilvy.com/ideas/behavioral-science" target="_blank" rel="noopener noreferrer">Ogilvy UK Behavioral Economics Group</a>, Cognitive Friction in Large-Asset Transactions (2024).</li>
+                <li>[1] Rory Sutherland, "<a href="https://www.spectator.co.uk/article/how-to-buy-a-house-that-isnt-on-the-market/" target="_blank" rel="noopener noreferrer">How to buy a house that isn't on the market</a>," <em>The Spectator</em>, 9 November 2024.</li>
               </CitationList>
             </ArticleContainer>
           )}

@@ -86,32 +86,39 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
   };
 
   if (type === 'deficit') {
-    // Dwellings per 1,000 inhabitants (source: REAL Numbers page)
+    // Dwellings per 1,000 inhabitants. England (434) and OECD average (487) are from HBF
+    // Housing Horizons (Oct 2023, 2020 data). All other countries are from the OECD
+    // Affordable Housing Database, Table HM1.1.A1 (latest available year: 2022, except
+    // Japan which is 2018). Sorted ascending by value.
     const data = [
-      { country: 'United Kingdom', value: 446, highlighted: true },
-      { country: 'Netherlands', value: 456, highlighted: false },
+      { country: 'United States', value: 428, highlighted: false },
+      { country: 'England', value: 434, highlighted: true },
+      { country: 'Netherlands', value: 454, highlighted: false },
       { country: 'OECD Average', value: 487, highlighted: false },
-      { country: 'EU Average', value: 500, highlighted: false },
-      { country: 'Germany', value: 521, highlighted: false },
-      { country: 'Japan', value: 523, highlighted: false },
-      { country: 'Spain', value: 550, highlighted: false },
-      { country: 'Italy', value: 587, highlighted: false },
-      { country: 'France', value: 590, highlighted: false },
+      { country: 'Japan', value: 493, highlighted: false },
+      { country: 'Germany', value: 518, highlighted: false },
+      { country: 'Spain', value: 563, highlighted: false },
+      { country: 'France', value: 591, highlighted: false },
+      { country: 'Italy', value: 598, highlighted: false },
     ];
 
-    const chartHeight = 240;
+    const chartHeight = 270;
     const barHeight = 18;
     const barSpacing = 8;
     const paddingLeft = 140;
     const paddingRight = 40;
     const chartWidth = 500;
-    const scale = (chartWidth - paddingLeft - paddingRight) / 590;
+    // Scale to the actual max in the dataset, not a hardcoded value - otherwise a bar can
+    // silently overflow the track once the data changes (as happened here: France used to
+    // be the max at 590, then Italy's corrected figure of 598 overflowed the fixed scale).
+    const maxVal = Math.max(...data.map(d => d.value));
+    const scale = (chartWidth - paddingLeft - paddingRight) / maxVal;
 
     return (
       <ChartContainer style={{ position: 'relative' }}>
         <ChartTitle>Dwellings per 1,000 Inhabitants</ChartTitle>
         <ChartSubtitle>
-          The UK has a severe structural undersupply, building fewer homes per capita than almost all major developed nations.
+          England holds fewer dwellings per head of population than most comparable developed nations.
         </ChartSubtitle>
         <SVGContainer viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%">
           {data.map((d, i) => {
@@ -138,7 +145,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
                 <rect
                   x={paddingLeft}
                   y={y}
-                  width={590 * scale}
+                  width={maxVal * scale}
                   height={barHeight}
                   rx="4"
                   fill="rgba(255, 255, 255, 0.02)"
@@ -320,7 +327,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
       <ChartContainer style={{ position: 'relative' }}>
         <ChartTitle>The Liquidity Framework: Binary vs. Continuous Market</ChartTitle>
         <ChartSubtitle>
-          Comparing the highly restricted traditional listing system (2% active homes) against Rory Sutherland's 100% addressable registry.
+          Comparing the traditional listing system, where only a small fraction of homes are on the market at any time, against Sutherland's proposal that every home be addressable.
         </ChartSubtitle>
         <SVGContainer viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%">
           {/* Traditional Panel */}
@@ -330,11 +337,11 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
           {/* Traditional Bar: 2% Active Listings */}
           <rect x="35" y="60" width="180" height="16" rx="4" fill="rgba(255, 255, 255, 0.02)" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="1" />
           <rect x="35" y="60" width="12" height="16" rx="4" fill="hsl(46, 65%, 52%)" />
-          <text x="53" y="72" fill="rgba(255,255,255,0.5)" fontSize="8" fontFamily="Inter">2% Active Listings</text>
+          <text x="53" y="72" fill="rgba(255,255,255,0.5)" fontSize="8" fontFamily="Inter">Few Active Listings</text>
 
           {/* Traditional Metrics */}
           <text x="35" y="100" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• 6-Month Average Sale Time</text>
-          <text x="35" y="120" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• 30% Chain Collapse Risk</text>
+          <text x="35" y="120" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• ~24% Fall-Through Rate</text>
           <text x="35" y="140" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• £9B+ Transactional Drag</text>
           <text x="35" y="160" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="Inter">• Locked "Shadow Inventory"</text>
           
@@ -388,7 +395,7 @@ export const VisualChart: React.FC<ChartProps> = ({ type }) => {
     <ChartContainer style={{ position: 'relative' }}>
       <ChartTitle>Wage Growth vs. House Price Inflation (1995 - 2025)</ChartTitle>
       <ChartSubtitle>
-        The systemic affordability crisis: in 1995, a newly qualified teacher could buy a home for 3.4x their salary; today, it costs over 8.1x.
+        In 2025 the median home in England cost 7.6 times median annual earnings (£300,000 against £39,300), roughly double the ratio when the ONS series began in 1997.
       </ChartSubtitle>
       <SVGContainer viewBox={`0 0 ${chartWidth} ${chartHeight}`} width="100%">
         {/* Y Axis grid */}

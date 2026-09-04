@@ -6,7 +6,7 @@ interface PartnerPortalProps {
 }
 
 const PortalContainer = styled.div`
-  max-width: 1000px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem 2rem;
 
@@ -247,7 +247,7 @@ export const PartnerPortal: React.FC<PartnerPortalProps> = ({ onStartIntake }) =
         <ModelText>
           <h3>Our Academic & Feasibility Modeling Framework</h3>
           <p>
-            Real Evolution bridges the gap between academic macroeconomic theory and actionable, spatial-engineering strategy. We explore how planning stagnation, zoning mismatches, and outdated building footprints act as a continuous anchor on national GDP and social well-being.
+            Real Evolution bridges the gap between academic macroeconomic theory and actionable, spatial-engineering strategy. We explore how planning delays, zoning mismatches, and older building footprints act as a continuous drag on national GDP and social well-being.
           </p>
           <p>
             Our research projects model the systemic re-use of vacant building shells, leveraging Class E vacancies and Permitted Development Rights (PDR) to study next-generation spatial models:
@@ -260,7 +260,7 @@ export const PartnerPortal: React.FC<PartnerPortalProps> = ({ onStartIntake }) =
               <strong>Regulatory Feasibility</strong>: Analyzing Class E to C3 prior-approval constraints to map administrative friction and identify pathways for faster structural conversions.
             </li>
             <li>
-              <strong>Energy Performance Studies</strong>: Modeling structural retrofitting (ventilation, thermal insulation, and heat pumps) to transition outdated commercial envelopes into highly efficient homes.
+              <strong>Energy Performance Studies</strong>: Modeling structural retrofitting (ventilation, thermal insulation, and heat pumps) to transition older commercial envelopes into efficient homes.
             </li>
           </ul>
         </ModelText>
@@ -303,7 +303,7 @@ export const PartnerPortal: React.FC<PartnerPortalProps> = ({ onStartIntake }) =
           <TimelineContent>
             <h4>Volumetric Layout Simulation (Months 2 - 3)</h4>
             <p>
-              Architects simulate adaptive layout options. Outdated corridors are eliminated in modeling, maximizing open communal spaces while optimizing functional sleeping quarters.
+              Architects simulate adaptive layout options. Corridor space is reduced in modeling, freeing up open communal space while optimizing functional sleeping quarters.
             </p>
           </TimelineContent>
         </TimelineItem>

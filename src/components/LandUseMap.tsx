@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const MapContainer = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem 2rem;
   animation: fadeIn 0.5s ease-out;
@@ -489,7 +489,7 @@ export const LandUseMap: React.FC = () => {
               <g clipPath="url(#uk-silhouette)">
                 <rect x="0" y="0" width={ukSvgSize.w} height={bandYPositions[0]} fill="hsl(46, 65%, 52%)" />
                 <rect x="0" y={bandYPositions[0]} width={ukSvgSize.w} height={bandYPositions[1] - bandYPositions[0]} fill="#84cc16" />
-                <rect x="0" y={bandYPositions[1]} width={ukSvgSize.w} height={bandYPositions[2] - bandYPositions[1]} fill="#10b981" />
+                <rect x="0" y={bandYPositions[1]} width={ukSvgSize.w} height={bandYPositions[2] - bandYPositions[1]} fill="#15803d" />
                 <rect x="0" y={bandYPositions[2]} width={ukSvgSize.w} height={bandYPositions[3] - bandYPositions[2]} fill="#f59e0b" />
                 <rect x="0" y={bandYPositions[3]} width={ukSvgSize.w} height={bandYPositions[4] - bandYPositions[3]} fill="#f43f5e" />
                 <rect x="0" y={bandYPositions[4]} width={ukSvgSize.w} height={bandYPositions[5] - bandYPositions[4]} fill="#38bdf8" />
@@ -504,7 +504,7 @@ export const LandUseMap: React.FC = () => {
               {[
                 { emoji: '🌾', name: 'Agricultural Land', pct: '49.0%', color: 'hsl(46, 65%, 52%)' },
                 { emoji: '🌿', name: 'Grassland & Natural Open Space', pct: '28.7%', color: '#84cc16' },
-                { emoji: '🌳', name: 'Forestry & Woodland', pct: '12.0%', color: '#10b981' },
+                { emoji: '🌳', name: 'Forestry & Woodland', pct: '12.0%', color: '#15803d' },
                 { emoji: '🏠', name: 'Residential (Homes & Gardens)', pct: '5.6%', color: '#f59e0b' },
                 { emoji: '🌉', name: 'Urban (Transport & Commercial)', pct: '1.6%', color: '#f43f5e' },
                 { emoji: '💧', name: 'Water & Wetlands', pct: '3.1%', color: '#38bdf8' },
