@@ -1,12 +1,14 @@
 {
   "files": {
-    "main.js": "./static/js/main.82429e03.js",
-    "static/media/BackgroundImage.png": "./static/media/BackgroundImage.2aca9543e4fa497d2496.png",
+    "main.js": "./static/js/main.a8f4b4ab.js",
+    "static/media/BackgroundImage_2.jpg": "./static/media/BackgroundImage_2.723cc267453392333841.jpg",
+    "static/media/BackgroundImage_3.jpg": "./static/media/BackgroundImage_3.f709452ae56780763f41.jpg",
+    "static/media/BackgroundImage.jpg": "./static/media/BackgroundImage.955845773c44c1669aeb.jpg",
     "index.html": "./index.html",
-    "static/media/real-evolution-logo.svg": "./static/media/real-evolution-logo.a818db2bf2591dcc642e54a461e03c67.svg",
-    "main.82429e03.js.map": "./static/js/main.82429e03.js.map"
+    "static/media/real-evolution-logo.svg": "./static/media/real-evolution-logo.b6a7d9adafed0b52b8e151a05fdf1082.svg",
+    "main.a8f4b4ab.js.map": "./static/js/main.a8f4b4ab.js.map"
   },
   "entrypoints": [
-    "static/js/main.82429e03.js"
+    "static/js/main.a8f4b4ab.js"
   ]
 }
