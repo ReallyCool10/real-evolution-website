@@ -531,7 +531,7 @@ export const ResearchHub: React.FC = () => {
                 <ArticleTitle>Location, Location, Location: How Much Does London Distort the Picture?</ArticleTitle>
                 <MetaRow>
                   <span>Published: Q3 2026</span>
-                  <span>Reading Time: 4 mins</span>
+                  <span>Reading Time: 3 mins</span>
                 </MetaRow>
               </ArticleHeader>
 
@@ -543,7 +543,7 @@ export const ResearchHub: React.FC = () => {
                 <VisualChart type="london-premium" />
 
                 <p>
-                  It's worth going one step further than the headline nation-vs-capital comparison. Stripping London's own sales out of the England and UK figures entirely, using the same underlying transaction-weighted dataset, leaves an average home price of <strong>£266,965 for the rest of England</strong> and <strong>£250,113 for the rest of the UK</strong> <sup>[1]</sup>. London is <strong>2.08 times</strong> the England-excluding-London figure and <strong>2.22 times</strong> the UK-excluding-London figure, both a noticeably wider gap than the 1.89x and 2.04x you get from comparing London to the blended national totals. The published "national average" is already being pulled upward by London; take it out, and the gap it was masking gets bigger, not smaller.
+                  It's worth going one step further than the headline nation-vs-capital comparison. Stripping London's own sales out of the England and UK figures entirely, using the same underlying transaction-weighted dataset, leaves an average home price of <strong>£266,965 for the rest of England</strong> and <strong>£250,113 for the rest of the UK</strong> <sup>[1]</sup>, both meaningfully below the published national averages. London isn't just an outlier sitting on top of the national figure; it's propping that figure up.
                 </p>
 
                 <h3>The Superstar City Effect</h3>
@@ -565,10 +565,6 @@ export const ResearchHub: React.FC = () => {
                 <h3>Occupied, Not Empty</h3>
                 <p>
                   The other half of the "investment demand" question is whether these homes sit empty. Using commercial and administrative data as a proxy for occupation, the same study inferred that 10.2% of new-build homes across London were under-used in some way, rising to around half in prime central London specifically. Overseas owners were more likely to hold an under-used property than UK owners (42.3% versus 5.6%) <sup>[3]</sup>. But because overseas buyers are a minority of the market, the absolute numbers were close either way: an estimated 402 under-used homes owned overseas against 389 owned by UK buyers, in a sample of under 8,000 properties. Even the "empty homes" story, once you look past the headline percentage, turns out to be roughly split rather than a story about foreign money alone.
-                </p>
-
-                <p>
-                  None of this erases London from the picture, and it shouldn't. But "location" understates what's actually going on: a structural, decades-old scarcity effect that would exist regardless of who's buying, a genuine but geographically narrow concentration of overseas demand, and an under-occupation problem shared roughly evenly between domestic and overseas owners. Treating "London" as a single distorting force, the way our own "Four Nations, Four Markets" warns against treating "the UK" as one, hides exactly the detail a specific, buildable response to the housing crisis depends on.
                 </p>
               </ArticleBody>
 
