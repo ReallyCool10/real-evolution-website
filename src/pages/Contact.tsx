@@ -229,11 +229,11 @@ const Contact: React.FC = () => {
         </SubmitButton>
 
         {status === 'success' && (
-          <StatusMessage variant="success">Thanks &ndash; your message has been sent. We'll be in touch soon.</StatusMessage>
+          <StatusMessage variant="success">Thanks - your message has been sent. We'll be in touch soon.</StatusMessage>
         )}
         {status === 'error' && (
           <StatusMessage variant="error">
-            We couldn't send that automatically, so we've opened your email client instead &ndash; please send the pre-filled message to reach us.
+            We couldn't send that automatically, so we've opened your email client instead - please send the pre-filled message to reach us.
           </StatusMessage>
         )}
       </Form>

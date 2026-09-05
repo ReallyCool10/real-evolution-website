@@ -239,13 +239,16 @@ export const RealNumbers: React.FC = () => {
   const [hoveredBar, setHoveredBar] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<{ series: 'wage' | 'price'; year: number } | null>(null);
 
-  // 1. Scarcity Data (dwellings per 100 citizens). England and OECD average are from HBF
-  // Housing Horizons (Oct 2023, 2020 data). All other countries are from the OECD
-  // Affordable Housing Database, Table HM1.1.A1 (latest available year: 2022, except
-  // Japan which is 2018). Sorted ascending by value.
+  // 1. Scarcity Data (dwellings per 100 citizens). United Kingdom is a combined figure:
+  // dwelling stock from MHCLG (England, 31 Mar 2023), National Records of Scotland (2023),
+  // Welsh Government (31 Mar 2023) and NISRA (Apr 2023), divided by ONS mid-2023 UK
+  // population - see the "Four Nations, Four Markets" article for the by-nation breakdown
+  // and full citations. OECD average is from HBF Housing Horizons (Oct 2023, 2020 data).
+  // All other countries are from the OECD Affordable Housing Database, Table HM1.1.A1
+  // (latest available year: 2022, except Japan which is 2018). Sorted ascending by value.
   const scarcityData = [
     { country: 'United States', val: 42.8, highlighted: false },
-    { country: 'England', val: 43.4, highlighted: true },
+    { country: 'United Kingdom', val: 44.6, highlighted: true },
     { country: 'Netherlands', val: 45.4, highlighted: false },
     { country: 'OECD Average', val: 48.7, highlighted: false },
     { country: 'Japan', val: 49.3, highlighted: false },
@@ -325,7 +328,7 @@ export const RealNumbers: React.FC = () => {
       <ChartWrapper style={{ position: 'relative' }}>
         <ChartTitle>Dwellings per 100 Citizens</ChartTitle>
         <ChartDesc>
-Compared to most European counterparts, England operates under significant structural undersupply &ndash; only the United States has a lower ratio among the nations shown here <sup><a href="#cit-1">[1]</a></sup><sup><a href="#cit-2">[2]</a></sup>.
+Compared to most European counterparts, the UK operates under significant structural undersupply - only the United States has a lower ratio among the nations shown here <sup><a href="#cit-1">[1]</a></sup><sup><a href="#cit-2">[2]</a></sup>.
         </ChartDesc>
         <SVGContainer viewBox={`0 0 ${sWidth} ${sHeight}`}>
           {scarcityData.map((d, i) => {
@@ -408,7 +411,7 @@ Compared to most European counterparts, England operates under significant struc
           </defs>
         </SVGContainer>
         <div style={{ marginTop: '1.2rem', padding: '0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
-            To match the OECD average of <strong style={{ color: '#fff' }}>48.7</strong> dwellings per 100 citizens, England (at <strong style={{ color: '#fff' }}>43.4</strong>) would need approximately <span style={{ color: 'hsl(46, 65%, 52%)', fontWeight: 700 }}>3.1 million</span> additional homes <span style={{ opacity: 0.5 }}>((48.7 − 43.4) × 57.69m ÷ 100 = 3,057,586)</span>.
+            To match the OECD average of <strong style={{ color: '#fff' }}>48.7</strong> dwellings per 100 citizens, the UK (at <strong style={{ color: '#fff' }}>44.6</strong>) would need approximately <span style={{ color: 'hsl(46, 65%, 52%)', fontWeight: 700 }}>2.8 million</span> additional homes <span style={{ opacity: 0.5 }}>((48.7 − 44.6) × 68.27m ÷ 100 = 2,798,873)</span>.
         </div>
       </ChartWrapper>
 
@@ -416,7 +419,7 @@ Compared to most European counterparts, England operates under significant struc
       <ChartWrapper style={{ position: 'relative' }}>
         <ChartTitle>House Price Growth vs. Wage Growth (1997 - 2025)</ChartTitle>
         <ChartDesc>
-          Indexed to 100 at 1997. UK house prices have grown far faster than UK median earnings at every check-in point since <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
+          Indexed to 100 at 1997. UK house prices have grown far faster than UK median earnings at every check-in point since then <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
         </ChartDesc>
         <SVGContainer viewBox={`0 0 ${aChartW} ${aChartH}`}>
           {/* Y Grid lines + axis */}
@@ -513,7 +516,7 @@ Compared to most European counterparts, England operates under significant struc
           })()}
         </SVGContainer>
         <div style={{ marginTop: '1.2rem', padding: '0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}>
-          Between 1997 and 2025, UK house prices rose from £55,914 to £264,936 (+374%), while UK median full-time earnings rose from £16,666 to £39,863 (+139%) &ndash; the price-to-earnings ratio nearly doubled, from {affordabilityIndexed[0].ratio.toFixed(1)}x to {affordabilityIndexed[affordabilityIndexed.length - 1].ratio.toFixed(1)}x.
+          Between 1997 and 2025, UK house prices rose from £55,914 to £264,936 (+374%), while UK median full-time earnings rose from £16,666 to £39,863 (+139%) - the price-to-earnings ratio nearly doubled, from {affordabilityIndexed[0].ratio.toFixed(1)}x to {affordabilityIndexed[affordabilityIndexed.length - 1].ratio.toFixed(1)}x.
         </div>
       </ChartWrapper>
 
@@ -569,7 +572,7 @@ Compared to most European counterparts, England operates under significant struc
         <CitationTable>
           <div className="index" id="cit-1">[1]</div>
           <div className="text">
-            Home Builders Federation, Housing Horizons: Examining UK Housing Stock in an International Context. England at 434 dwellings per 1,000 inhabitants against an OECD benchmark of 487 (2020 data).
+            Home Builders Federation, Housing Horizons: Examining UK Housing Stock in an International Context. OECD benchmark of 487 dwellings per 1,000 inhabitants (2020 data). The UK figure (446 per 1,000) is a separate combined calculation across all four nations - see the "Four Nations, Four Markets" article for the full by-nation breakdown and sources.
             View report: <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noreferrer">HBF Housing Horizons</a>
           </div>
           <div className="source">HBF (Oct 2023)</div>
@@ -589,7 +592,7 @@ Compared to most European counterparts, England operates under significant struc
 
           <div className="index" id="cit-4">[4]</div>
           <div className="text">
-            ONS earnings time series of median gross weekly earnings, UK, adult full-time employees (male &amp; female), 1997&ndash;2025; annualised as weekly figure &times; 52.
+            ONS earnings time series of median gross weekly earnings, UK, adult full-time employees (male &amp; female), 1997-2025; annualised as weekly figure &times; 52.
             View data: <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/earningstimeseriesofmediangrossweeklyearningsfrom1968to2022/current" target="_blank" rel="noreferrer">ONS Earnings Time Series</a>
           </div>
           <div className="source">ONS ASHE / NES (2025)</div>

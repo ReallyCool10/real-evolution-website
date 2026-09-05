@@ -475,7 +475,7 @@ export const LandUseMap: React.FC = () => {
       </HeaderSection>
 
       <Figure1Section>
-        {/* Proportional Fill UK Silhouette — area-proportional bands from real GeoJSON */}
+        {/* Proportional Fill UK Silhouette - area-proportional bands from real GeoJSON */}
         {ukSvgPaths.length > 0 && bandYPositions.length > 0 && (
           <div style={{ display: 'flex', gap: '5rem', alignItems: 'center', marginBottom: '3rem', marginTop: '-60px', flexWrap: 'wrap', justifyContent: 'flex-start', marginLeft: '-100px' }}>
             <svg viewBox={`0 0 ${ukSvgSize.w} ${ukSvgSize.h}`} width="588" style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.4))' }}>
@@ -485,7 +485,7 @@ export const LandUseMap: React.FC = () => {
                 </clipPath>
               </defs>
 
-              {/* Filled bands clipped to real UK shape — area-proportional positions */}
+              {/* Filled bands clipped to real UK shape - area-proportional positions */}
               <g clipPath="url(#uk-silhouette)">
                 <rect x="0" y="0" width={ukSvgSize.w} height={bandYPositions[0]} fill="hsl(46, 65%, 52%)" />
                 <rect x="0" y={bandYPositions[0]} width={ukSvgSize.w} height={bandYPositions[1] - bandYPositions[0]} fill="#84cc16" />

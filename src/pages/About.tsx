@@ -53,7 +53,7 @@ const About: React.FC = () => {
           </p>
           <p>
             We're looking for partners: property owners, investors, and policymakers who see the same
-            opportunity &ndash; that solving the housing crisis depends as much on using what already
+            opportunity - that solving the housing crisis depends as much on using what already
             exists as it does on building new.
           </p>
         </TextSection>
