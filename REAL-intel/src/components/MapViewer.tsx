@@ -114,6 +114,8 @@ export const MapViewer: React.FC<MapViewerProps> = ({
   const fetchTimeoutRef = useRef<any>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const popupRef = useRef<Popup | null>(null);
+  const showBoundariesRef = useRef(showBoundaries);
+  showBoundariesRef.current = showBoundaries;
 
   // Setup data layers and boundaries on the current map style
   const setupLayers = useCallback((map: Map) => {
@@ -140,7 +142,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           'raster-opacity': 0.88
         },
         layout: {
-          visibility: showBoundaries ? 'visible' : 'none'
+          visibility: showBoundariesRef.current ? 'visible' : 'none'
         }
       });
     }
@@ -276,7 +278,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
         console.warn('Could not add osm-housenumber-labels layer:', err);
       }
     }
-  }, [showBoundaries, mapboxToken, basemap]);
+  }, [mapboxToken, basemap]);
 
   // Viewport property fetcher with Tiered Level of Detail (LOD)
   const fetchViewportProperties = useCallback(() => {
@@ -617,18 +619,25 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     map.once('style.load', handleStyleLoad);
   }, [basemap, mapboxToken, setupLayers, fetchViewportProperties]);
 
-  // Toggle Boundaries Visibility & auto-zoom if zoomed out
+  // Toggle Boundaries Visibility
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+
+    const applyVisibility = () => {
+      try {
+        if (map.getLayer('hmlr-layer')) {
+          map.setLayoutProperty('hmlr-layer', 'visibility', showBoundaries ? 'visible' : 'none');
+        }
+      } catch (err) {
+        console.warn('Could not set hmlr-layer visibility:', err);
+      }
+    };
 
     if (map.getLayer('hmlr-layer')) {
-      map.setLayoutProperty('hmlr-layer', 'visibility', showBoundaries ? 'visible' : 'none');
-    }
-
-    // Auto-zoom to street level when enabling boundaries so parcels immediately render
-    if (showBoundaries && map.getZoom() < 15.5) {
-      map.easeTo({ zoom: 16, duration: 800 });
+      applyVisibility();
+    } else {
+      map.once('idle', applyVisibility);
     }
   }, [showBoundaries]);
 
