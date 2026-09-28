@@ -1,6 +1,6 @@
 # dependencies
 /node_modules
-tools/cadastre-explorer/node_modules
+REAL-intel/node_modules
 /.pnp
 .pnp.js
 
@@ -9,7 +9,7 @@ tools/cadastre-explorer/node_modules
 
 # production
 /build
-tools/cadastre-explorer/dist
+REAL-intel/dist
 
 # datasets & large raw data
 /DATA/
@@ -18,7 +18,7 @@ tools/cadastre-explorer/dist
 *.csv.gz
 
 # transient cache
-tools/cadastre-explorer/server/cache/
+REAL-intel/server/cache/
 
 # misc & environment
 .DS_Store

@@ -8,10 +8,11 @@ if (Test-Path $OldShortcut) {
     Remove-Item $OldShortcut -Force -ErrorAction SilentlyContinue
 }
 
+$AppDir = $PSScriptRoot
 $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
-$Shortcut.TargetPath = "C:\Dev\real-evolution-website\tools\cadastre-explorer\REAL-Cadastre.bat"
-$Shortcut.WorkingDirectory = "C:\Dev\real-evolution-website\tools\cadastre-explorer"
-$Shortcut.IconLocation = "C:\Dev\real-evolution-website\tools\cadastre-explorer\public\cadastre.ico,0"
+$Shortcut.TargetPath = Join-Path $AppDir "REAL-Cadastre.bat"
+$Shortcut.WorkingDirectory = $AppDir
+$Shortcut.IconLocation = (Join-Path $AppDir "public\cadastre.ico") + ",0"
 $Shortcut.Description = "REAL intel - Commercial Land & Property Intelligence"
 $Shortcut.Save()
 

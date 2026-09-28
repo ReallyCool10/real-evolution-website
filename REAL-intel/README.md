@@ -1,4 +1,4 @@
-# REAL Cadastre — UK Land & Commercial Property Explorer
+# REAL intel — UK Land & Commercial Property Intelligence
 
 A pure, modern, and minimalist GIS explorer that combines:
 - **UK Map Interface** (MapLibre GL JS with Dark / Light / Satellite modes)
@@ -12,7 +12,7 @@ A pure, modern, and minimalist GIS explorer that combines:
 ## Quick Start
 
 ### 1. Ingest Data (One-Time Setup)
-From `tools/cadastre-explorer`:
+From `REAL-intel`:
 ```bash
 # Ingests outcodes + OCOD (91k records) + 50k CCOD records
 npm run ingest
@@ -22,7 +22,7 @@ npm run ingest:all
 ```
 
 ### 2. Desktop Applet (One-Click Launch)
-A Windows Desktop shortcut named **REAL Cadastre** has been placed directly on your Desktop (`C:\Users\MarkNewman\Desktop\REAL Cadastre.lnk`):
+A Windows Desktop shortcut named **REAL intel** has been placed directly on your Desktop (`C:\Users\MarkNewman\Desktop\REAL intel.lnk`):
 - Double-click the desktop icon.
 - It automatically boots the backend and frontend servers.
 - As soon as services are ready, it launches the app directly into your browser / app window.

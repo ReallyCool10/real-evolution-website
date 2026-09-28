@@ -22,7 +22,8 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
-    "cadastre": "npm run dev --prefix tools/cadastre-explorer",
+    "intel": "npm run dev --prefix REAL-intel",
+    "cadastre": "npm run dev --prefix REAL-intel",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
