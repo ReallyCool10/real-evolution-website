@@ -15,75 +15,107 @@ if (!fs.existsSync(CACHE_DIR)) {
   process.exit(1);
 }
 
+const args = process.argv.slice(2);
+const areaArg = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toUpperCase();
+const outcodeArg = args.find(a => a.startsWith('--outcode='))?.split('=')[1]?.toUpperCase();
+
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode = WAL;');
+db.exec('PRAGMA synchronous = NORMAL;');
 db.exec('PRAGMA busy_timeout = 15000;');
 
-const cacheFiles = fs.readdirSync(CACHE_DIR).filter(f => f.startsWith('addresses_') && f.endsWith('.json'));
+let cacheFiles = fs.readdirSync(CACHE_DIR).filter(f => f.startsWith('addresses_') && f.endsWith('.json'));
+
+if (outcodeArg) {
+  cacheFiles = cacheFiles.filter(f => f.toUpperCase() === `ADDRESSES_${outcodeArg}.JSON`);
+} else if (areaArg) {
+  if (areaArg === 'BS' || areaArg === 'BRISTOL') {
+    cacheFiles = cacheFiles.filter(f => f.toUpperCase().startsWith('ADDRESSES_BS'));
+  } else if (areaArg === 'LONDON') {
+    const londonPrefixes = ['E', 'EC', 'N', 'NW', 'SE', 'SW', 'W', 'WC'];
+    cacheFiles = cacheFiles.filter(f => {
+      const oc = f.replace('addresses_', '').replace('.json', '').toUpperCase();
+      return londonPrefixes.some(p => oc.startsWith(p));
+    });
+  }
+}
+
 console.log(`Found ${cacheFiles.length} cached outcode files to evaluate.`);
 
 const cleanPostcode = (pc) => (pc ? pc.replace(/\s+/g, '').toUpperCase() : '');
 
-const STREET_SUFFIXES = [
-  'ROAD', 'STREET', 'AVENUE', 'LANE', 'DRIVE', 'WAY', 'CLOSE', 'COURT',
-  'CRESCENT', 'GARDENS', 'GROVE', 'HILL', 'PARK', 'PLACE', 'SQUARE',
-  'TERRACE', 'MEWS', 'WALK', 'RISE', 'ROW', 'YARD', 'PARADE', 'CIRCUS',
-  'BROADWAY', 'WHARF', 'QUAY', 'APPROACH', 'PASSAGE', 'ALLEY'
-];
-const SUFFIX_REGEX = new RegExp(`\\b(${STREET_SUFFIXES.join('|')})\\b`, 'i');
+function cleanStreet(st) {
+  if (!st) return '';
+  return st.toLowerCase()
+    .replace(/\b(rd|st|ave|ln|dr|cres|pl|sq|ter|ct|bvd|blvd)\b/g, (m) => {
+      const map = { rd: 'road', st: 'street', ave: 'avenue', ln: 'lane', dr: 'drive', cres: 'crescent', pl: 'place', sq: 'square', ter: 'terrace', ct: 'court', bvd: 'boulevard', blvd: 'boulevard' };
+      return map[m] || m;
+    })
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanHouseNum(num) {
+  if (!num) return '';
+  return num.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+}
+
+function expandNumberRange(rangeStr) {
+  if (!rangeStr) return [];
+  const str = rangeStr.trim();
+  const rangeMatch = str.match(/^(\d+)\s*(?:to|-|\/)\s*(\d+)$/i);
+  if (rangeMatch) {
+    const start = parseInt(rangeMatch[1], 10);
+    const end = parseInt(rangeMatch[2], 10);
+    if (!isNaN(start) && !isNaN(end) && end > start && end - start <= 20) {
+      const step = ((end - start) % 2 === 0) ? 2 : 1;
+      const list = [];
+      for (let n = start; n <= end; n += step) list.push(String(n));
+      return list;
+    }
+    return [String(start), String(end)];
+  }
+  return [cleanHouseNum(str)];
+}
 
 function parseLRAddress(address) {
   if (!address) return { houseNums: [], street: null };
-  const cleaned = address.toUpperCase().replace(/[\r\n]+/g, ', ');
-  const parts = cleaned.split(',').map(p => p.trim()).filter(Boolean);
+  let clean = address.replace(/\s+/g, ' ').replace(/\([A-Z0-9\s]+\)$/i, '').trim();
+  clean = clean.replace(/^(?:land\s+(?:and\s+buildings\s+)?(?:at\s+the\s+rear\s+of|on\s+the\s+(?:north|south|east|west)\s+side\s+of|lying\s+to\s+the\s+(?:north|south|east|west)\s+of|adjoining)\s+)/i, '');
+  clean = clean.replace(/^(?:(?:ground|first|second|third|fourth|fifth|top)\s+floor(?:\s+flat|\s+suite)?\s*,\s*)/i, '');
+  clean = clean.replace(/^(?:(?:flat|unit|suite|room|apartment|part\s+of|floor)\s+[^,]+,\s*)+/i, '');
 
-  let houseNums = [];
-  let street = null;
+  const streetSuffixes = 'Road|Street|Avenue|Lane|Way|Drive|Close|Gardens|Crescent|Place|Walk|Square|Hill|Terrace|Yard|Court|Grove|Mews|Row|Rise|Parade|Park|Wharf|Boulevard|Gate|Broadway|Quay|Circus|Reach|Meadow|Bank|Corner|End|View|Green|Alley|Highway|Passage|Approach|Rise|Side|Circus|Row|Mall|Buildings|Mansions|Chambers';
+  const match = clean.match(new RegExp(`(\\b\\d+[a-z]?(?:\\s*(?:to|-|\\/|&|and)\\s*\\d+[a-z]?)?)\\s+([A-Za-z\\s]+(?:${streetSuffixes}))\\b`, 'i'));
 
-  for (const part of parts) {
-    if (part.startsWith('FLAT') || part.startsWith('UNIT') || part.startsWith('SUITE') ||
-        part.startsWith('APARTMENT') || part.startsWith('ROOM') || part.startsWith('FLOOR')) {
-      continue;
-    }
-
-    const rangeMatch = part.match(/\b(\d+)\s*(?:-|TO|\/)\s*(\d+)\b/i);
-    if (rangeMatch && !houseNums.length) {
-      const start = parseInt(rangeMatch[1], 10);
-      const end = parseInt(rangeMatch[2], 10);
-      if (end >= start && end - start <= 20) {
-        for (let n = start; n <= end; n++) houseNums.push(String(n));
-      } else {
-        houseNums.push(rangeMatch[1], rangeMatch[2]);
-      }
-    }
-
-    const numMatch = part.match(/\b(\d+[A-Z]?)\b/);
-    if (numMatch && !houseNums.length) {
-      houseNums.push(numMatch[1]);
-    }
-
-    if (!street && SUFFIX_REGEX.test(part)) {
-      const idx = part.search(SUFFIX_REGEX);
-      const m = part.match(SUFFIX_REGEX);
-      const endIdx = idx + m[0].length;
-      let candidate = part.slice(0, endIdx).replace(/^\d+[A-Z]?\s*,?\s*/, '').trim();
-      candidate = candidate.replace(/^(NORTH|SOUTH|EAST|WEST|UPPER|LOWER|OLD|NEW|GREAT|LITTLE)\s+/i, '');
-      if (candidate.length > 2) street = candidate;
-    }
+  if (match) {
+    const rawNum = match[1].toLowerCase();
+    const street = cleanStreet(match[2]);
+    const nums = expandNumberRange(rawNum);
+    return { houseNums: nums, street };
   }
 
-  return { houseNums, street };
+  const parts = clean.split(',').map(s => s.trim());
+  for (const part of parts) {
+    const numMatch = part.match(/^(\d+[a-z]?(?:\s*(?:to|-|\/)\s*\d+[a-z]?)?)\s+(.+)$/i);
+    if (numMatch) {
+      return { houseNums: expandNumberRange(numMatch[1]), street: cleanStreet(numMatch[2]) };
+    }
+  }
+  return { houseNums: [], street: null };
 }
 
 const getPropsStmt = db.prepare(`
-  SELECT id, property_address, postcode 
+  SELECT id, property_address, postcode, latitude, longitude
   FROM properties 
   WHERE postcode >= ? AND postcode <= ?
+    AND (precision_level IS NULL OR precision_level = 'ESTIMATED')
 `);
 
 const updatePrecisionStmt = db.prepare(`
   UPDATE properties 
-  SET precision_level = 'EXACT_OSM' 
+  SET latitude = ?, longitude = ?, precision_level = 'EXACT_OSM' 
   WHERE id = ?
 `);
 
@@ -99,7 +131,7 @@ for (let i = 0; i < cacheFiles.length; i++) {
   try {
     const raw = fs.readFileSync(filePath, 'utf8');
     const data = JSON.parse(raw);
-    elements = data.elements || [];
+    elements = Array.isArray(data) ? data : (data.elements || []);
   } catch (err) {
     continue;
   }
@@ -112,19 +144,18 @@ for (let i = 0; i < cacheFiles.length; i++) {
   for (const el of elements) {
     const lat = el.lat || (el.center && el.center.lat);
     const lon = el.lon || (el.center && el.center.lon);
-    if (!lat || !lon) continue;
+    if (!lat || !lon || !el.tags) continue;
 
-    const tags = el.tags || {};
-    const houseNum = tags['addr:housenumber'] ? tags['addr:housenumber'].toUpperCase().trim() : null;
-    const rawPc = tags['addr:postcode'];
-    const streetName = tags['addr:street'] ? tags['addr:street'].toUpperCase().trim() : null;
+    const rawHNum = el.tags['addr:housenumber'];
+    if (!rawHNum) continue;
 
-    if (houseNum && rawPc) {
-      const pc = cleanPostcode(rawPc);
-      postcodeHouseMap.set(`${pc}__${houseNum}`, { lat, lon });
-    }
-    if (houseNum && streetName) {
-      streetHouseMap.set(`${streetName}__${houseNum}`, { lat, lon });
+    const pc = cleanPostcode(el.tags['addr:postcode']);
+    const st = cleanStreet(el.tags['addr:street']);
+    const numCandidates = expandNumberRange(rawHNum);
+
+    for (const num of numCandidates) {
+      if (pc) postcodeHouseMap.set(`${pc}__${num}`, { lat, lon });
+      if (st) streetHouseMap.set(`${st}__${num}`, { lat, lon });
     }
   }
 
@@ -139,25 +170,25 @@ for (let i = 0; i < cacheFiles.length; i++) {
     const { houseNums, street } = parseLRAddress(prop.property_address);
     const pc = cleanPostcode(prop.postcode);
 
-    let matched = false;
+    let matchCoord = null;
     for (const num of houseNums) {
       if (pc && postcodeHouseMap.has(`${pc}__${num}`)) {
-        matched = true;
+        matchCoord = postcodeHouseMap.get(`${pc}__${num}`);
         break;
       }
     }
 
-    if (!matched && street) {
+    if (!matchCoord && street) {
       for (const num of houseNums) {
         if (streetHouseMap.has(`${street}__${num}`)) {
-          matched = true;
+          matchCoord = streetHouseMap.get(`${street}__${num}`);
           break;
         }
       }
     }
 
-    if (matched) {
-      updatePrecisionStmt.run(prop.id);
+    if (matchCoord) {
+      updatePrecisionStmt.run(matchCoord.lat, matchCoord.lon, prop.id);
       markedInOutcode++;
     }
   }
@@ -165,7 +196,7 @@ for (let i = 0; i < cacheFiles.length; i++) {
   db.exec('COMMIT;');
   totalMarked += markedInOutcode;
 
-  if ((i + 1) % 25 === 0 || i === cacheFiles.length - 1) {
+  if ((i + 1) % 15 === 0 || i === cacheFiles.length - 1) {
     console.log(`[Backfill ${i + 1}/${cacheFiles.length}] Outcode ${outcode}: marked ${markedInOutcode} (Total exact marked so far: ${totalMarked.toLocaleString()})`);
   }
 }
@@ -182,7 +213,7 @@ const summary = db.prepare(`
   GROUP BY level
 `).all();
 
-console.log('Updated Database Precision Distribution:');
+console.log('\nUpdated Database Precision Distribution:');
 summary.forEach(s => console.log(` - ${s.level}: ${Number(s.count).toLocaleString()}`));
 
 db.close();
