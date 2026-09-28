@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Vivid electric to royal blue gradient matching REAL Evolution brand identity -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4aa3ff"/>
+      <stop offset="40%" stop-color="#1e90ff"/>
+      <stop offset="100%" stop-color="#0055d4"/>
+    </linearGradient>
+
+    <!-- Crisp ambient drop shadow to give depth on light and dark backgrounds -->
+    <filter id="crispShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#crispShadow)">
+    <path d="M 33,248 
+             L 33,141 
+             L 128,35 
+             L 223,141 
+             L 223,248" 
+          stroke="url(#blueGrad)" 
+          stroke-width="54"
+          stroke-linecap="butt"
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+</svg>

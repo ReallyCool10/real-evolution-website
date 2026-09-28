@@ -1,0 +1,11 @@
+node_modules/
+dist/
+server/*.sqlite*
+server/*.json
+server/cache/
+.DS_Store
+*.log
+.env
+.env.local
+__MACOSX/
+._*

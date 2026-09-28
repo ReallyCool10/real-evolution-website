@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>REAL Intel - Commercial Land & Property Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=trans" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/cadastre-256.png?v=trans" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico?v=trans" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=trans" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html, body, #root {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #080a0f;
+        color: #f1f3f7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* MapLibre custom popup & control overrides for minimal modern look */
+      .maplibregl-popup-content {
+        background: rgba(10, 13, 20, 0.94) !important;
+        backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 8px !important;
+        padding: 10px 14px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+        color: #ffffff !important;
+      }
+      .maplibregl-popup-tip {
+        border-top-color: rgba(10, 13, 20, 0.94) !important;
+      }
+      .maplibregl-ctrl-attrib {
+        background: rgba(8, 10, 15, 0.7) !important;
+        color: rgba(255, 255, 255, 0.45) !important;
+        font-size: 10px !important;
+        border-top-left-radius: 6px;
+      }
+      .maplibregl-ctrl-attrib a {
+        color: rgba(255, 255, 255, 0.6) !important;
+      }
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
