@@ -527,6 +527,19 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                           ✓ OS UPRN
                         </span>
                       )}
+                      {p.precision_level === 'STREET_UPRN' && (
+                        <span style={{
+                          fontSize: '0.62rem',
+                          fontWeight: 600,
+                          color: '#38bdf8',
+                          background: 'rgba(56, 189, 248, 0.12)',
+                          padding: '2px 5px',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(56, 189, 248, 0.3)'
+                        }} title="Street-level physical building cluster match">
+                          ✓ Street (Cluster)
+                        </span>
+                      )}
                       {(!p.precision_level || p.precision_level === 'ESTIMATED') && (
                         <span style={{
                           fontSize: '0.62rem',

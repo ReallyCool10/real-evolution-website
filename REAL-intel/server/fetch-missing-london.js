@@ -7,41 +7,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
 const CACHE_DIR = path.join(__dirname, 'cache');
 
-console.log('=== REAL Intel: Fast Precision Level Backfill (Enhanced Address Parser) ===');
-
-if (!fs.existsSync(CACHE_DIR)) {
-  console.error('No cache directory found at:', CACHE_DIR);
-  process.exit(1);
-}
-
-const args = process.argv.slice(2);
-const areaArg = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toUpperCase();
-const outcodeArg = args.find(a => a.startsWith('--outcode='))?.split('=')[1]?.toUpperCase();
+if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode = WAL;');
 db.exec('PRAGMA synchronous = NORMAL;');
 db.exec('PRAGMA busy_timeout = 15000;');
 
-let cacheFiles = fs.readdirSync(CACHE_DIR).filter(f => f.startsWith('addresses_') && f.endsWith('.json'));
+const OVERPASS_MIRRORS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://lz4.overpass-api.de/api/interpreter',
+  'https://z.overpass-api.de/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+];
 
-if (outcodeArg) {
-  cacheFiles = cacheFiles.filter(f => f.toUpperCase() === `ADDRESSES_${outcodeArg}.JSON`);
-} else if (areaArg) {
-  if (areaArg === 'BS' || areaArg === 'BRISTOL') {
-    cacheFiles = cacheFiles.filter(f => f.toUpperCase().startsWith('ADDRESSES_BS'));
-  } else if (areaArg === 'LONDON') {
-    const londonPrefixes = ['E', 'EC', 'N', 'NW', 'SE', 'SW', 'W', 'WC'];
-    cacheFiles = cacheFiles.filter(f => {
-      const oc = f.replace('addresses_', '').replace('.json', '').toUpperCase();
-      return londonPrefixes.some(p => oc.startsWith(p));
-    });
-  }
+function cleanPostcode(pc) {
+  if (!pc) return '';
+  return pc.replace(/\s+/g, '').toUpperCase();
 }
-
-console.log(`Found ${cacheFiles.length} cached outcode files to evaluate.`);
-
-const cleanPostcode = (pc) => (pc ? pc.replace(/\s+/g, '').toUpperCase() : '');
 
 function cleanStreet(st) {
   if (!st) return '';
@@ -69,13 +53,8 @@ function cleanHouseNum(num) {
 function expandNumbers(rawStr) {
   if (!rawStr) return [];
   const str = rawStr.trim();
+  if (/^\d+[a-z]?$/i.test(str)) return [cleanHouseNum(str)];
 
-  // Single number (e.g. 12, 12a)
-  if (/^\d+[a-z]?$/i.test(str)) {
-    return [cleanHouseNum(str)];
-  }
-
-  // Range: 10-14, 10 to 14, 10/14
   const rangeMatch = str.match(/^(\d+)\s*(?:to|-|\/)\s*(\d+)$/i);
   if (rangeMatch) {
     const start = parseInt(rangeMatch[1], 10);
@@ -89,12 +68,8 @@ function expandNumbers(rawStr) {
     return [String(start), String(end)];
   }
 
-  // Multiple comma or "and" separated numbers: "16, 18, 20 and 22", "25 and 27"
   const allNums = str.match(/\b\d+[a-z]?\b/gi);
-  if (allNums && allNums.length > 0) {
-    return allNums.map(n => cleanHouseNum(n));
-  }
-
+  if (allNums && allNums.length > 0) return allNums.map(n => cleanHouseNum(n));
   return [cleanHouseNum(str)];
 }
 
@@ -110,10 +85,7 @@ function parseLRAddress(address) {
 
   const match = clean.match(ADDRESS_REGEX);
   if (match) {
-    const rawNum = match[1];
-    const street = cleanStreet(match[2]);
-    const nums = expandNumbers(rawNum);
-    return { houseNums: nums, street };
+    return { houseNums: expandNumbers(match[1]), street: cleanStreet(match[2]) };
   }
 
   const parts = clean.split(',').map(s => s.trim());
@@ -131,10 +103,15 @@ function parseLRAddress(address) {
   return { houseNums: [], street: null };
 }
 
-// Queries properties that are NOT currently EXACT_OSM (so ESTIMATED or EXACT_UPRN can be upgraded!)
+const getBoundsStmt = db.prepare(`
+  SELECT min(latitude) as minLat, max(latitude) as maxLat, min(longitude) as minLon, max(longitude) as maxLon
+  FROM properties
+  WHERE postcode >= ? AND postcode <= ? AND latitude IS NOT NULL
+`);
+
 const getPropsStmt = db.prepare(`
-  SELECT id, property_address, postcode, latitude, longitude
-  FROM properties 
+  SELECT id, property_address, postcode
+  FROM properties
   WHERE postcode >= ? AND postcode <= ?
     AND (precision_level IS NULL OR precision_level != 'EXACT_OSM')
 `);
@@ -150,6 +127,7 @@ const getStatsForOutcode = db.prepare(`
     COUNT(*) as total,
     SUM(CASE WHEN precision_level = 'EXACT_OSM' THEN 1 ELSE 0 END) as exact_osm,
     SUM(CASE WHEN precision_level = 'EXACT_UPRN' THEN 1 ELSE 0 END) as exact_uprn,
+    SUM(CASE WHEN precision_level = 'STREET_UPRN' THEN 1 ELSE 0 END) as street_uprn,
     SUM(CASE WHEN precision_level IS NULL OR precision_level = 'ESTIMATED' THEN 1 ELSE 0 END) as estimated
   FROM properties 
   WHERE postcode >= ? AND postcode <= ?
@@ -157,7 +135,7 @@ const getStatsForOutcode = db.prepare(`
 
 const upsertProgress = db.prepare(`
   INSERT INTO enrichment_progress (outcode, region, total_properties, matched_properties, match_percentage, status, last_updated)
-  VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+  VALUES (?, 'London', ?, ?, ?, 'COMPLETED', datetime('now'))
   ON CONFLICT(outcode) DO UPDATE SET
     total_properties = excluded.total_properties,
     matched_properties = excluded.matched_properties,
@@ -166,26 +144,70 @@ const upsertProgress = db.prepare(`
     last_updated = excluded.last_updated
 `);
 
-let totalMarked = 0;
-const t0 = Date.now();
-
-for (let i = 0; i < cacheFiles.length; i++) {
-  const file = cacheFiles[i];
-  const outcode = file.replace('addresses_', '').replace('.json', '');
-  const filePath = path.join(CACHE_DIR, file);
-
-  let elements = [];
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(raw);
-    elements = Array.isArray(data) ? data : (data.elements || []);
-  } catch (err) {
-    continue;
+async function fetchOutcodeNodes(outcode) {
+  const cacheFile = path.join(CACHE_DIR, `addresses_${outcode}.json`);
+  if (fs.existsSync(cacheFile)) {
+    try {
+      const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+      const els = Array.isArray(cached) ? cached : (cached.elements || []);
+      if (els.length > 0) return els;
+    } catch {}
   }
 
-  if (elements.length === 0) continue;
+  const lower = `${outcode} `;
+  const upper = `${outcode} ~`;
+  const b = getBoundsStmt.get(lower, upper);
+  if (!b || !b.minLat) return null;
 
-  // Build high-speed lookup maps
+  const minLat = (b.minLat - 0.003).toFixed(4);
+  const maxLat = (b.maxLat + 0.003).toFixed(4);
+  const minLon = (b.minLon - 0.003).toFixed(4);
+  const maxLon = (b.maxLon + 0.003).toFixed(4);
+
+  const query = `[out:json][timeout:40];(node["addr:housenumber"](${minLat},${minLon},${maxLat},${maxLon});way["addr:housenumber"](${minLat},${minLon},${maxLat},${maxLon}););out center;`;
+
+  for (const mirror of OVERPASS_MIRRORS) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 40000);
+      const res = await fetch(mirror, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'RealIntel-PrecisionRunner/2.0'
+        },
+        body: 'data=' + encodeURIComponent(query)
+      });
+      clearTimeout(timer);
+
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (!text.startsWith('{')) continue;
+
+      const json = JSON.parse(text);
+      if (Array.isArray(json.elements) && json.elements.length > 0) {
+        fs.writeFileSync(cacheFile, JSON.stringify(json.elements));
+        return json.elements;
+      }
+    } catch {
+      // try next mirror
+    }
+  }
+  return null;
+}
+
+export async function processOutcode(outcode) {
+  const lower = `${outcode} `;
+  const upper = `${outcode} ~`;
+
+  const elements = await fetchOutcodeNodes(outcode);
+  if (!elements || elements.length === 0) {
+    console.log(`[Overpass] ${outcode}: No nodes returned or mirrors throttled.`);
+    return 0;
+  }
+
+  // Build maps
   const exactMap = new Map();
   const streetNumMap = new Map();
 
@@ -199,31 +221,20 @@ for (let i = 0; i < cacheFiles.length; i++) {
     const street = cleanStreet(tags['addr:street']);
     const pc = cleanPostcode(tags['addr:postcode']);
 
-    if (num && street && pc) {
-      exactMap.set(`${pc}|${street}|${num}`, { lat, lon });
-    }
-    if (num && street) {
-      if (!streetNumMap.has(`${street}|${num}`)) {
-        streetNumMap.set(`${street}|${num}`, { lat, lon });
-      }
-    }
+    if (num && street && pc) exactMap.set(`${pc}|${street}|${num}`, { lat, lon });
+    if (num && street && !streetNumMap.has(`${street}|${num}`)) streetNumMap.set(`${street}|${num}`, { lat, lon });
   }
 
-  const lower = outcode + ' ';
-  const upper = outcode + ' ~';
   const props = getPropsStmt.all(lower, upper);
-  if (props.length === 0) continue;
+  let newlyUpgraded = 0;
 
-  let markedThisOutcode = 0;
   db.exec('BEGIN TRANSACTION;');
-
   for (const p of props) {
     const { houseNums, street } = parseLRAddress(p.property_address);
     if (!street || houseNums.length === 0) continue;
 
     const propPc = cleanPostcode(p.postcode);
     let coords = null;
-
     for (const num of houseNums) {
       if (propPc) {
         coords = exactMap.get(`${propPc}|${street}|${num}`);
@@ -235,41 +246,59 @@ for (let i = 0; i < cacheFiles.length; i++) {
 
     if (coords) {
       updatePrecisionStmt.run(coords.lat, coords.lon, p.id);
-      markedThisOutcode++;
-      totalMarked++;
+      newlyUpgraded++;
     }
   }
-
   db.exec('COMMIT;');
 
-  // Update progress record
-  const afterStats = getStatsForOutcode.get(lower, upper);
-  if (afterStats && afterStats.total > 0) {
-    const totalPrecision = (afterStats.exact_osm || 0) + (afterStats.exact_uprn || 0);
-    const precisionPct = Number(((totalPrecision / afterStats.total) * 100).toFixed(1));
-    const region = outcode.startsWith('BS') ? 'Bristol' : 'London';
-    upsertProgress.run(outcode, region, afterStats.total, totalPrecision, precisionPct, 'COMPLETED');
+  const s = getStatsForOutcode.get(lower, upper);
+  if (s && s.total > 0) {
+    const precisionCount = (s.exact_osm || 0) + (s.exact_uprn || 0) + (s.street_uprn || 0);
+    const pct = Number(((precisionCount / s.total) * 100).toFixed(1));
+    upsertProgress.run(outcode, s.total, precisionCount, pct);
   }
 
-  if ((i + 1) % 15 === 0 || i === cacheFiles.length - 1) {
-    console.log(`[Backfill ${i + 1}/${cacheFiles.length}] Outcode ${outcode}: newly marked ${markedThisOutcode} EXACT_OSM (Total newly upgraded so far: ${totalMarked.toLocaleString()})`);
+  console.log(`[Overpass Completed] Outcode ${outcode}: ${elements.length.toLocaleString()} OSM nodes fetched -> ${newlyUpgraded.toLocaleString()} newly upgraded to EXACT_OSM (Doorway)`);
+  return newlyUpgraded;
+}
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+const TARGET_OUTCODES = [
+  'NW10', 'E17',  'SW16', 'NW9',  'W5',   'E11',  'N9',   'SE9',
+  'E12',  'N19',  'SE19', 'SE17', 'SE20', 'E9',   'SE26', 'N3',
+  'N12',  'N18',  'SE4',  'SE3',  'SE14', 'W1T',  'W1U',  'NW5',
+  'N13',  'SE27', 'W1J',  'W13',  'N11',  'NW7',  'SE8',  'W7',
+  'N10',  'SE7',  'EC1A', 'EC2A', 'WC1X', 'WC1E', 'EC4N', 'WC2E',
+  'EC1B', 'EC2',  'EC3',  'EC4',  'WC1',  'WC2',  'SW1'
+];
+
+async function runBatch() {
+  console.log(`\nStarting polite batch fetch across ${TARGET_OUTCODES.length} London outcodes...`);
+  let grandTotal = 0;
+  for (let i = 0; i < TARGET_OUTCODES.length; i++) {
+    const oc = TARGET_OUTCODES[i];
+    console.log(`\n[${i + 1}/${TARGET_OUTCODES.length}] Fetching Overpass for ${oc}...`);
+    try {
+      const count = await processOutcode(oc);
+      grandTotal += count;
+    } catch (e) {
+      console.error(`Error processing ${oc}:`, e.message);
+    }
+    await sleep(2500);
   }
+  console.log(`\n=======================================================`);
+  console.log(`[All Complete] Upgraded ${grandTotal.toLocaleString()} properties to EXACT_OSM!`);
+  console.log(`=======================================================\n`);
+  db.close();
 }
 
-const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-console.log(`\n=======================================================`);
-console.log(`[Complete] Upgraded ${totalMarked.toLocaleString()} properties to EXACT_OSM in ${elapsed}s!`);
-console.log(`=======================================================\n`);
-
-const summary = db.prepare(`
-  SELECT COALESCE(precision_level, 'ESTIMATED') as level, count(*) as count 
-  FROM properties 
-  GROUP BY level
-`).all();
-
-console.log('Updated Database Precision Distribution:');
-for (const s of summary) {
-  console.log(` - ${s.level}: ${s.count.toLocaleString()}`);
+const arg = process.argv[2]?.toUpperCase();
+if (arg === '--ALL') {
+  runBatch();
+} else if (arg) {
+  processOutcode(arg).then(() => db.close());
+} else {
+  console.log('Usage: node server/fetch-missing-london.js <OUTCODE> | --all');
+  process.exit(0);
 }
-
-db.close();

@@ -94,6 +94,12 @@ function cleanPostcode(pc) {
 function cleanStreet(st) {
   if (!st) return '';
   return st.toLowerCase()
+    .replace(/\bst\.\s+/g, 'saint ')
+    .replace(/\bst\s+([a-z]+)/g, (m, name) => {
+      const saintNames = ['stephen', 'stephens', 'paul', 'pauls', 'peter', 'peters', 'nicholas', 'john', 'johns', 'mary', 'marys', 'george', 'georges', 'andrew', 'andrews', 'james', 'albans', 'giles', 'jude', 'judes', 'clements', 'thomas'];
+      if (saintNames.includes(name)) return 'saint ' + name;
+      return m;
+    })
     .replace(/\b(rd|st|ave|ln|dr|cres|pl|sq|ter|ct|bvd|blvd)\b/g, (m) => {
       const map = { rd: 'road', st: 'street', ave: 'avenue', ln: 'lane', dr: 'drive', cres: 'crescent', pl: 'place', sq: 'square', ter: 'terrace', ct: 'court', bvd: 'boulevard', blvd: 'boulevard' };
       return map[m] || m;
@@ -108,9 +114,16 @@ function cleanHouseNum(num) {
   return num.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
 }
 
-function expandNumberRange(rangeStr) {
-  if (!rangeStr) return [];
-  const str = rangeStr.trim();
+function expandNumberRange(rawStr) {
+  if (!rawStr) return [];
+  const str = rawStr.trim();
+
+  // Single number
+  if (/^\d+[a-z]?$/i.test(str)) {
+    return [cleanHouseNum(str)];
+  }
+
+  // Range: 10-14, 10 to 14, 10/14
   const rangeMatch = str.match(/^(\d+)\s*(?:to|-|\/)\s*(\d+)$/i);
   if (rangeMatch) {
     const start = parseInt(rangeMatch[1], 10);
@@ -118,15 +131,23 @@ function expandNumberRange(rangeStr) {
     if (!isNaN(start) && !isNaN(end) && end > start && end - start <= 20) {
       const step = ((end - start) % 2 === 0) ? 2 : 1;
       const list = [];
-      for (let n = start; n <= end; n += step) {
-        list.push(String(n));
-      }
+      for (let n = start; n <= end; n += step) list.push(String(n));
       return list;
     }
     return [String(start), String(end)];
   }
+
+  // Multiple comma or "and" separated numbers: "16, 18, 20 and 22", "25 and 27"
+  const allNums = str.match(/\b\d+[a-z]?\b/gi);
+  if (allNums && allNums.length > 0) {
+    return allNums.map(n => cleanHouseNum(n));
+  }
+
   return [cleanHouseNum(str)];
 }
+
+const SUFFIXES = 'road|rd|street|st|avenue|ave|lane|ln|drive|dr|close|gardens|crescent|cres|place|pl|square|sq|terrace|ter|court|ct|grove|mews|row|rise|parade|park|wharf|boulevard|bvd|blvd|gate|broadway|quay|circus|reach|meadow|mead|bank|corner|end|view|green|alley|highway|passage|approach|side|mall|buildings|mansions|chambers';
+const ADDRESS_REGEX = new RegExp(`(\\b\\d+[a-z]?(?:\\s*(?:to|-|\\/|&|and|,)\\s*\\d+[a-z]?)*)\\s+([A-Za-z\\s]+?\\b(?:${SUFFIXES}))\\b`, 'i');
 
 function parseLRAddress(address) {
   if (!address) return { houseNums: [], street: null };
@@ -138,12 +159,9 @@ function parseLRAddress(address) {
   clean = clean.replace(/^(?:(?:ground|first|second|third|fourth|fifth|top)\s+floor(?:\s+flat|\s+suite)?\s*,\s*)/i, '');
   clean = clean.replace(/^(?:(?:flat|unit|suite|room|apartment|part\s+of|floor)\s+[^,]+,\s*)+/i, '');
 
-  const streetSuffixes = 'Road|Street|Avenue|Lane|Way|Drive|Close|Gardens|Crescent|Place|Walk|Square|Hill|Terrace|Yard|Court|Grove|Mews|Row|Rise|Parade|Park|Wharf|Boulevard|Gate|Broadway|Quay|Circus|Reach|Meadow|Bank|Corner|End|View|Green|Alley|Highway|Passage|Approach|Rise|Side|Circus|Row|Mall|Buildings|Mansions|Chambers';
-
-  const match = clean.match(/(\b\d+[a-z]?(?:\s*(?:to|-|\/|&|and)\s*\d+[a-z]?)?)\s+([A-Za-z\s]+(?:${streetSuffixes}))\b/i);
-
+  const match = clean.match(ADDRESS_REGEX);
   if (match) {
-    const rawNum = match[1].toLowerCase();
+    const rawNum = match[1];
     const street = cleanStreet(match[2]);
     const nums = expandNumberRange(rawNum);
     return { houseNums: nums, street };
@@ -151,7 +169,11 @@ function parseLRAddress(address) {
 
   const parts = clean.split(',').map(s => s.trim());
   for (const part of parts) {
-    const numMatch = part.match(/^(\d+[a-z]?(?:\s*(?:to|-|\/)\s*\d+[a-z]?)?)\s+(.+)$/i);
+    const partMatch = part.match(ADDRESS_REGEX);
+    if (partMatch) {
+      return { houseNums: expandNumberRange(partMatch[1]), street: cleanStreet(partMatch[2]) };
+    }
+    const numMatch = part.match(/^(\d+[a-z]?(?:\s*(?:to|-|\/|&|and|,)\s*\d+[a-z]?)*)\s+(.+)$/i);
     if (numMatch) {
       return {
         houseNums: expandNumberRange(numMatch[1]),

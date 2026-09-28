@@ -17,7 +17,7 @@ export interface Property {
   dataset_type: 'CCOD' | 'OCOD';
   latitude: number;
   longitude: number;
-  precision_level?: 'EXACT_OSM' | 'EXACT_UPRN' | 'ESTIMATED';
+  precision_level?: 'EXACT_OSM' | 'EXACT_UPRN' | 'STREET_UPRN' | 'ESTIMATED';
   relatedProperties?: Property[];
 }
 
