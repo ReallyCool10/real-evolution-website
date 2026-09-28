@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Property, ProprietorSummary } from '../types';
 
-interface ProprietorPortfolioProps {
+export interface ProprietorPortfolioProps {
   proprietorName: string | null;
   onClose: () => void;
   onSelectProperty: (property: Property) => void;
+  onPinProperty?: (property: Property) => void;
+  selectedPropertyId?: number;
 }
 
 export const ProprietorPortfolio: React.FC<ProprietorPortfolioProps> = ({
   proprietorName,
   onClose,
-  onSelectProperty
+  onSelectProperty,
+  onPinProperty,
+  selectedPropertyId
 }) => {
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState<ProprietorSummary | null>(null);
@@ -305,40 +309,67 @@ export const ProprietorPortfolio: React.FC<ProprietorPortfolioProps> = ({
             const price = p.price_paid
               ? new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(p.price_paid)
               : null;
+            const isPinned = selectedPropertyId === p.id;
 
             return (
               <div
                 key={p.id}
-                onClick={() => onSelectProperty(p)}
+                onClick={() => {
+                  if (onPinProperty && p.latitude && p.longitude) {
+                    onPinProperty(p);
+                  } else {
+                    onSelectProperty(p);
+                  }
+                }}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  background: isPinned ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                  border: `1px solid ${isPinned ? 'rgba(16, 185, 129, 0.6)' : 'rgba(255, 255, 255, 0.06)'}`,
+                  boxShadow: isPinned ? '0 0 16px rgba(16, 185, 129, 0.2)' : 'none',
                   borderRadius: '8px',
                   padding: '10px 12px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
-                  e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.4)';
+                  if (!isPinned) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.07)';
+                    e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.4)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                  if (!isPinned) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                  }
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                  <span style={{
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '0.75rem',
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    padding: '2px 6px',
-                    borderRadius: '4px'
-                  }}>
-                    {p.title_number}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: '0.75rem',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      padding: '2px 6px',
+                      borderRadius: '4px'
+                    }}>
+                      {p.title_number}
+                    </span>
+                    {isPinned && (
+                      <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        color: '#10b981',
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)'
+                      }}>
+                        HIGHLIGHTED
+                      </span>
+                    )}
+                  </div>
                   <span style={{
                     fontSize: '0.65rem',
                     textTransform: 'uppercase',
@@ -366,21 +397,75 @@ export const ProprietorPortfolio: React.FC<ProprietorPortfolioProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginTop: '6px',
+                  marginTop: '8px',
+                  paddingTop: '6px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.04)',
                   fontSize: '0.72rem',
                   color: 'rgba(255, 255, 255, 0.45)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {p.latitude && p.longitude ? (
-                      <span style={{ color: '#06b6d4', fontSize: '0.7rem', fontWeight: 500 }}>📍 Fly to Map</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onPinProperty) {
+                            onPinProperty(p);
+                          } else {
+                            onSelectProperty(p);
+                          }
+                        }}
+                        style={{
+                          background: isPinned ? 'rgba(16, 185, 129, 0.25)' : 'rgba(16, 185, 129, 0.12)',
+                          border: `1px solid ${isPinned ? '#10b981' : 'rgba(16, 185, 129, 0.35)'}`,
+                          color: isPinned ? '#34d399' : '#10b981',
+                          padding: '3px 8px',
+                          borderRadius: '5px',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={isPinned ? 'Currently pinned and highlighted on map with green ring' : 'Pin and highlight on map with green ring'}
+                      >
+                        <span>📍</span>
+                        <span>{isPinned ? 'Pinned on Map' : 'Pin on Map'}</span>
+                      </button>
                     ) : (
                       <span style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '0.7rem' }}>📄 Record</span>
                     )}
                     <span>{p.district ? `${p.district} · ` : ''}{p.postcode}</span>
                   </div>
-                  {price && (
-                    <span style={{ color: 'hsl(46, 65%, 52%)', fontWeight: 600 }}>{price}</span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {price && (
+                      <span style={{ color: 'hsl(46, 65%, 52%)', fontWeight: 600 }}>{price}</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectProperty(p);
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#06b6d4',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: '2px 4px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px'
+                      }}
+                      title="Open detailed property inspector"
+                    >
+                      Details ↗
+                    </button>
+                  </div>
                 </div>
               </div>
             );

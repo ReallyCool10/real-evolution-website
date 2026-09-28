@@ -115,10 +115,10 @@ export const App: React.FC = () => {
           setShowUserPanel(false);
         } else if (showSettingsModal) {
           setShowSettingsModal(false);
-        } else if (selectedProperty) {
-          setSelectedProperty(null);
         } else if (selectedProprietor) {
           setSelectedProprietor(null);
+        } else if (selectedProperty) {
+          setSelectedProperty(null);
         }
       }
     };
@@ -128,8 +128,11 @@ export const App: React.FC = () => {
 
   const handleSelectProperty = (prop: Property | null) => {
     setSelectedProperty(prop);
-    if (prop && prop.latitude && prop.longitude) {
-      setFlyToTarget({ lat: prop.latitude, lon: prop.longitude });
+    if (prop) {
+      setSelectedProprietor(null);
+      if (prop.latitude && prop.longitude) {
+        setFlyToTarget({ lat: prop.latitude, lon: prop.longitude });
+      }
     }
   };
 
@@ -138,6 +141,13 @@ export const App: React.FC = () => {
     // If opening portfolio, close property inspector so they don't overlap
     if (name) {
       setSelectedProperty(null);
+    }
+  };
+
+  const handlePinProperty = (prop: Property) => {
+    setSelectedProperty(prop);
+    if (prop.latitude && prop.longitude) {
+      setFlyToTarget({ lat: prop.latitude, lon: prop.longitude });
     }
   };
 
@@ -327,13 +337,15 @@ export const App: React.FC = () => {
 
       {/* Side Property Inspector Panel (From Right) */}
       <ErrorBoundary fallbackTitle="Property Details Error" onReset={() => setSelectedProperty(null)}>
-        <PropertyInspector
-          property={selectedProperty}
-          onClose={() => setSelectedProperty(null)}
-          onSelectProprietor={handleSelectProprietor}
-          isSaved={isPropertySaved}
-          onToggleSave={handleToggleSaveProperty}
-        />
+        {!selectedProprietor && (
+          <PropertyInspector
+            property={selectedProperty}
+            onClose={() => setSelectedProperty(null)}
+            onSelectProprietor={handleSelectProprietor}
+            isSaved={isPropertySaved}
+            onToggleSave={handleToggleSaveProperty}
+          />
+        )}
       </ErrorBoundary>
 
       {/* Side Proprietor Portfolio Panel (From Right) */}
@@ -342,6 +354,8 @@ export const App: React.FC = () => {
           proprietorName={selectedProprietor}
           onClose={() => setSelectedProprietor(null)}
           onSelectProperty={handleSelectPortfolioAsset}
+          onPinProperty={handlePinProperty}
+          selectedPropertyId={selectedProperty?.id}
         />
       </ErrorBoundary>
 

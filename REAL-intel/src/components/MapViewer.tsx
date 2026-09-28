@@ -94,18 +94,101 @@ export function extractBuildingKey(address?: string, postcode?: string): string 
   return `${(postcode || '').trim().toLowerCase()}__${noPostcode.toLowerCase().slice(0, 35)}`;
 }
 
+function ensureMarkerStyles() {
+  const styleId = 'cadastre-selected-marker-styles';
+  if (typeof document === 'undefined' || document.getElementById(styleId)) return;
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    @keyframes cadastrePulseRing {
+      0% {
+        transform: scale(0.6);
+        opacity: 0.95;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 0.45;
+      }
+      100% {
+        transform: scale(2.1);
+        opacity: 0;
+      }
+    }
+    @keyframes cadastreInnerGlow {
+      0%, 100% {
+        box-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.5), inset 0 0 8px rgba(16, 185, 129, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 16px #10b981, 0 0 28px rgba(16, 185, 129, 0.8), inset 0 0 12px rgba(16, 185, 129, 0.6);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function createSelectedMarkerElement(): HTMLElement {
+  ensureMarkerStyles();
+  const container = document.createElement('div');
+  container.className = 'cadastre-selected-marker';
+  container.style.width = '36px';
+  container.style.height = '36px';
+  container.style.position = 'relative';
+  container.style.pointerEvents = 'none';
+  container.style.display = 'flex';
+  container.style.alignItems = 'center';
+  container.style.justifyContent = 'center';
+
+  // 1. Radar Shockwave Pulse Ring (Fades outward)
+  const pulseRing = document.createElement('div');
+  pulseRing.style.position = 'absolute';
+  pulseRing.style.width = '100%';
+  pulseRing.style.height = '100%';
+  pulseRing.style.borderRadius = '50%';
+  pulseRing.style.border = '2px solid #10b981';
+  pulseRing.style.background = 'rgba(16, 185, 129, 0.2)';
+  pulseRing.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.8), inset 0 0 10px rgba(16, 185, 129, 0.4)';
+  pulseRing.style.animation = 'cadastrePulseRing 1.8s cubic-bezier(0.25, 1, 0.5, 1) infinite';
+
+  // 2. Solid High-Contrast Emerald Ring
+  const solidRing = document.createElement('div');
+  solidRing.style.position = 'absolute';
+  solidRing.style.width = '24px';
+  solidRing.style.height = '24px';
+  solidRing.style.borderRadius = '50%';
+  solidRing.style.border = '3px solid #10b981';
+  solidRing.style.background = 'rgba(16, 185, 129, 0.15)';
+  solidRing.style.animation = 'cadastreInnerGlow 2s ease-in-out infinite';
+
+  // 3. Pinpoint Center Reticle Dot
+  const centerDot = document.createElement('div');
+  centerDot.style.position = 'relative';
+  centerDot.style.width = '6px';
+  centerDot.style.height = '6px';
+  centerDot.style.borderRadius = '50%';
+  centerDot.style.background = '#ffffff';
+  centerDot.style.boxShadow = '0 0 6px #ffffff, 0 0 10px #10b981';
+  centerDot.style.zIndex = '2';
+
+  container.appendChild(pulseRing);
+  container.appendChild(solidRing);
+  container.appendChild(centerDot);
+
+  return container;
+}
+
 export const MapViewer: React.FC<MapViewerProps> = ({
   basemap,
   mapboxToken,
   showBoundaries,
   filter,
-  selectedProperty: _selectedProperty,
+  selectedProperty,
   onSelectProperty,
   onZoomChange,
   flyToTarget
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
+  const selectedMarkerRef = useRef<maplibregl.Marker | null>(null);
   const activeBasemapRef = useRef<BasemapStyle>(basemap);
   const activeTokenRef = useRef<string | undefined>(mapboxToken);
   const propertiesDataRef = useRef<Property[]>([]);
@@ -278,7 +361,30 @@ export const MapViewer: React.FC<MapViewerProps> = ({
         console.warn('Could not add osm-housenumber-labels layer:', err);
       }
     }
-  }, [mapboxToken, basemap]);
+
+    // Tier 3: Selected Property Vector Ring (Emerald Green Ring)
+    if (!map.getLayer('selected-property-vector-ring')) {
+      map.addLayer({
+        id: 'selected-property-vector-ring',
+        type: 'circle',
+        source: 'properties-source',
+        filter: ['all', ['!=', ['get', 'is_cluster'], true], ['==', ['get', 'id'], selectedProperty?.id ?? -1]],
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            15, 14,
+            17, 18,
+            19, 25
+          ],
+          'circle-color': 'rgba(16, 185, 129, 0.15)',
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#10b981'
+        }
+      });
+    }
+  }, [mapboxToken, basemap, selectedProperty]);
 
   // Viewport property fetcher with Tiered Level of Detail (LOD)
   const fetchViewportProperties = useCallback(() => {
@@ -547,6 +653,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
 
     map.on('click', 'unclustered-point', handleMicroClick);
     map.on('click', 'unclustered-point-label', handleMicroClick);
+    map.on('click', 'selected-property-vector-ring', handleMicroClick);
 
     // Hover tooltip for individual properties
     popupRef.current = new Popup({
@@ -614,10 +721,13 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     const handleStyleLoad = () => {
       setupLayers(map);
       fetchViewportProperties();
+      if (selectedProperty && typeof selectedProperty.latitude === 'number' && typeof selectedProperty.longitude === 'number' && selectedMarkerRef.current) {
+        selectedMarkerRef.current.addTo(map);
+      }
     };
 
     map.once('style.load', handleStyleLoad);
-  }, [basemap, mapboxToken, setupLayers, fetchViewportProperties]);
+  }, [basemap, mapboxToken, setupLayers, fetchViewportProperties, selectedProperty]);
 
   // Toggle Boundaries Visibility
   useEffect(() => {
@@ -657,6 +767,54 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       essential: true
     });
   }, [flyToTarget]);
+
+  // Selected Property Highlight Marker (Pulsating Emerald Green Ring)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Update vector layer filter if style is loaded
+    if (map.isStyleLoaded() && map.getLayer('selected-property-vector-ring')) {
+      try {
+        map.setFilter('selected-property-vector-ring', [
+          'all',
+          ['!=', ['get', 'is_cluster'], true],
+          ['==', ['get', 'id'], selectedProperty?.id ?? -1]
+        ]);
+      } catch (err) {
+        console.warn('Could not update selected-property-vector-ring filter:', err);
+      }
+    }
+
+    if (selectedProperty && typeof selectedProperty.latitude === 'number' && typeof selectedProperty.longitude === 'number') {
+      const coords: [number, number] = [selectedProperty.longitude, selectedProperty.latitude];
+      if (!selectedMarkerRef.current) {
+        const el = createSelectedMarkerElement();
+        selectedMarkerRef.current = new maplibregl.Marker({
+          element: el,
+          anchor: 'center'
+        }).setLngLat(coords).addTo(map);
+      } else {
+        selectedMarkerRef.current.setLngLat(coords);
+        selectedMarkerRef.current.addTo(map);
+      }
+    } else {
+      if (selectedMarkerRef.current) {
+        selectedMarkerRef.current.remove();
+        selectedMarkerRef.current = null;
+      }
+    }
+  }, [selectedProperty]);
+
+  // Clean up marker on unmount
+  useEffect(() => {
+    return () => {
+      if (selectedMarkerRef.current) {
+        selectedMarkerRef.current.remove();
+        selectedMarkerRef.current = null;
+      }
+    };
+  }, []);
 
   return <div ref={mapContainerRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />;
 };
