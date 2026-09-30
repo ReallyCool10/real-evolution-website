@@ -7,10 +7,16 @@
     "server": "node server/server.js",
     "ingest": "node server/ingest.js",
     "ingest:all": "node server/ingest.js --ccod-limit=1000000",
+    "ingest:full": "node server/ingest-full.js",
+    "geocode": "node server/apply-exact-postcodes.js",
+    "summaries": "node server/build-outcodes.js && node server/build-proprietor-summary.js",
+    "download:uprn": "node server/download-nsul.js",
+    "ingest:uprn": "node server/ingest-nsul.js",
     "client": "vite",
     "dev": "node dev.js",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test \"server/**/*.test.js\""
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",

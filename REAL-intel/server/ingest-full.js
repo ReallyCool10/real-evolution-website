@@ -1,17 +1,26 @@
+// Full CCOD + OCOD ingest into a fresh staging database (cadastre_staging.sqlite) with the
+// complete schema, summaries, and reference data carried over from the live database. When
+// it finishes, stop the server and replace cadastre.sqlite with the staging file.
 import fs from 'node:fs';
-import path from 'node:path';
 import readline from 'node:readline';
 import { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
 import { parseCsvLine } from './csvParser.js';
+import { openDatabase } from './connection.js';
+import { DB_PATH, STAGING_DB_PATH, dataPath } from './paths.js';
+import { createBaseTables, migrate } from './schema.js';
+import { rebuildLodSummaries, rebuildProprietorSummary } from './summaries.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, '../../../DATA');
-const OCOD_PATH = path.join(DATA_DIR, 'OCOD_FULL_2026_09', 'OCOD_FULL_2026_09.csv');
-const CCOD_PATH = path.join(DATA_DIR, 'CCOD_FULL_2026_09', 'CCOD_FULL_2026_09.csv');
+const OCOD_PATH = dataPath('OCOD_FULL_2026_09', 'OCOD_FULL_2026_09.csv');
+const CCOD_PATH = dataPath('CCOD_FULL_2026_09', 'CCOD_FULL_2026_09.csv');
 
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
-const STAGING_DB_PATH = path.join(__dirname, 'cadastre_staging.sqlite');
+// Reference data that a re-ingest must not lose: the user's saved workspace, and the UPRN
+// and OSM address lookups, which take hours to download and rebuild. enrichment_progress is
+// deliberately not carried over: property IDs and precision are reset by a fresh ingest.
+const CARRY_OVER = {
+  user_workspace: 'key, value, updated_at',
+  uprn_lookup: 'uprn, postcode, latitude, longitude',
+  address_points: 'id, postcode, house_number, street, latitude, longitude',
+};
 
 // Remove any existing staging file from previous attempts
 if (fs.existsSync(STAGING_DB_PATH)) {
@@ -23,47 +32,13 @@ console.log(`Target Staging DB: ${STAGING_DB_PATH}`);
 console.log(`CCOD Source: ${CCOD_PATH}`);
 console.log(`OCOD Source: ${OCOD_PATH}`);
 
-const db = new DatabaseSync(STAGING_DB_PATH);
-
-// Maximum throughput PRAGMAs for bulk load
-db.exec(`
-  PRAGMA synchronous = OFF;
-  PRAGMA journal_mode = OFF;
-  PRAGMA cache_size = -128000;
-  PRAGMA temp_store = MEMORY;
-  PRAGMA locking_mode = EXCLUSIVE;
-
-  CREATE TABLE postcodes (
-    postcode TEXT PRIMARY KEY,
-    latitude REAL NOT NULL,
-    longitude REAL NOT NULL
-  );
-
-  CREATE TABLE properties (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title_number TEXT,
-    tenure TEXT,
-    property_address TEXT,
-    district TEXT,
-    county TEXT,
-    region TEXT,
-    postcode TEXT,
-    price_paid REAL,
-    proprietor_name TEXT,
-    company_reg_no TEXT,
-    proprietorship_category TEXT,
-    country_incorporated TEXT,
-    proprietor_address TEXT,
-    date_added TEXT,
-    dataset_type TEXT,
-    latitude REAL,
-    longitude REAL
-  );
-`);
+// Bulk settings, tables only: indexes are built once after loading, which is far faster.
+const db = openDatabase({ path: STAGING_DB_PATH, bulk: true });
+createBaseTables(db);
 
 // Seed postcodes from existing database or download
 console.log('[Postcodes] Seeding UK postcode centroids...');
-const existingDb = fs.existsSync(DB_PATH) ? new DatabaseSync(DB_PATH) : null;
+const existingDb = fs.existsSync(DB_PATH) ? new DatabaseSync(DB_PATH, { readOnly: true }) : null;
 const postcodeMap = new Map();
 
 if (existingDb) {
@@ -310,22 +285,36 @@ async function streamCcod() {
   console.log(`[CCOD] Completed in ${elapsed}s: ${total.toLocaleString()} rows (${geocoded.toLocaleString()} geocoded).`);
 }
 
+function carryOverReferenceData() {
+  if (!fs.existsSync(DB_PATH)) return;
+  db.prepare('ATTACH DATABASE ? AS live').run(DB_PATH);
+  for (const [table, columns] of Object.entries(CARRY_OVER)) {
+    const exists = db.prepare("SELECT 1 FROM live.sqlite_master WHERE type = 'table' AND name = ?").get(table);
+    if (!exists) continue;
+    db.exec(`INSERT INTO main.${table} (${columns}) SELECT ${columns} FROM live.${table}`);
+    const count = db.prepare(`SELECT COUNT(*) AS c FROM main.${table}`).get().c;
+    console.log(`[Carry-over] ${table}: ${count.toLocaleString()} rows kept from the live database.`);
+  }
+  db.exec('DETACH DATABASE live');
+}
+
 async function main() {
   const overallStart = Date.now();
 
   await streamOcod();
   await streamCcod();
 
-  console.log('[Indexing] Building high-performance spatial and search indexes...');
+  carryOverReferenceData();
+
+  console.log('[Schema] Building indexes and bringing the schema up to date...');
   const indexStart = Date.now();
-  db.exec(`
-    CREATE INDEX idx_properties_coords ON properties(latitude, longitude);
-    CREATE INDEX idx_properties_postcode ON properties(postcode);
-    CREATE INDEX idx_properties_title ON properties(title_number);
-    CREATE INDEX idx_properties_type ON properties(dataset_type);
-    CREATE INDEX idx_properties_tenure ON properties(tenure);
-  `);
-  console.log(`[Indexing] Indexes built in ${((Date.now() - indexStart) / 1000).toFixed(1)}s.`);
+  migrate(db);
+  console.log(`[Schema] Done in ${((Date.now() - indexStart) / 1000).toFixed(1)}s.`);
+
+  console.log('[Summaries] Building map and proprietor summaries...');
+  const lod = rebuildLodSummaries(db);
+  const proprietors = rebuildProprietorSummary(db);
+  console.log(`[Summaries] ${lod.outcodes} outcodes, ${lod.sectors} sectors, ${proprietors} proprietors.`);
 
   console.log('[Optimization] Finalizing WAL mode and database statistics...');
   db.exec(`
@@ -352,7 +341,8 @@ async function main() {
   console.log(`Final Database Size: ${finalSizeMb} MB`);
   console.log(`Total Ingestion Time: ${((Date.now() - overallStart) / 1000 / 60).toFixed(2)} minutes.`);
 
-  console.log('[Swap] Ready for atomic database activation.');
+  console.log('[Swap] Staging database is complete. To activate it: stop the server, then replace');
+  console.log(`       ${DB_PATH} with ${STAGING_DB_PATH} (delete any cadastre.sqlite-wal/-shm too).`);
 }
 
 main().catch(err => {

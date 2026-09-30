@@ -1,9 +1,8 @@
-import { DatabaseSync } from 'node:sqlite';
+import { openDatabase } from './connection.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
 import { discoverOutcodesForArea } from './automated-runner.js';
 
 console.log('=== REAL Intel: OS Open UPRN Precision Matcher (Pass 2) ===');
@@ -13,10 +12,7 @@ const outcodeArg = args.find(a => a.startsWith('--outcode='))?.split('=')[1]?.to
 const areaArg = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toUpperCase();
 const showStatus = args.includes('--status');
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA busy_timeout = 15000;');
+const db = openDatabase();
 
 // Prepared queries
 const getUprnsByPostcode = db.prepare(`

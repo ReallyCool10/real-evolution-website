@@ -1,51 +1,8 @@
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+// Query and write helpers used by the API server and the small ingest script.
+// Schema lives in schema.js; connection settings and migrations in connection.js.
+import { openDatabase } from './connection.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
-const db = new DatabaseSync(DB_PATH);
-
-// Enable WAL mode for high concurrency & speed
-db.exec(`
-  PRAGMA journal_mode = WAL;
-  PRAGMA synchronous = NORMAL;
-  PRAGMA busy_timeout = 10000;
-  PRAGMA cache_size = -64000;
-
-  CREATE TABLE IF NOT EXISTS postcodes (
-    postcode TEXT PRIMARY KEY,
-    latitude REAL NOT NULL,
-    longitude REAL NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS properties (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title_number TEXT,
-    tenure TEXT,
-    property_address TEXT,
-    district TEXT,
-    county TEXT,
-    region TEXT,
-    postcode TEXT,
-    price_paid REAL,
-    proprietor_name TEXT,
-    company_reg_no TEXT,
-    proprietorship_category TEXT,
-    country_incorporated TEXT,
-    proprietor_address TEXT,
-    date_added TEXT,
-    dataset_type TEXT,
-    latitude REAL,
-    longitude REAL
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_properties_coords ON properties(latitude, longitude);
-  CREATE INDEX IF NOT EXISTS idx_properties_postcode ON properties(postcode);
-  CREATE INDEX IF NOT EXISTS idx_properties_title ON properties(title_number);
-  CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(dataset_type);
-  CREATE INDEX IF NOT EXISTS idx_properties_tenure ON properties(tenure);
-`);
+const db = openDatabase();
 
 const stmtInsertPostcode = db.prepare(`
   INSERT OR REPLACE INTO postcodes (postcode, latitude, longitude)
@@ -400,13 +357,6 @@ export function getEnrichmentSummary() {
 }
 
 // User Workspace Persistence
-db.exec(`
-  CREATE TABLE IF NOT EXISTS user_workspace (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  );
-`);
 
 export function getWorkspaceState() {
   try {

@@ -15,44 +15,19 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { DatabaseSync } from 'node:sqlite';
+import { openDatabase } from './connection.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CACHE_DIR = path.join(__dirname, 'cache');
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
 
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 15000;');
+const db = openDatabase();
 
-// 1. Initialize Tables for Tracking & Address Points
-db.exec(`
-  CREATE TABLE IF NOT EXISTS enrichment_progress (
-    outcode TEXT PRIMARY KEY,
-    region TEXT,
-    total_properties INTEGER,
-    matched_properties INTEGER,
-    match_percentage REAL,
-    status TEXT, -- 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED'
-    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS address_points (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    postcode TEXT,
-    house_number TEXT,
-    street TEXT,
-    latitude REAL,
-    longitude REAL
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_addr_postcode_num ON address_points(postcode, house_number);
-  CREATE INDEX IF NOT EXISTS idx_addr_street_num ON address_points(street, house_number);
-`);
+// enrichment_progress and address_points are defined in schema.js.
 
 const getOutcodeProgress = db.prepare('SELECT * FROM enrichment_progress WHERE outcode = ?');
 const upsertProgress = db.prepare(`

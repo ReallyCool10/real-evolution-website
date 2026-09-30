@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import readline from 'node:readline';
 import https from 'node:https';
 import { fileURLToPath } from 'node:url';
@@ -11,11 +10,11 @@ import {
   getStats,
   db
 } from './db.js';
+import { dataPath } from './paths.js';
+import { rebuildLodSummaries, rebuildProprietorSummary } from './summaries.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, '../../../DATA');
-const OCOD_PATH = path.join(DATA_DIR, 'OCOD_FULL_2026_09', 'OCOD_FULL_2026_09.csv');
-const CCOD_PATH = path.join(DATA_DIR, 'CCOD_FULL_2026_09', 'CCOD_FULL_2026_09.csv');
+const OCOD_PATH = dataPath('OCOD_FULL_2026_09', 'OCOD_FULL_2026_09.csv');
+const CCOD_PATH = dataPath('CCOD_FULL_2026_09', 'CCOD_FULL_2026_09.csv');
 
 // Download and seed UK Outcodes (e.g. SW1, M1, BN21, LS1...) for 100% UK geographical coverage
 export async function seedOutcodes() {
@@ -231,6 +230,11 @@ async function run() {
   await seedOutcodes();
   await ingestOcod();
   await ingestCcod(ccodLimit);
+
+  // The map and search read from these; without them a fresh database shows nothing.
+  console.log('[Summaries] Building map and proprietor summaries...');
+  const lod = rebuildLodSummaries(db);
+  console.log(`[Summaries] ${lod.outcodes} outcodes, ${lod.sectors} sectors, ${rebuildProprietorSummary(db)} proprietors.`);
 
   console.log('=== Database Summary ===');
   console.log(getStats());

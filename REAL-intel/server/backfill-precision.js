@@ -1,10 +1,9 @@
-import { DatabaseSync } from 'node:sqlite';
+import { openDatabase } from './connection.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
 const CACHE_DIR = path.join(__dirname, 'cache');
 
 console.log('=== REAL Intel: Fast Precision Level Backfill (Enhanced Address Parser) ===');
@@ -18,10 +17,7 @@ const args = process.argv.slice(2);
 const areaArg = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toUpperCase();
 const outcodeArg = args.find(a => a.startsWith('--outcode='))?.split('=')[1]?.toUpperCase();
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA busy_timeout = 15000;');
+const db = openDatabase();
 
 let cacheFiles = fs.readdirSync(CACHE_DIR).filter(f => f.startsWith('addresses_') && f.endsWith('.json'));
 

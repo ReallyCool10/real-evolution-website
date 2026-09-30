@@ -1,10 +1,9 @@
-import { DatabaseSync } from 'node:sqlite';
+import { openDatabase } from './connection.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
 const CACHE_DIR = path.join(__dirname, 'cache');
 
 console.log('=== REAL Intel: Pass 3 Street-Cluster Matcher (Retired/Corporate Postcodes) ===');
@@ -13,10 +12,7 @@ const args = process.argv.slice(2);
 const areaArg = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toUpperCase();
 const outcodeArg = args.find(a => a.startsWith('--outcode='))?.split('=')[1]?.toUpperCase();
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA busy_timeout = 15000;');
+const db = openDatabase();
 
 const SUFFIXES = 'road|rd|street|st|avenue|ave|lane|ln|drive|dr|close|gardens|crescent|cres|place|pl|square|sq|terrace|ter|court|ct|grove|mews|row|rise|parade|park|wharf|boulevard|bvd|blvd|gate|broadway|quay|circus|reach|meadow|mead|bank|corner|end|view|green|alley|highway|passage|approach|side|mall|buildings|mansions|chambers';
 

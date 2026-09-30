@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dataPath } from './paths.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, '../../../DATA/NSUL');
+const DATA_DIR = dataPath('NSUL');
 const ZIP_PATH = path.join(DATA_DIR, 'NSUL_E127_JUN_2026.zip');
 const NSUL_URL = 'https://www.arcgis.com/sharing/rest/content/items/e5c9409787b344dea64488d70fb0990a/data';
 

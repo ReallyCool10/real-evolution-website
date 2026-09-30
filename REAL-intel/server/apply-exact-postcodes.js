@@ -1,12 +1,12 @@
+// Geocodes every not-yet-enriched property to its unit postcode centroid, falling back to the
+// outcode centroid, then rebuilds the map summaries. Needs DATA/ukpostcodes.csv.
 import fs from 'node:fs';
-import path from 'node:path';
 import readline from 'node:readline';
-import { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
+import { openDatabase } from './connection.js';
+import { DB_PATH, dataPath } from './paths.js';
+import { rebuildLodSummaries } from './summaries.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
-const POSTCODES_CSV = 'C:/Dev/real-evolution-website/DATA/ukpostcodes.csv';
+const POSTCODES_CSV = dataPath('ukpostcodes.csv');
 
 if (!fs.existsSync(POSTCODES_CSV)) {
   console.error(`Error: ${POSTCODES_CSV} not found!`);
@@ -67,25 +67,14 @@ for (const [code, val] of outcodeSums.entries()) {
 }
 console.log(`Generated ${outcodeMap.size.toLocaleString()} outcode fallback centroids.`);
 
-// 2. Open SQLite Database with high-performance PRAGMAs
-const db = new DatabaseSync(DB_PATH);
-db.exec(`
-  PRAGMA synchronous = OFF;
-  PRAGMA journal_mode = WAL;
-  PRAGMA cache_size = -128000;
-  PRAGMA temp_store = MEMORY;
-`);
+// 2. Open the database. Keeps the shared WAL/NORMAL durability settings: this runs against
+// the live database, so disabling syncs could corrupt it on a crash or power cut.
+const db = openDatabase();
+db.exec('PRAGMA cache_size = -128000; PRAGMA temp_store = MEMORY;');
 
 // 3. Populate postcodes table with exact unit postcodes
 console.log('Seeding SQLite postcodes table with full UK unit postcodes...');
-db.exec('DROP TABLE IF EXISTS postcodes;');
-db.exec(`
-  CREATE TABLE postcodes (
-    postcode TEXT PRIMARY KEY,
-    latitude REAL NOT NULL,
-    longitude REAL NOT NULL
-  );
-`);
+db.exec('DELETE FROM postcodes;');
 
 const stmtInsertPc = db.prepare('INSERT INTO postcodes (postcode, latitude, longitude) VALUES (?, ?, ?)');
 db.exec('BEGIN TRANSACTION;');
@@ -105,12 +94,19 @@ console.log(`Seeded ${pcCount.toLocaleString()} postcodes in SQLite.`);
 console.log('Updating all properties with exact address coordinates...');
 const tUpdate = Date.now();
 
-// Query only properties with postcodes
+// Only properties still on estimated coordinates. Rows an enrichment pass has matched to an
+// exact address (EXACT_OSM, EXACT_UPRN) or street (STREET_UPRN) keep their better position;
+// overwriting them here would leave precision_level claiming an accuracy the row no longer has.
 const selectStmt = db.prepare(`
   SELECT id, postcode, title_number
   FROM properties
   WHERE postcode IS NOT NULL AND postcode != ''
+    AND (precision_level IS NULL OR precision_level = 'ESTIMATED')
 `);
+const enrichedCount = db
+  .prepare("SELECT COUNT(*) AS c FROM properties WHERE precision_level IS NOT NULL AND precision_level != 'ESTIMATED'")
+  .get().c;
+console.log(`Keeping ${enrichedCount.toLocaleString()} enriched properties at their matched coordinates.`);
 
 const updateStmt = db.prepare('UPDATE properties SET latitude = ?, longitude = ? WHERE id = ?');
 
@@ -165,59 +161,13 @@ console.log(`  - Unmatched / Rural Land: ${unmatched.toLocaleString()}`);
 console.log('\nRebuilding LOD summary tables (outcode_summary & sector_summary)...');
 const tLod = Date.now();
 
-db.exec(`
-  DROP TABLE IF EXISTS outcode_summary;
-  CREATE TABLE outcode_summary AS
-  SELECT 
-    TRIM(SUBSTR(postcode, 1, INSTR(postcode || ' ', ' ') - 1)) AS outcode,
-    COUNT(*) AS total_count,
-    SUM(CASE WHEN dataset_type = 'CCOD' THEN 1 ELSE 0 END) AS ccod_count,
-    SUM(CASE WHEN dataset_type = 'OCOD' THEN 1 ELSE 0 END) AS ocod_count,
-    ROUND(AVG(price_paid)) AS avg_price,
-    ROUND(AVG(latitude), 5) AS latitude,
-    ROUND(AVG(longitude), 5) AS longitude
-  FROM properties
-  WHERE latitude IS NOT NULL
-    AND postcode IS NOT NULL
-    AND postcode != ''
-  GROUP BY outcode
-  HAVING outcode != '' AND COUNT(*) >= 5;
-
-  CREATE INDEX idx_outcode_summary_coords ON outcode_summary(latitude, longitude);
-  CREATE INDEX idx_outcode_summary_code ON outcode_summary(outcode);
-`);
-
-console.log('Building sector_summary...');
-db.exec(`
-  DROP TABLE IF EXISTS sector_summary;
-  CREATE TABLE sector_summary AS
-  SELECT 
-    TRIM(SUBSTR(postcode, 1, INSTR(postcode, ' ') + 1)) AS sector,
-    TRIM(SUBSTR(postcode, 1, INSTR(postcode || ' ', ' ') - 1)) AS outcode,
-    COUNT(*) AS total_count,
-    SUM(CASE WHEN dataset_type = 'CCOD' THEN 1 ELSE 0 END) AS ccod_count,
-    SUM(CASE WHEN dataset_type = 'OCOD' THEN 1 ELSE 0 END) AS ocod_count,
-    ROUND(AVG(price_paid)) AS avg_price,
-    ROUND(AVG(latitude), 5) AS latitude,
-    ROUND(AVG(longitude), 5) AS longitude
-  FROM properties
-  WHERE latitude IS NOT NULL
-    AND postcode IS NOT NULL
-    AND INSTR(postcode, ' ') > 0
-  GROUP BY sector
-  HAVING sector != '' AND COUNT(*) >= 3;
-
-  CREATE INDEX idx_sector_summary_coords ON sector_summary(latitude, longitude);
-  CREATE INDEX idx_sector_summary_code ON sector_summary(sector);
-`);
+const { outcodes, sectors } = rebuildLodSummaries(db);
 
 console.log(`LOD summaries rebuilt in ${((Date.now() - tLod) / 1000).toFixed(2)}s.`);
 
 // Verify stats
-const outCount = db.prepare('SELECT COUNT(*) as c FROM outcode_summary').get();
-const secCount = db.prepare('SELECT COUNT(*) as c FROM sector_summary').get();
-console.log(`  - Outcodes: ${outCount.c.toLocaleString()}`);
-console.log(`  - Sectors: ${secCount.c.toLocaleString()}`);
+console.log(`  - Outcodes: ${outcodes.toLocaleString()}`);
+console.log(`  - Sectors: ${sectors.toLocaleString()}`);
 
 console.log('\nOptimizing database indexes...');
 db.exec('PRAGMA optimize;');

@@ -11,15 +11,28 @@ A pure, modern, and minimalist GIS explorer that combines:
 
 ## Quick Start
 
-### 1. Ingest Data (One-Time Setup)
-From `REAL-intel`:
-```bash
-# Ingests outcodes + OCOD (91k records) + 50k CCOD records
-npm run ingest
+### 1. Build the Database
 
-# Or ingest more CCOD records
-npm run ingest:all
-```
+Source data lives outside git, in a `DATA` folder beside the website repo (`C:/Dev/DATA`) or
+inside it (`DATA/`); set `REAL_INTEL_DATA_DIR` to use somewhere else. The database is
+`server/cadastre.sqlite` (override with `REAL_INTEL_DB`).
+
+Every script opens the database through `server/connection.js`, which creates or upgrades
+the schema automatically (`server/schema.js`), so steps can be run on an empty or an
+existing database. Run from `REAL-intel`, in this order:
+
+| Step | Command | Needs | Does |
+| :-- | :-- | :-- | :-- |
+| 1 | `npm run ingest:full` | `CCOD_FULL_*/`, `OCOD_FULL_*/` CSVs | Loads all ~4.5M titles into `server/cadastre_staging.sqlite`, keeping your saved workspace and UPRN/OSM lookups from the live database. Then stop the server and replace `cadastre.sqlite` with the staging file. |
+| 2 | `npm run geocode` | `ukpostcodes.csv` | Places each property at its unit postcode (outcode centre as a fallback). Leaves already-enriched properties alone. |
+| 3 | `npm run download:uprn`, unzip into `NSUL/Data/`, then `npm run ingest:uprn` | internet | Loads OS Open UPRN address points for exact matching. |
+| 4 | Enrichment, from the app's Settings panel or `node server/uprn-matcher.js --area=London` | step 3 | Moves properties to exact addresses and records `precision_level`. |
+| 5 | `npm run summaries` | | Rebuilds the map's outcode/sector bubbles and proprietor search. Run after steps 2 and 4. |
+
+For a quick sample instead of step 1, `npm run ingest` loads OCOD plus 100k CCOD rows straight
+into the live database and builds the summaries (run it on an empty database: it appends).
+
+`npm test` checks the schema, migrations, summaries and geocoding against temporary databases.
 
 ### 2. Desktop Applet (One-Click Launch)
 Run `create-shortcut.ps1` once to put a **REAL intel** shortcut on your Windows Desktop:

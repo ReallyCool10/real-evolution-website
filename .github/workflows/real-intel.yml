@@ -1,0 +1,39 @@
+# Checks the REAL intel tool (not deployed): database/schema tests, type-check and build.
+name: REAL intel checks
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["REAL-intel/**", ".github/workflows/real-intel.yml"]
+  pull_request:
+    paths: ["REAL-intel/**", ".github/workflows/real-intel.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: REAL-intel
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: REAL-intel/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Schema and data tests
+        run: npm test
+
+      - name: Type-check and build
+        run: npm run build

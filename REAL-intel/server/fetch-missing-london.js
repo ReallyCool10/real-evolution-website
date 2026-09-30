@@ -1,18 +1,14 @@
-import { DatabaseSync } from 'node:sqlite';
+import { openDatabase } from './connection.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
 const CACHE_DIR = path.join(__dirname, 'cache');
 
 if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA busy_timeout = 15000;');
+const db = openDatabase();
 
 const OVERPASS_MIRRORS = [
   'https://overpass-api.de/api/interpreter',

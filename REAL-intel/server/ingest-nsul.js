@@ -1,12 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
-import { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
+import { openDatabase } from './connection.js';
+import { DB_PATH, dataPath } from './paths.js';
+import { ensureIndexes } from './schema.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, '../../../DATA/NSUL/Data');
-const DB_PATH = path.join(__dirname, 'cadastre.sqlite');
+const DATA_DIR = dataPath('NSUL', 'Data');
 
 // High-speed, millimeter-accurate Transverse Mercator + 7-parameter Helmert shift (OSGB36 -> WGS84)
 function fastBngToWgs84(easting, northing) {
@@ -106,20 +105,8 @@ if (csvFiles.length === 0) {
 
 console.log(`Target CSV files to ingest:`, csvFiles);
 
-const db = new DatabaseSync(DB_PATH);
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA cache_size = -128000;'); // 128MB cache
-
-// Ensure table exists
-db.exec(`
-  CREATE TABLE IF NOT EXISTS uprn_lookup (
-    uprn INTEGER PRIMARY KEY,
-    postcode TEXT NOT NULL,
-    latitude REAL NOT NULL,
-    longitude REAL NOT NULL
-  );
-`);
+const db = openDatabase();
+db.exec('PRAGMA cache_size = -128000;'); // 128MB cache for the bulk load
 
 console.log('[Optimization] Temporarily dropping idx_uprn_postcode for ultra-fast bulk insert...');
 db.exec('DROP INDEX IF EXISTS idx_uprn_postcode;');
@@ -234,7 +221,7 @@ async function run() {
 
   console.log('\n--- Building High-Speed Postcode Index on uprn_lookup(postcode) ---');
   const idxStart = Date.now();
-  db.exec('CREATE INDEX IF NOT EXISTS idx_uprn_postcode ON uprn_lookup(postcode);');
+  ensureIndexes(db);
   console.log(`Index built in ${((Date.now() - idxStart) / 1000).toFixed(1)}s`);
 
   const count = db.prepare('SELECT COUNT(*) as total FROM uprn_lookup').get().total;
