@@ -22,11 +22,18 @@ npm run ingest:all
 ```
 
 ### 2. Desktop Applet (One-Click Launch)
-A Windows Desktop shortcut named **REAL intel** has been placed directly on your Desktop (`C:\Users\MarkNewman\Desktop\REAL intel.lnk`):
+Run `create-shortcut.ps1` once to put a **REAL intel** shortcut on your Windows Desktop:
 - Double-click the desktop icon.
 - It automatically boots the backend and frontend servers.
 - As soon as services are ready, it launches the app directly into your browser / app window.
 - Closing the small terminal window cleanly stops the server and frees all ports.
+
+### Local-only by design
+
+REAL intel has no login, so it only accepts connections from the machine it runs on: the API
+listens on `127.0.0.1:3001`, sends no CORS headers (the app reaches it through the Vite proxy),
+rejects requests whose `Host` isn't localhost, and only accepts JSON on POST. Keep it that way
+unless you add authentication first.
 
 ### 3. Manual Command Line Launch
 ```bash

@@ -20,9 +20,9 @@ async function checkService(url) {
 }
 
 async function start() {
-  const backendRunning = await checkService('http://localhost:3001/api/stats');
+  const backendRunning = await checkService('http://127.0.0.1:3001/api/stats');
   if (backendRunning) {
-    console.log('[Backend] Already active on http://localhost:3001');
+    console.log('[Backend] Already active on http://127.0.0.1:3001');
   } else {
     console.log('Starting REAL intel Backend Server (port 3001)...');
     serverProc = spawn(nodeCmd, [serverJs], {
@@ -37,7 +37,7 @@ async function start() {
     openBrowser();
   } else {
     console.log('Starting REAL intel Vite Dev Server (port 5173)...');
-    viteProc = spawn(nodeCmd, [viteJs, '--host', '--port', '5173'], {
+    viteProc = spawn(nodeCmd, [viteJs, '--port', '5173'], {
       cwd: __dirname,
       stdio: 'inherit'
     });

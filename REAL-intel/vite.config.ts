@@ -3,12 +3,14 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  // MapLibre 6's worker is an ES module (see src/main.tsx).
+  worker: { format: 'es' },
   server: {
-    host: true,
+    host: 'localhost',
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true
       }
     }

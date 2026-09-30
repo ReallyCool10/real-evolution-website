@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import maplibregl, { Map, Popup } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { Map, Popup } from 'maplibre-gl';
 import { Property, BasemapStyle, FilterState, LodTier, ClusterPoint } from '../types';
 
 interface MapViewerProps {

@@ -111,7 +111,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleStopRun = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/enrichment/stop', { method: 'POST' });
+      const res = await fetch('/api/enrichment/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
       const data = await res.json();
       setFeedback({ type: 'success', message: data.message || 'Runner stopped.' });
       fetchStatus();
