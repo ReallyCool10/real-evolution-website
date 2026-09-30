@@ -1,0 +1,254 @@
+---
+// The UK silhouette is precomputed by scripts/build-uk-silhouette.mjs; the page ships it as
+// a ~12 KB inline SVG with no runtime work.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import silhouette from '../data/uk-silhouette.json';
+import { LAND_COVER, LAND_USE_BANDS, type LandCoverType } from '../data/land-use';
+
+const { width, height, bands, path } = silhouette;
+const bandRects = LAND_USE_BANDS.map((band, i) => {
+  const y = i === 0 ? 0 : bands[i - 1];
+  return { ...band, y, h: (i === LAND_USE_BANDS.length - 1 ? height : bands[i]) - y };
+});
+
+const TYPE_COLOR: Record<LandCoverType, string> = {
+  Agriculture: 'var(--gold)',
+  Natural: 'var(--green)',
+  'Built-Up': 'var(--red)',
+};
+---
+
+<BaseLayout
+  title="Land Use"
+  description="How the UK's land is used: agriculture, grassland, woodland, homes and urban areas, as a share of total land area."
+>
+  <div class="page">
+    <h1 class="page-title">UK Land Use &amp; Spatial Metrics</h1>
+
+    <figure class="silhouette">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-labelledby="silhouette-desc">
+        <desc id="silhouette-desc">
+          Outline of the UK filled with horizontal bands whose areas are proportional to each land use category.
+        </desc>
+        <defs>
+          <path id="uk-path" d={path} />
+          <clipPath id="uk-outline">
+            <use href="#uk-path" />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#uk-outline)">
+          {bandRects.map(b => <rect x="0" y={b.y} width={width} height={b.h} style={`fill: ${b.color}`} />)}
+        </g>
+        <use href="#uk-path" class="coast" />
+      </svg>
+
+      <figcaption>
+        <ul class="legend">
+          {LAND_USE_BANDS.map(b => (
+            <li>
+              <span class="swatch" style={`background: ${b.color}`} />
+              <span>
+                <span class="legend-name">
+                  <span aria-hidden="true">{b.emoji}</span> {b.name}
+                </span>
+                <span class="legend-pct" style={`color: ${b.color}`}>{b.pct.toFixed(1)}%</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </figcaption>
+    </figure>
+
+    <ul class="cover">
+      {LAND_COVER.map(row => (
+        <li style={`--c: ${TYPE_COLOR[row.type]}`}>
+          <div class="cover-main">
+            <span class="cover-name">{row.name}</span>
+            <span class="cover-type">{row.type}</span>
+            <span class="cover-bar" aria-hidden="true"><span style={`width: ${row.pct}%`} /></span>
+          </div>
+          <div class="cover-figures">
+            <span class="cover-ha">{row.ha}</span>
+            <span class="cover-pct">{row.pct}%</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p class="licence">
+      Contains public sector information licensed under the
+      <a class="cite-link" href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" target="_blank" rel="noreferrer">Open Government Licence v3.0</a>.
+      Reference sources:
+      <a class="cite-link" href="https://www.ceh.ac.uk/data/ukceh-land-cover-maps" target="_blank" rel="noreferrer">UKCEH Land Cover Map 2024 (UK Land Cover Statistics)</a>
+      &amp; ONS Standard Area Measurements.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Map and legend side by side where there's room; stacked on phones. The SVG scales with
+     its container up to its natural display size, so the whole UK is always in view. */
+  .silhouette {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2rem 5rem;
+    margin-bottom: 3rem;
+  }
+
+  svg {
+    flex: 0 1 360px;
+    min-width: 0;
+    height: auto;
+    filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.4));
+  }
+
+  .coast {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.25);
+    stroke-width: 0.6;
+  }
+
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .swatch {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+
+  .legend-name,
+  .legend-pct {
+    display: block;
+    font-family: var(--font-display);
+  }
+
+  .legend-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .legend-pct {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .cover {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 850px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cover li {
+    display: flex;
+    align-items: center;
+    gap: 1rem 2rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .cover-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+
+  .cover-name {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .cover-type {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+  }
+
+  .cover-bar {
+    grid-column: 1 / -1;
+    height: 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+  }
+
+  .cover-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--c);
+  }
+
+  .cover-figures {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .cover-ha {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .cover-pct {
+    min-width: 3.5ch;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-align: right;
+    color: var(--c);
+  }
+
+  /* Phones: figures drop beneath the bar so nothing is pushed off-screen. */
+  @media (max-width: 600px) {
+    .cover li {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+
+    .cover-figures {
+      justify-content: space-between;
+    }
+  }
+
+  .licence {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .licence a {
+    color: var(--gold);
+  }
+</style>

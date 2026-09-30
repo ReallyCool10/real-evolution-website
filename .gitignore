@@ -1,14 +1,10 @@
 # dependencies
 /node_modules
 REAL-intel/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
 
 # production
-/build
+/dist
+/.astro
 REAL-intel/dist
 
 # datasets & large raw data

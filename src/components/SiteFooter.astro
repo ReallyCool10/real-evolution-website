@@ -1,0 +1,56 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <div class="left">
+    <span>&copy; {year} REAL evolution</span>
+    <a class="credit" href="https://unsplash.com/@david_garrick_bangbola" target="_blank" rel="noopener noreferrer">
+      Photos by David Garrick
+    </a>
+  </div>
+  <nav aria-label="Footer">
+    <a href="/about/">About</a>
+  </nav>
+</footer>
+
+<style>
+  footer {
+    position: relative;
+    z-index: 2;
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 2.5rem var(--gutter);
+    border-top: 1px solid var(--border);
+    color: var(--gold);
+  }
+
+  .left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.9rem;
+  }
+
+  a {
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--text);
+  }
+
+  .credit {
+    font-size: 0.84rem;
+  }
+
+  nav a {
+    font-family: var(--font-display);
+  }
+</style>

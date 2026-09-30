@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ARTICLES } from '../../data/site';
+---
+
+<BaseLayout
+  title="Articles"
+  description="Research articles on UK housing supply, quality, affordability and the transaction process."
+>
+  <div class="page">
+    <h1 class="page-title">Articles</h1>
+    <ul class="list">
+      {ARTICLES.map(a => (
+        <li>
+          <a class="card entry" href={`/articles/${a.slug}/`}>
+            <span class="eyebrow">{a.category}</span>
+            <h2>{a.title}</h2>
+            <p>{a.summary}</p>
+            <span class="meta">{a.published} · {a.readingTime}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    height: 100%;
+    text-decoration: none;
+    box-shadow: none;
+    transition: transform 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+
+  .entry:hover {
+    transform: translateY(-3px);
+    border-color: var(--gold-line);
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: var(--text-3);
+  }
+
+  .meta {
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: var(--text-4);
+  }
+</style>

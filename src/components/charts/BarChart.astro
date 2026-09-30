@@ -1,0 +1,125 @@
+---
+// Horizontal bar chart rendered as plain HTML and CSS. Labels and values are real text at
+// real font sizes, so the chart stays legible at any width, and values are always shown
+// rather than hidden behind a hover. On narrow screens each row stacks label/value over the bar.
+import ChartFrame from './ChartFrame.astro';
+import type { Bar } from '../../data/charts';
+
+type Props = {
+  title: string;
+  subtitle?: string;
+  bars: Bar[];
+  /** Value that fills the full track. Defaults to the largest value in `bars`. */
+  max?: number;
+};
+
+const { title, subtitle, bars, max = Math.max(...bars.map(b => b.value)) } = Astro.props;
+const pct = (v: number) => `${Math.min(100, (v / max) * 100).toFixed(2)}%`;
+---
+
+<ChartFrame title={title} subtitle={subtitle}>
+  <ul class="bars">
+    {bars.map(bar => (
+      <li class:list={['row', { highlight: bar.highlight }]}>
+        <span class="label">{bar.label}</span>
+        <span class="track" aria-hidden="true">
+          <span class="bar" style={`--w: ${pct(bar.value)}`} />
+        </span>
+        <span class="value">{bar.display ?? bar.value}</span>
+      </li>
+    ))}
+  </ul>
+  <slot />
+</ChartFrame>
+
+<style>
+  .bars {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(6rem, max-content) 1fr auto;
+    gap: 0.6rem 1rem;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  /* Each row spans the parent grid via subgrid, so labels line up across rows
+     while the row can still be re-laid out on its own at narrow widths. */
+  .row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-areas: 'label track value';
+    align-items: center;
+  }
+
+  .label {
+    grid-area: label;
+    text-align: right;
+    color: var(--text-3);
+  }
+
+  .track {
+    grid-area: track;
+    height: 1.1rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+  }
+
+  .bar {
+    display: block;
+    width: var(--w);
+    height: 100%;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    transition: filter 0.2s ease;
+  }
+
+  .value {
+    grid-area: value;
+    min-width: 3ch;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .highlight .label {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .highlight .bar {
+    background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+    border: 1.5px solid var(--gold);
+  }
+
+  .highlight .value {
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .row:hover .bar {
+    filter: brightness(1.35);
+  }
+
+  /* Phones: label and value on one line, full-width bar beneath. */
+  @media (max-width: 520px) {
+    .bars {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+
+    .row {
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        'label value'
+        'track track';
+      gap: 0.3rem 0.75rem;
+    }
+
+    .label {
+      text-align: left;
+    }
+  }
+</style>

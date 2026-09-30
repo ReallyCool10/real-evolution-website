@@ -1,0 +1,169 @@
+---
+// One research article: sidebar of all articles, header, prose body and citations slot.
+import BaseLayout from './BaseLayout.astro';
+import { ARTICLES, getArticle } from '../data/site';
+
+type Props = { slug: string };
+const article = getArticle(Astro.props.slug);
+---
+
+<BaseLayout title={article.navTitle} description={article.summary}>
+  <div class="page layout">
+    <nav class="sidebar" aria-label="Articles">
+      <ul>
+        {ARTICLES.map(a => (
+          <li>
+            <a href={`/articles/${a.slug}/`} aria-current={a.slug === article.slug ? 'page' : undefined}>{a.navTitle}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <article>
+      <header>
+        <span class="eyebrow">{article.category}</span>
+        <h1>{article.title}</h1>
+        <p class="meta">
+          <span>Published: {article.published}</span>
+          <span>Reading Time: {article.readingTime}</span>
+        </p>
+      </header>
+
+      <div class="prose">
+        <slot />
+      </div>
+
+      <slot name="citations" />
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 3rem;
+  }
+
+  .sidebar ul {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sidebar a {
+    display: block;
+    padding: 0.85rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .sidebar a:hover {
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .sidebar a[aria-current='page'] {
+    color: var(--text);
+    background: var(--gold-soft);
+    border-color: var(--gold);
+  }
+
+  /* Phones and small tablets: the article list becomes a horizontal scroller whose right
+     edge fades out, hinting that there is more to swipe to. */
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    .sidebar {
+      margin: 0 calc(var(--gutter) * -1);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar ul {
+      position: static;
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 0 var(--gutter) 1rem;
+      scrollbar-width: none;
+      mask-image: linear-gradient(to right, #000 85%, transparent);
+    }
+
+    .sidebar a {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+  }
+
+  header {
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h1 {
+    margin: 0.5rem 0;
+    font-size: clamp(1.75rem, 5vw, 2.2rem);
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-4);
+  }
+
+  .prose {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-2);
+  }
+
+  .prose :global(p),
+  .prose :global(ul) {
+    margin-bottom: 1.5rem;
+  }
+
+  .prose :global(li) {
+    margin-bottom: 1rem;
+  }
+
+  .prose :global(h2) {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.4rem;
+    color: var(--text);
+  }
+
+  .prose :global(blockquote) {
+    margin: 2rem 0;
+    padding: 1rem 1.5rem;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background: rgba(255, 255, 255, 0.02);
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .prose :global(blockquote p) {
+    margin: 0;
+  }
+
+  .prose :global(strong) {
+    color: var(--text);
+  }
+</style>

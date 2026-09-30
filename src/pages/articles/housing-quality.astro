@@ -1,0 +1,45 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import BarChart from '../../components/charts/BarChart.astro';
+import Citations from '../../components/Citations.astro';
+import { NON_DECENT_BY_TENURE } from '../../data/charts';
+---
+
+<ArticleLayout slug="housing-quality">
+  <p>
+    Beyond absolute scarcity, the UK has amongst the oldest and least energy-efficient housing stocks in Europe. <strong>78% of homes</strong> were built before 1980, compared to an EU average of 61%. And <strong>38% of the housing stock</strong> was built before 1946, compared to the EU average of 18% <sup><a href="#cit-1">[1]</a></sup>.
+  </p>
+
+  <blockquote>
+    <p>
+      Leaving the historical housing envelope unmodernized has direct public health and environmental consequences.
+    </p>
+  </blockquote>
+
+  <BarChart
+    title="Homes Failing Decent Homes Standard by Tenure (%)"
+    subtitle="Private renters face the worst conditions, with over 1 in 5 homes failing to meet basic decency standards (EHS 2022-23)."
+    bars={NON_DECENT_BY_TENURE}
+    max={25}
+  />
+
+  <h2>Failure to Meet Basic Decency</h2>
+  <p>
+    This historical legacy has a direct impact on the livability of homes: <strong>15%, or 3.7 million dwellings, failed to meet the Decent Homes Standard</strong> in 2022 <sup><a href="#cit-2">[2]</a></sup>. Private renters are worst affected, with 21% living in non-decent conditions, against 14% of owner-occupied and 10% of social rented homes. The Home Builders Federation puts England's proportion of substandard homes as the highest in Europe on this measure, ahead of Germany (12%), Bulgaria (11%), Lithuania (11%) and Poland (6%) <sup><a href="#cit-3">[3]</a></sup>.
+  </p>
+
+  <h2>The Downstream Cost of an Ageing Stock</h2>
+  <p>
+    Homes built before modern insulation standards tend to be significantly less energy-efficient. The BRE Trust estimates that poor housing conditions in England cost the NHS approximately <strong>£1.4 billion per year</strong> in first-year treatment costs for conditions linked to cold, damp, and hazardous homes <sup><a href="#cit-4">[4]</a></sup>. Excess cold alone accounts for £857 million of that figure.
+  </p>
+  <p>
+    These are structural characteristics of the existing housing grid, not individual choices. Understanding the scale of this quality deficit is a prerequisite for any serious conversation about housing reform in the UK.
+  </p>
+
+  <Citations slot="citations">
+    <li id="cit-1">Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023), housing stock age against EU averages.</li>
+    <li id="cit-2"><a href="https://assets.publishing.service.gov.uk/media/657c3ff691864e001308bdba/2022-23_EHS_Headline_Report.pdf" target="_blank" rel="noopener noreferrer">English Housing Survey 2022-23, Headline Report</a>, Department for Levelling Up, Housing &amp; Communities. "In 2022, 15% or 3.7 million dwellings failed to meet the Decent Homes Standard."</li>
+    <li id="cit-3">Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023), European comparison based on 2020 data.</li>
+    <li id="cit-4"><a href="https://www.bregroup.com/press-releases/bre-report-finds-poor-housing-is-costing-nhs-1-4bn-a-year/" target="_blank" rel="noopener noreferrer">BRE Trust</a>, The Cost of Poor Housing to the NHS (2021).</li>
+  </Citations>
+</ArticleLayout>

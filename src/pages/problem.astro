@@ -1,0 +1,132 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const metrics = [
+  {
+    label: 'Transaction Failures',
+    number: '~24%',
+    desc: 'of agreed sales collapse before completion, wasting millions in unrecoverable legal and survey fees.',
+  },
+  {
+    label: 'Housing Stock Quality',
+    number: '15%',
+    desc: 'of English homes fail to meet the Decent Homes Standard, with private renters worst affected at 21%.',
+  },
+  {
+    label: 'The Transactional Drag',
+    number: '£9 Billion+',
+    desc: 'in estate agent commissions, conveyancing fees, and mortgage broker charges divert capital away from the productive economy.',
+  },
+];
+---
+
+<BaseLayout
+  title="The REAL Problem"
+  description="Why the UK housing crisis is a failure of supply, quality and transactional trust, not just high prices."
+>
+  <div class="page">
+    <h1 class="page-title">The REAL Problem</h1>
+
+    <div class="layout">
+      <div class="prose">
+        <p>
+          The UK housing sector has stagnated for decades. Political and economic debates have treated housing as a simple commodity market, overlooking the architectural, legal, and operational constraints that limit our built environment.
+        </p>
+        <p>
+          This isn't only about high prices. It reflects a deeper failure of supply, quality, and transactional trust, one that costs families, businesses, and the wider economy every year.
+        </p>
+
+        <h2>1. The Scarcity Matrix</h2>
+        <p>
+          The most immediate symptom is straightforward supply scarcity. The UK builds fewer homes than its European counterparts. That shortage is one lever keeping prices high; the UK's limited supply of developable land is another. Together they leave many households with less space, or fewer options, than they would otherwise choose.
+        </p>
+        <p>
+          With completions lagging behind demographic growth, the gap between home seekers and available dwellings continues to widen, creating a permanent seller's market that isolates families from housing security.
+        </p>
+
+        <h2>2. The Quality Gap</h2>
+        <p>
+          UK housing quality lags behind. The UK has the oldest, least insulated housing stock in Europe, leaving families exposed to rising energy costs and supply shocks.
+        </p>
+        <p>
+          Cold, damp buildings drive significant public health costs, placing a multi-billion-pound burden on the NHS for treatable cardiovascular and respiratory illness. Their carbon footprint is also one of the biggest obstacles to reaching carbon net-zero.
+        </p>
+
+        <h2>3. The Conveyancing Bottleneck</h2>
+        <p>
+          Buying and selling a home in the UK involves significant friction and a structural lack of trust. The typical transaction is slow, largely manual, and gives neither side binding commitment until exchange.
+        </p>
+        <p>
+          Roughly a quarter of agreed sales fall through before completion, with more than 300,000 failed transactions recorded across 2025. Each failure leaves buyers and sellers with non-recoverable survey, legal, and mortgage fees, and across the market those costs run into hundreds of millions of pounds a year. A fragmented intermediary system adds further cost for largely administrative work.
+        </p>
+      </div>
+
+      <aside class="metrics" aria-label="Key figures">
+        {metrics.map(m => (
+          <div class="card metric">
+            <span class="label">{m.label}</span>
+            <p><strong>{m.number}</strong> {m.desc}</p>
+          </div>
+        ))}
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(2rem, 8vw, 7rem);
+  }
+
+  @media (max-width: 768px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .prose {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-2);
+  }
+
+  .prose p {
+    margin-bottom: 1.75rem;
+  }
+
+  .prose h2 {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+
+  .metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .label {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+
+  .metric p {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--text-3);
+  }
+
+  .metric strong {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+</style>

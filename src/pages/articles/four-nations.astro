@@ -1,0 +1,59 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import BarChart from '../../components/charts/BarChart.astro';
+import Citations from '../../components/Citations.astro';
+import { NATIONS_DWELLINGS, NATIONS_PRICE, NATIONS_RATIO } from '../../data/charts';
+---
+
+<ArticleLayout slug="four-nations">
+  <p>
+    UK housing figures are usually reported as a single national number, but England, Scotland, Wales and Northern Ireland have meaningfully different housing markets. Comparing dwellings per capita, average house prices, and the price-to-earnings ratio across all four shows where the pressure is actually concentrated <sup><a href="#cit-1">[1]</a></sup>.
+  </p>
+
+  <h2>Dwellings Per Capita</h2>
+  <p>
+    Northern Ireland has the fewest dwellings relative to its population among the four nations, at 43.2 per 100 people, just below England's 44.0. Wales (46.7) and Scotland (49.5) are both better supplied, though all four still fall short of the OECD average of 48.7 <sup><a href="#cit-1">[1]</a></sup><sup><a href="#cit-2">[2]</a></sup>.
+  </p>
+
+  <BarChart
+    title="Dwellings per 100 People, by UK Nation"
+    subtitle="Northern Ireland has the fewest dwellings relative to its population; Scotland has the most."
+    bars={NATIONS_DWELLINGS}
+    max={100}
+  />
+
+  <h2>House Prices</h2>
+  <p>
+    House prices vary far more sharply than housing supply does. As of January 2023, the average home in England cost £285,817, compared with £201,853 in Wales, £175,092 in Scotland, and £162,479 in Northern Ireland <sup><a href="#cit-3">[3]</a></sup>.
+  </p>
+
+  <BarChart
+    title="Average House Price, by UK Nation (Jan 2023)"
+    subtitle="England's average house price is more than 60% higher than Wales, and over 70% higher than Scotland or Northern Ireland."
+    bars={NATIONS_PRICE}
+    max={300000}
+  />
+
+  <h2>Affordability: Price to Earnings</h2>
+  <p>
+    Scotland combines relatively low house prices with the UK's highest median full-time earnings of the four nations (£709 a week in 2023), giving it by far the most affordable price-to-earnings ratio at 4.75x. England, despite not having the lowest dwellings per capita, has both the highest prices and the highest ratio, at 7.97x <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>.
+  </p>
+
+  <BarChart
+    title="Price-to-Earnings Ratio, by UK Nation"
+    subtitle="England combines the highest house prices with a middling dwellings-per-capita figure, giving it the least affordable ratio of the four."
+    bars={NATIONS_RATIO}
+    max={9}
+  />
+
+  <p>
+    The pattern suggests undersupply alone doesn't explain the UK's affordability problem. Northern Ireland has a tighter dwellings-per-capita figure than England, yet its housing is far more affordable, because prices and wages there sit much closer together.
+  </p>
+
+  <Citations slot="citations">
+    <li id="cit-1">Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023). OECD benchmark, 2020 data.</li>
+    <li id="cit-2">Dwelling stock estimates, ~2023: <a href="https://www.gov.uk/government/statistics/dwelling-stock-estimates-in-england-2023/dwelling-stock-estimates-england-31-march-2023" target="_blank" rel="noopener noreferrer">MHCLG, England</a> (31 March 2023); <a href="https://www.nrscotland.gov.uk/publications/households-and-dwellings-in-scotland-2023/" target="_blank" rel="noopener noreferrer">National Records of Scotland</a> (2023); <a href="https://www.gov.wales/dwelling-stock-estimates-31-march-2023-html" target="_blank" rel="noopener noreferrer">Welsh Government</a> (31 March 2023); <a href="https://datavis.nisra.gov.uk/communities/northern-ireland-housing-statistics-2022-2023.html" target="_blank" rel="noopener noreferrer">NISRA</a> (April 2023). Population: ONS mid-2023 estimates.</li>
+    <li id="cit-3">HM Land Registry / ONS, <a href="https://landregistry.data.gov.uk/app/ukhpi" target="_blank" rel="noopener noreferrer">UK House Price Index</a>, average price by nation, January 2023.</li>
+    <li id="cit-4">ONS, <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofworkbylocalauthorityashetable7" target="_blank" rel="noopener noreferrer">ASHE Table 7.1a</a> (Work Geography): median gross weekly earnings, full-time, 2023 (England, Wales, Scotland); <a href="https://www.nisra.gov.uk/statistics/work-pay-and-benefits/annual-survey-hours-and-earnings" target="_blank" rel="noopener noreferrer">NISRA Annual Survey of Hours and Earnings</a>, 2023 (Northern Ireland).</li>
+  </Citations>
+</ArticleLayout>

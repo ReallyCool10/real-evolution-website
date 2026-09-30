@@ -1,0 +1,67 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import LineChart from '../../components/charts/LineChart.astro';
+import Citations from '../../components/Citations.astro';
+import { AFFORDABILITY } from '../../data/charts';
+
+// Same UK-wide source pair as The REAL Numbers page, shown here as start and end points only.
+const first = AFFORDABILITY[0];
+const last = AFFORDABILITY[AFFORDABILITY.length - 1];
+const gbp = (n: number) => `£${n.toLocaleString('en-GB')}`;
+const series = [
+  {
+    name: 'Wages',
+    endLabel: `Wages (${(last.wageIndex / 100).toFixed(1)}x)`,
+    points: [first, last].map(d => ({ x: d.year, y: d.wageIndex, tip: `${gbp(d.wageAnnual)}/yr (${d.wageIndex.toFixed(0)}%)` })),
+  },
+  {
+    name: 'House Prices',
+    endLabel: `House Prices (${(last.priceIndex / 100).toFixed(1)}x)`,
+    emphasis: true,
+    points: [first, last].map(d => ({ x: d.year, y: d.priceIndex, tip: `${gbp(d.housePrice)} (${d.priceIndex.toFixed(0)}%)` })),
+  },
+];
+---
+
+<ArticleLayout slug="cost-of-friction">
+  <p>
+    House prices have risen far faster than earnings for three decades. In 2025 the median UK home cost <strong>6.6 times median annual earnings</strong> (£264,936 against £39,863), roughly double the ratio when the ONS affordability series began in 1997 <sup><a href="#cit-1">[1]</a></sup>.
+  </p>
+
+  <blockquote>
+    <p>
+      The transaction process itself hasn't kept up. Onward chains, hidden property defects, and a lack of upfront mortgage clarity leave buyers and sellers stuck in limbo.
+    </p>
+  </blockquote>
+
+  <LineChart
+    title="Wage Growth vs. House Price Inflation (1997 - 2025)"
+    subtitle="In 2025 the median UK home cost 6.6 times median annual earnings (£264,936 against £39,863), roughly double the ratio when the ONS series began in 1997."
+    series={series}
+    yMax={600}
+    yTicks={[0, 100, 200, 300, 400, 500, 600]}
+    ySuffix="%"
+    xLabels={[{ x: 1997, label: '1997 (baseline 100%)' }, { x: 2025, label: '2025' }]}
+    inset={0.12}
+  />
+
+  <h2>Collapsing Chains and Wasted Capital</h2>
+  <p>
+    Buying a home in the UK involves a lot of uncertainty. Published fall-through rates vary by source and by quarter, but cluster around a quarter of agreed sales: TwentyCi put the national rate at <strong>23.7% in Q1 2026</strong>, little changed from 24% a year earlier, while Quick Move Now recorded over a quarter of sales collapsing across 2024 with individual quarters peaking above 30% <sup><a href="#cit-3">[3]</a></sup>. In absolute terms TwentyCi counted <strong>303,538 failed transactions in 2025</strong>, up 4.5% on the previous year. Buyers and sellers lose between £500 and £3,500 in non-recoverable survey, legal, and mortgage fees per failed attempt.
+  </p>
+  <p>
+    The leading causes of transaction collapse are problems uncovered during building surveys and difficulty securing a mortgage. In Quick Move Now's Q2 2026 analysis, buyer mortgage or lending issues accounted for 33% of fall-throughs and survey issues for 27% <sup><a href="#cit-3">[3]</a></sup>. This friction is compounded by a lack of trust: undisclosed defects and complex onward chains leave buyers and sellers stuck.
+  </p>
+
+  <h2>The Transactional Drag</h2>
+  <p>
+    Beyond the stress of failed sales, the cost of successfully transacting is itself a major economic drag. The UK estate agency sector alone generates <strong>£5.7 billion per year</strong> in commission revenue. On top of this, conveyancing solicitor fees add approximately <strong>£2.5 billion</strong>, and mortgage broker charges a further <strong>£0.7 billion</strong> annually. In total, over <strong>£9 billion per year</strong> goes to intermediary transaction fees across the UK's ~1.1 million annual home sales <sup><a href="#cit-4">[4]</a></sup>, capital that is diverted away from the productive economy.
+  </p>
+
+  <Citations slot="citations">
+    <li id="cit-1"><a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/bulletins/housingaffordabilityinenglandandwales/2025" target="_blank" rel="noopener noreferrer">ONS, Housing affordability in England and Wales: 2025</a>. Median house price to median gross annual earnings, full-time employees; series begins 1997.</li>
+    <li id="cit-2"><a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/ratioofhousepricetoworkplacebasedearningslowerquartileandmedian" target="_blank" rel="noopener noreferrer">ONS, Ratio of house price to workplace-based earnings</a> (median and lower quartile), 1997-2025.</li>
+    <li id="cit-3"><a href="https://www.twentyci.co.uk/phmr/" target="_blank" rel="noopener noreferrer">TwentyCi Property &amp; Homemover Report</a> (national fall-through rate and failed-transaction counts); reasons-for-failure breakdown from <a href="https://www.quickmovenow.com/media-centre/property-sale-fall-through-indexes" target="_blank" rel="noopener noreferrer">Quick Move Now's fall-through index</a>.</li>
+    <li id="cit-4"><a href="https://www.gov.uk/government/statistics/monthly-property-transactions-completed-in-the-uk-with-value-40000-or-above" target="_blank" rel="noopener noreferrer">UK Property Transaction Statistics &amp; Agent Commission Index</a>.</li>
+  </Citations>
+</ArticleLayout>

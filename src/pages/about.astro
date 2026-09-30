@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="About"
+  description="REAL evolution researches the potential of bringing underused and vacant buildings into productive use."
+>
+  <div class="page">
+    <article class="about">
+      <h1>Purpose</h1>
+      <p>
+        Addressing the UK's housing shortage isn't only about getting new homes built. It's also
+        about the utilisation of the existing built environment. REAL evolution researches the
+        potential of bringing underused and vacant assets into productive use.
+      </p>
+      <p>
+        Our work spans research and modelling, tracking vacant commercial stock suited to
+        residential use, and mapping land use against demographic pressure.
+      </p>
+      <p>
+        We're looking for partners: property owners, investors, and policymakers who see the same
+        opportunity - that solving the housing crisis depends as much on using what already
+        exists as it does on building new.
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .about {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin-bottom: 2rem;
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #ffffff 0%, #e2e8f0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  p {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    letter-spacing: 0.3px;
+    opacity: 0.9;
+  }
+</style>

@@ -1,0 +1,214 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BarChart from '../components/charts/BarChart.astro';
+import LineChart from '../components/charts/LineChart.astro';
+import Citations from '../components/Citations.astro';
+import { AFFORDABILITY, DWELLINGS_PER_100 } from '../data/charts';
+
+const gbp = (n: number) => `£${n.toLocaleString('en-GB')}`;
+const first = AFFORDABILITY[0];
+const last = AFFORDABILITY[AFFORDABILITY.length - 1];
+const growth = (from: number, to: number) => `+${Math.round((to / from - 1) * 100)}%`;
+
+const series = [
+  {
+    name: 'Wages',
+    points: AFFORDABILITY.map(d => ({
+      x: d.year,
+      y: d.wageIndex,
+      tip: `${gbp(d.wageAnnual)}/yr (${d.wageIndex.toFixed(0)}%)`,
+    })),
+  },
+  {
+    name: 'House Prices',
+    emphasis: true,
+    points: AFFORDABILITY.map(d => ({
+      x: d.year,
+      y: d.priceIndex,
+      tip: `${gbp(d.housePrice)} (${d.priceIndex.toFixed(0)}%)`,
+    })),
+  },
+];
+
+const eras = [
+  { year: first.year, d: first, current: false },
+  { year: last.year, d: last, current: true },
+];
+---
+
+<BaseLayout
+  title="The REAL Numbers"
+  description="UK housing supply and affordability in numbers: dwellings per head against other nations, and house prices against wages since 1997."
+>
+  <div class="page">
+    <h1 class="page-title">The REAL Numbers</h1>
+
+    <BarChart
+      title="Dwellings per 100 Citizens"
+      subtitle="Compared to most European counterparts, the UK operates under significant structural undersupply - only the United States has a lower ratio among the nations shown here."
+      bars={DWELLINGS_PER_100}
+      max={100}
+    >
+      <p class="chart-note">
+        To match the OECD average of <strong>48.7</strong> dwellings per 100 citizens, the UK (at <strong>44.6</strong>)
+        would need approximately <span class="gold">2.8 million</span> additional homes
+        <span class="dim">((48.7 − 44.6) × 68.27m ÷ 100 = 2,798,873)</span>.
+        <sup><a href="#cit-1">[1]</a></sup><sup><a href="#cit-2">[2]</a></sup>
+      </p>
+    </BarChart>
+
+    <LineChart
+      title="House Price Growth vs. Wage Growth (1997 - 2025)"
+      subtitle="Indexed to 100 at 1997. UK house prices have grown far faster than UK median earnings at every check-in point since then."
+      series={series}
+      yMax={600}
+      yTicks={[0, 100, 200, 300, 400, 500, 600]}
+      ySuffix="%"
+    >
+      <p class="chart-note">
+        Between {first.year} and {last.year}, UK house prices rose from {gbp(first.housePrice)} to {gbp(last.housePrice)}
+        ({growth(first.housePrice, last.housePrice)}), while UK median full-time earnings rose from {gbp(first.wageAnnual)} to
+        {gbp(last.wageAnnual)} ({growth(first.wageAnnual, last.wageAnnual)}) - the price-to-earnings ratio nearly doubled, from
+        {first.ratio.toFixed(1)}x to {last.ratio.toFixed(1)}x.
+        <sup><a href="#cit-3">[3]</a></sup><sup><a href="#cit-4">[4]</a></sup>
+      </p>
+    </LineChart>
+
+    <section class="example" aria-labelledby="example-title">
+      <h2 id="example-title">The Worked Example: How the Numbers Affect a Family</h2>
+      <p class="example-desc">
+        A concrete comparison of UK house prices against UK median full-time earnings in {first.year} vs {last.year},
+        using the same ONS/Land Registry data as the chart above.
+      </p>
+
+      <div class="eras">
+        {eras.map(({ year, d, current }) => (
+          <div class:list={['era', { current }]}>
+            <h3>{year}</h3>
+            <dl>
+              <div>
+                <dt>UK Median Earnings (Annualised)</dt>
+                <dd>{gbp(d.wageAnnual)}{current && ` (${growth(first.wageAnnual, d.wageAnnual)})`}</dd>
+              </div>
+              <div>
+                <dt>UK Average Home</dt>
+                <dd>{gbp(d.housePrice)}{current && ` (${growth(first.housePrice, d.housePrice)})`}</dd>
+              </div>
+              <div class="ratio">
+                <dt>Price-to-Earnings Ratio</dt>
+                <dd>{d.ratio.toFixed(1)}x</dd>
+              </div>
+            </dl>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <Citations>
+      <li id="cit-1">
+        Home Builders Federation, Housing Horizons: Examining UK Housing Stock in an International Context. OECD benchmark of 487 dwellings per 1,000 inhabitants (2020 data). The UK figure (446 per 1,000) is a separate combined calculation across all four nations - see <a href="/articles/four-nations/">Four Nations, Four Markets</a> for the full by-nation breakdown and sources.
+        View report: <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noreferrer">HBF Housing Horizons</a>. <span class="source">HBF (Oct 2023)</span>
+      </li>
+      <li id="cit-2">
+        OECD Affordable Housing Database, <a href="https://webfs.oecd.org/els-com/Affordable_Housing_Database/HM1-1-Housing-stock-and-construction.xlsx" target="_blank" rel="noreferrer">Table HM1.1.A1</a>: total housing stock in OECD and EU countries. Netherlands, Germany, Spain, Italy, France and the United States are 2022 figures; Japan is 2018, the latest year available. <span class="source">OECD HM1.1.A1</span>
+      </li>
+      <li id="cit-3">
+        HM Land Registry / ONS UK House Price Index. Average house price for the United Kingdom, January snapshot of each year shown (1997, 2000, 2005, 2010, 2015, 2020, 2025).
+        View index: <a href="https://landregistry.data.gov.uk/app/ukhpi" target="_blank" rel="noreferrer">UK House Price Index</a>. <span class="source">Land Registry / ONS UK HPI</span>
+      </li>
+      <li id="cit-4">
+        ONS earnings time series of median gross weekly earnings, UK, adult full-time employees (male &amp; female), 1997-2025; annualised as weekly figure &times; 52.
+        View data: <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/earningstimeseriesofmediangrossweeklyearningsfrom1968to2022/current" target="_blank" rel="noreferrer">ONS Earnings Time Series</a>. <span class="source">ONS ASHE / NES (2025)</span>
+      </li>
+      <li id="cit-5">
+        ONS Housing Affordability in England and Wales. Median house price to median earnings ratio by local authority, 2025.
+        View bulletin: <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/housing/bulletins/housingaffordabilityinenglandandwales/latest" target="_blank" rel="noreferrer">ONS Affordability</a>. <span class="source">ONS Affordability (2025)</span>
+      </li>
+    </Citations>
+  </div>
+</BaseLayout>
+
+<style>
+  .gold {
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .dim {
+    opacity: 0.5;
+  }
+
+  .example {
+    margin-bottom: 3rem;
+  }
+
+  .example h2 {
+    font-size: clamp(1.2rem, 4vw, 1.4rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .example-desc {
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .eras {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1.5rem 2rem;
+  }
+
+  .era {
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .era.current {
+    border-color: rgba(212, 175, 55, 0.25);
+    background: rgba(212, 175, 55, 0.04);
+  }
+
+  .era h3 {
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 1.4rem;
+  }
+
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  dt {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  dd {
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .ratio {
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+  }
+
+  .ratio dt {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .ratio dd {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--gold);
+  }
+</style>

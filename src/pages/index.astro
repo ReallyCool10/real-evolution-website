@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroBackdrop from '../components/HeroBackdrop.astro';
+
+const gaps = [
+  {
+    title: 'The GDP & Prosperity Gap',
+    icon: 'M15 6a4 4 0 00-8 0v10a2 2 0 002 2h6M6 12h8',
+    body: 'Average house prices are up over 425% in 30 years, far outpacing earnings growth. The median home in England now costs 7.6 times median annual earnings, roughly double the ratio when the ONS series began in 1997.',
+  },
+  {
+    title: 'The Productivity & Talent Gap',
+    icon: 'M4 17l6-6 4 4 6-6M16 9h4v4',
+    body: 'Skilled workers are priced out of high-productivity urban employment hubs. Long commutes and spatial mismatch wear down the workforce and hold back UK productivity.',
+  },
+  {
+    title: 'The Quality & Energy Gap',
+    icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+    body: 'The UK housing stock is the oldest in Europe, with 15% falling short of the Decent Homes Standard. Damp, cold homes drive billions in NHS costs and are a major hurdle to reaching carbon net-zero.',
+  },
+  {
+    title: 'The Transactional Friction Cost',
+    icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
+    body: 'Buying a home takes six months on average, and roughly a quarter of agreed sales fall through before completion. Onward chains and hidden defects contributed to more than 300,000 failed transactions in 2025, wasting millions in legal fees.',
+  },
+];
+---
+
+<BaseLayout backdrop="photo">
+  <HeroBackdrop />
+
+  <div class="home">
+    <section class="hero">
+      <h1 class="visually-hidden">Real Evolution</h1>
+      <p class="lede">
+        Examining the data behind the UK's housing shortage and the untapped opportunities to transform it.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/problem/">Explore The REAL Problem</a>
+        <a class="btn btn-secondary" href="/numbers/">View The REAL Numbers</a>
+      </div>
+    </section>
+
+    <section class="issues" aria-labelledby="issues-title">
+      <h2 id="issues-title">The Systemic Issues</h2>
+      <p class="issues-desc">
+        Housing shortages hold back the UK economy, stalling GDP and productivity growth. We pioneer research and strategy to find REAL solutions.
+      </p>
+
+      <div class="grid">
+        {gaps.map(gap => (
+          <article class="gap">
+            <h3>
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                <path d={gap.icon} />
+              </svg>
+              {gap.title}
+            </h3>
+            <p>{gap.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .home {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: calc(var(--nav-h) + 3rem) 0 4rem;
+    text-align: center;
+  }
+
+  .lede,
+  .issues h2,
+  .issues-desc {
+    color: var(--gold);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+
+  .lede {
+    max-width: 850px;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(1.5rem, 4.5vw, 2rem);
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 1.5rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 1rem 2rem;
+    border-radius: var(--radius);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-deep);
+    box-shadow: 0 6px 24px rgba(212, 175, 55, 0.3);
+  }
+
+  .btn-secondary {
+    background: #ffffff;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  @media (max-width: 480px) {
+    .actions,
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .issues {
+    padding: 10rem 0 6rem;
+    text-align: center;
+  }
+
+  .issues h2 {
+    font-size: clamp(1.8rem, 5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .issues-desc {
+    max-width: 820px;
+    margin: 0 auto 3rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+    gap: 2rem;
+    text-align: left;
+  }
+
+  /* The only cards drawn over the moving photo, so the only place blur earns its cost. */
+  .gap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+
+  .gap:hover {
+    transform: translateY(-3px);
+    border-color: var(--gold-line);
+  }
+
+  .gap h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.4rem;
+  }
+
+  .gap svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    color: var(--gold);
+  }
+
+  .gap p {
+    font-size: 0.95rem;
+    color: var(--text-3);
+  }
+</style>

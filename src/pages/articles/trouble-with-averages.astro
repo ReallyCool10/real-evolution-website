@@ -1,0 +1,35 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import Citations from '../../components/Citations.astro';
+---
+
+<ArticleLayout slug="trouble-with-averages">
+  <p>
+    Every chart on this site relies on an average of some kind: a median house price, a median wage, a per-capita dwelling count. Averages are useful. They are also a compression of a much messier reality, and the compression can hide exactly the detail that matters most.
+  </p>
+
+  <h2>No Nation Is Average</h2>
+  <p>
+    In 1950, the US Air Force asked researcher Gilbert Daniels to work out how many of its pilots actually matched the "average pilot" its cockpits had been designed around. Daniels measured 4,063 pilots across ten body dimensions. Not one of them was average on all ten <sup><a href="#cit-1">[1]</a></sup>. The average pilot didn't exist, and a cockpit built for him fit almost nobody. Our own <a href="/articles/four-nations/">"Four Nations, Four Markets"</a> makes a similar point about housing: a single UK figure for dwellings per capita, house prices, or affordability describes a nation, not a place any household actually lives in.
+  </p>
+
+  <h2>Planning Around a Number That Doesn't Exist</h2>
+  <p>
+    Statistician Sam Savage calls this the flaw of averages: plans built on a single central estimate, rather than the actual spread of outcomes around it, tend to be wrong on average <sup><a href="#cit-2">[2]</a></sup>. A national house price figure that averages £600,000 London flats with £120,000 terraces elsewhere in the country describes neither market accurately.
+  </p>
+
+  <h2>Why We Still Use Medians</h2>
+  <p>
+    Most of the housing statistics on this site, and most of the official ones they're drawn from, use the median rather than the mean specifically because house prices and earnings are skewed: a small number of very expensive properties or very high earners pull a simple average upward, while the median describes the middle of the distribution more honestly <sup><a href="#cit-3">[3]</a></sup>. That's a real improvement over a raw mean, but it doesn't solve the deeper problem. A median for the whole UK still says nothing about how far any one region sits from it, which is exactly what "Four Nations, Four Markets" and the Resolution Foundation's own work on regional affordability both show matters <sup><a href="#cit-4">[4]</a></sup>.
+  </p>
+  <p>
+    None of this means national figures are useless. They're a reasonable place to start. But treating them as the whole picture, rather than a starting point, is exactly the kind of generic framing our own <a href="/about/">Purpose page</a> argues against: solving the housing crisis requires specific, buildable interventions in specific places, not a single national number.
+  </p>
+
+  <Citations slot="citations">
+    <li id="cit-1">Todd Rose, <em>The End of Average: How We Succeed in a World That Values Sameness</em> (2016), recounting Gilbert S. Daniels' 1952 US Air Force cockpit study. Summary: <a href="https://futureforlearning.org/media/end-of-average/" target="_blank" rel="noopener noreferrer">Partnership for the Future of Learning</a>.</li>
+    <li id="cit-2">Sam L. Savage, <em>The Flaw of Averages: Why We Underestimate Risk in the Face of Uncertainty</em> (2009). <a href="https://www.flawofaverages.com/books" target="_blank" rel="noopener noreferrer">flawofaverages.com</a>.</li>
+    <li id="cit-3">ONS, <a href="https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/methodologies/guidetointerpretingannualsurveyofhoursandearningsasheestimates/pdf" target="_blank" rel="noopener noreferrer">Guide to interpreting Annual Survey of Hours and Earnings (ASHE) estimates</a>: median preferred over mean due to skewed earnings distribution.</li>
+    <li id="cit-4">Resolution Foundation, <a href="https://www.resolutionfoundation.org/comment/two-housing-crises/" target="_blank" rel="noopener noreferrer">Two housing crises</a>, on how national affordability figures mask regional disparity.</li>
+  </Citations>
+</ArticleLayout>

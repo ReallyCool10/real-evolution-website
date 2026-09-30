@@ -1,0 +1,256 @@
+---
+// Responsive line chart. Lines and gridlines are an SVG stretched to the plot area
+// (non-scaling strokes keep them crisp); axis labels, series labels and data points are
+// HTML positioned in percentages, so text stays full size at any width. Each point is
+// focusable and reveals its value on hover, focus or tap. A visually hidden table carries
+// the same data for screen readers.
+import ChartFrame from './ChartFrame.astro';
+
+type Point = { x: number; y: number; tip: string };
+type Series = { name: string; endLabel?: string; emphasis?: boolean; points: Point[] };
+
+type Props = {
+  title: string;
+  subtitle?: string;
+  series: Series[];
+  yMax: number;
+  yTicks: number[];
+  ySuffix?: string;
+  /** X-axis labels; defaults to the first series' x values. */
+  xLabels?: { x: number; label: string }[];
+  /** Horizontal inset (0-0.4) so sparse charts don't pin points to the edges. */
+  inset?: number;
+};
+
+const { title, subtitle, series, yMax, yTicks, ySuffix = '', inset = 0 } = Astro.props;
+const xs = series.flatMap(s => s.points.map(p => p.x));
+const xMin = Math.min(...xs);
+const xMax = Math.max(...xs);
+const xLabels = Astro.props.xLabels ?? series[0].points.map(p => ({ x: p.x, label: String(p.x) }));
+
+const left = (x: number) => (inset + ((x - xMin) / (xMax - xMin)) * (1 - 2 * inset)) * 100;
+const top = (y: number) => (1 - y / yMax) * 100;
+const fmt = (n: number) => n.toFixed(2);
+const edge = (x: number) => (left(x) < 15 ? 'edge-left' : left(x) > 85 ? 'edge-right' : '');
+---
+
+<ChartFrame title={title} subtitle={subtitle}>
+  <div class="plot" aria-hidden="true">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+      {yTicks.map(t => <line class="grid" x1="0" x2="100" y1={fmt(top(t))} y2={fmt(top(t))} />)}
+      <line class="axis" x1="0" x2="0" y1="0" y2="100" />
+      <line class="axis" x1="0" x2="100" y1="100" y2="100" />
+      {series.map(s => (
+        <polyline
+          class:list={['line', { emphasis: s.emphasis }]}
+          points={s.points.map(p => `${fmt(left(p.x))},${fmt(top(p.y))}`).join(' ')}
+        />
+      ))}
+    </svg>
+
+    {yTicks.map(t => <span class="y-label" style={`top: ${fmt(top(t))}%`}>{t}{ySuffix}</span>)}
+    {xLabels.map((l, i) => (
+      <span class:list={['x-label', { minor: xLabels.length > 4 && i % 2 === 1 }]} style={`left: ${fmt(left(l.x))}%`}>{l.label}</span>
+    ))}
+
+    {series.map(s => {
+      const last = s.points[s.points.length - 1];
+      return (
+        <>
+          {s.points.map(p => (
+            <span
+              class:list={['pt', edge(p.x), { emphasis: s.emphasis, below: top(p.y) < 15 }]}
+              style={`left: ${fmt(left(p.x))}%; top: ${fmt(top(p.y))}%`}
+              tabindex="0"
+            >
+              <span class="tip">{p.tip}</span>
+            </span>
+          ))}
+          <span
+            class:list={['series-label', { emphasis: s.emphasis }]}
+            style={`left: ${fmt(left(last.x))}%; top: ${fmt(top(last.y))}%`}
+          >
+            {s.endLabel ?? s.name}
+          </span>
+        </>
+      );
+    })}
+  </div>
+
+  <!-- Wrapped because tables ignore the 1px width of .visually-hidden and would widen the page. -->
+  <div class="visually-hidden">
+    <table>
+      <caption>{title}</caption>
+      <thead>
+        <tr><th scope="col">X</th>{series.map(s => <th scope="col">{s.name}</th>)}</tr>
+      </thead>
+      <tbody>
+        {series[0].points.map((p, i) => (
+          <tr><th scope="row">{p.x}</th>{series.map(s => <td>{s.points[i]?.tip}</td>)}</tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <slot />
+</ChartFrame>
+
+<style>
+  .plot {
+    position: relative;
+    height: clamp(200px, 45vw, 280px);
+    margin: 0.5rem 0.5rem 2.25rem 3rem;
+    font-size: 0.75rem;
+  }
+
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  svg line,
+  svg polyline {
+    vector-effect: non-scaling-stroke;
+    fill: none;
+  }
+
+  .grid {
+    stroke: rgba(255, 255, 255, 0.06);
+  }
+
+  .axis {
+    stroke: rgba(255, 255, 255, 0.2);
+  }
+
+  .line {
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 2;
+  }
+
+  .line.emphasis {
+    stroke: var(--gold);
+    stroke-width: 3;
+  }
+
+  .y-label,
+  .x-label,
+  .series-label,
+  .pt {
+    position: absolute;
+  }
+
+  .y-label {
+    right: calc(100% + 0.5rem);
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+  }
+
+  .x-label {
+    top: calc(100% + 0.5rem);
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+  }
+
+  /* Phones: every other year label, so neighbours never collide. */
+  @media (max-width: 520px) {
+    .x-label.minor {
+      display: none;
+    }
+  }
+
+  .series-label {
+    transform: translate(-100%, -170%);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+  }
+
+  /* The lower (secondary) series is labelled beneath its end point, clear of its own line. */
+  .series-label:not(.emphasis) {
+    transform: translate(-100%, 60%);
+  }
+
+  .series-label.emphasis {
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  /* Data points: a generous invisible hit area around a small visible dot. */
+  .pt {
+    width: 28px;
+    height: 28px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .pt::before {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #c0c0c0;
+  }
+
+  .pt.emphasis::before {
+    width: 10px;
+    height: 10px;
+    background: var(--gold);
+    box-shadow: 0 0 0 1px #ffffff;
+  }
+
+  .pt:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .tip {
+    position: absolute;
+    bottom: calc(100% - 2px);
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--text);
+    background: rgba(10, 13, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .pt.emphasis .tip {
+    border-color: var(--gold);
+  }
+
+  .pt.below .tip {
+    top: calc(100% - 2px);
+    bottom: auto;
+  }
+
+  .edge-left .tip {
+    left: 0;
+    transform: none;
+  }
+
+  .edge-right .tip {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+
+  .pt:hover .tip,
+  .pt:focus .tip {
+    opacity: 1;
+  }
+</style>

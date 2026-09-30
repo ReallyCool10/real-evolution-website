@@ -1,0 +1,14 @@
+{
+  "name": "Real Evolution",
+  "short_name": "Real Evolution",
+  "description": "Research-backed strategies and solutions to maximize the efficiency and utility of existing buildings.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0a0d14",
+  "background_color": "#0a0d14",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

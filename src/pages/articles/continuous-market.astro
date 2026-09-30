@@ -1,0 +1,187 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import ChartFrame from '../../components/charts/ChartFrame.astro';
+import Citations from '../../components/Citations.astro';
+
+const panels = [
+  {
+    heading: 'Traditional Market',
+    bar: { width: '7%', label: 'Few Active Listings' },
+    points: ['6-Month Average Sale Time', '~24% Fall-Through Rate', '£9B+ Transactional Drag', 'Locked "Shadow Inventory"'],
+    footer: 'Binary Listing Limbo',
+    active: false,
+  },
+  {
+    heading: 'Continuous Market',
+    bar: { width: '100%', label: '100% Addressable Assets' },
+    points: ['Instant Bid-Ask Discovery', 'Zero-Limbo "Reserve Pricing"', 'Decoupled Onward Chains', 'Active Downsizing Incentives'],
+    footer: 'Unlocked Shadow Liquidity',
+    active: true,
+  },
+];
+---
+
+<ArticleLayout slug="continuous-market">
+  <p>
+    In a thought experiment published in <em>The Spectator</em> (November 2024), Rory Sutherland (Vice Chairman of Ogilvy Group and behavioral economist) proposed a psychological solution to the housing market's illiquidity: <strong>what if every home in the country was listed for sale all the time?</strong> <sup><a href="#cit-1">[1]</a></sup>.
+  </p>
+
+  <blockquote>
+    <p>
+      "It would be a disaster if we applied the same principle to dating - it would lead to massive promiscuity and family breakdown. But in all other markets, we call promiscuity 'liquidity', and it's exactly what families need."
+    </p>
+  </blockquote>
+
+  <p>
+    Sutherland argues that the UK's illiquid housing market is as much a behavioral question as a physical supply constraint. Millions of homeowners live in properties that no longer suit their needs, such as empty-nester retirees holding large 4-bedroom detached family homes, but avoid moving simply because the administrative, marketing, and psychological friction of active listing is too daunting.
+  </p>
+
+  <ChartFrame
+    title="The Liquidity Framework: Binary vs. Continuous Market"
+    subtitle="Comparing the traditional listing system, where only a small fraction of homes are on the market at any time, against Sutherland's proposal that every home be addressable."
+  >
+    <div class="panels">
+      {panels.map(panel => (
+        <div class:list={['panel', { active: panel.active }]}>
+          <span class="panel-heading">{panel.heading}</span>
+          <div class="track">
+            <span class="fill" style={`width: ${panel.bar.width}`} />
+            <span class="track-label">{panel.bar.label}</span>
+          </div>
+          <ul>
+            {panel.points.map(point => <li>{point}</li>)}
+          </ul>
+          <span class="panel-footer">{panel.footer}</span>
+        </div>
+      ))}
+    </div>
+  </ChartFrame>
+
+  <h2>The Psychology of Unsolicited Bids</h2>
+  <p>
+    Sutherland's proposal is deliberately simple: government "mandates that all homes are for sale all the time", with "no obligation to sell - you could simply quote a ridiculously high price" <sup><a href="#cit-1">[1]</a></sup>. An owner content where they are names a figure high enough to make a sale unlikely; buyers can then approach any property directly, rather than choosing only from the small fraction actively listed.
+  </p>
+  <p>
+    This shifts the seller's mindset from an active, anxious seeker to a passive decision-maker. Receiving a concrete, highly attractive out-of-the-blue offer bypasses the dread of listing limbo, open viewings, and real estate middleman fees, serving as a powerful behavioral trigger for downsizing and strategic family relocation.
+  </p>
+
+  <h2>Detailed Viability &amp; Feasibility Considerations</h2>
+  <p>
+    To transition Sutherland's provocative thesis into a viable strategy, we must evaluate several critical friction and mitigation parameters:
+  </p>
+  <ul>
+    <li>
+      <strong>The Spam and Speculation Trap</strong>: Universal addressability could invite massive speculative crawler bids or low-ball spam on desirable properties.
+      <br />
+      <em>Mitigation</em>: Bids must be validated through escrowed deposits (e.g., staking 1% of bid value) or proof-of-funds verification, ensuring only credible, high-intent bidders can reach the owner.
+    </li>
+    <li>
+      <strong>Onward Chain Mismatch</strong>: Accepting an unsolicited bid is useless if the seller has nowhere to go. In a high-scarcity housing grid, the transaction velocity is capped by physical supply.
+      <br />
+      <em>Mitigation</em>: The platform must support delayed possession or leaseback options. Sellers could be legally entitled to a 6-month rent-free residency period post-transaction to source their onward home, decoupling transaction execution from physical move-in dates.
+    </li>
+    <li>
+      <strong>Municipal Rate Revaluations</strong>: Speculative offers could lead to local tax reassessment traps, penalizing owners for bids they never requested.
+      <br />
+      <em>Mitigation</em>: Speculative bids must remain confidential and legally protected from tax reassessments unless a formal sale transaction takes place.
+    </li>
+  </ul>
+
+  <Citations slot="citations">
+    <li id="cit-1">Rory Sutherland, "<a href="https://www.spectator.co.uk/article/how-to-buy-a-house-that-isnt-on-the-market/" target="_blank" rel="noopener noreferrer">How to buy a house that isn't on the market</a>," <em>The Spectator</em>, 9 November 2024.</li>
+  </Citations>
+</ArticleLayout>
+
+<style>
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 1.25rem;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-style: normal;
+  }
+
+  .panel.active {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.03);
+  }
+
+  .panel-heading,
+  .panel-footer {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .panel-footer {
+    margin-top: auto;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .active .panel-heading,
+  .active .panel-footer {
+    color: var(--gold);
+  }
+
+  .track {
+    position: relative;
+    height: 1.4rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--gold);
+  }
+
+  .active .fill {
+    background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+  }
+
+  .track-label {
+    position: relative;
+    display: block;
+    padding-left: calc(7% + 0.5rem);
+    font-size: 0.75rem;
+    line-height: 1.4rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .active .track-label {
+    padding-left: 0;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .panel ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .panel li {
+    margin-bottom: 0.4rem;
+  }
+
+  .active ul {
+    color: var(--text-2);
+  }
+</style>

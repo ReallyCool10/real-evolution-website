@@ -1,0 +1,100 @@
+---
+// Shell for every page: SEO metadata, fonts, global styles, nav and footer.
+// `backdrop="photo"` is used by the home page, which draws its own hero imagery;
+// every other page gets the fixed twilight gradient.
+import '@fontsource-variable/inter';
+import '@fontsource-variable/outfit';
+import '../styles/global.css';
+import SiteNav from '../components/SiteNav.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { SITE } from '../data/site';
+
+type Props = {
+  title?: string;
+  description?: string;
+  backdrop?: 'gradient' | 'photo';
+};
+
+const { title, description = SITE.description, backdrop = 'gradient' } = Astro.props;
+const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og-image.jpg', Astro.site);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ResearchOrganization',
+      '@id': 'https://realevolution.co.uk/#organization',
+      name: SITE.name,
+      url: 'https://realevolution.co.uk',
+      logo: 'https://realevolution.co.uk/icon-512.png',
+      description: SITE.description,
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://realevolution.co.uk/#website',
+      url: 'https://realevolution.co.uk',
+      name: SITE.title,
+      publisher: { '@id': 'https://realevolution.co.uk/#organization' },
+      inLanguage: 'en-GB',
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#0a0d14" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <slot name="head" />
+  </head>
+  <body>
+    {backdrop === 'gradient' && <div class="backdrop" aria-hidden="true" />}
+    <SiteNav />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style>
+  /* A fixed, composited layer is far cheaper than background-attachment: fixed. */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at top right, rgba(212, 175, 55, 0.06) 0%, transparent 65%),
+      linear-gradient(to bottom, var(--sky) 0%, var(--bg-deep) 100%);
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    flex: 1 0 auto;
+    width: 100%;
+  }
+</style>

@@ -1,0 +1,174 @@
+---
+// Fixed top navigation. On narrow screens the links collapse into a <details> disclosure,
+// which needs no JavaScript and closes naturally because every link is a full page load.
+import logo from '../assets/real-evolution-logo.svg';
+import { NAV_LINKS } from '../data/site';
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="nav">
+  <a class="logo" href="/" aria-label="Real Evolution home">
+    <img src={logo.src} width={logo.width} height={logo.height} alt="" />
+  </a>
+
+  <nav aria-label="Main">
+    <ul class="links">
+      {NAV_LINKS.map(link => (
+        <li>
+          <a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>{link.label}</a>
+        </li>
+      ))}
+    </ul>
+
+    <details class="menu">
+      <summary aria-label="Menu">
+        <svg class="icon-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+        <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </summary>
+      <ul class="menu-links">
+        {NAV_LINKS.map(link => (
+          <li>
+            <a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  </nav>
+</header>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--gutter);
+    background: rgba(10, 13, 20, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo img {
+    height: 38px;
+    width: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .links {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .links a {
+    position: relative;
+    display: block;
+    padding: 0.5rem 0.6rem;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s ease;
+  }
+
+  .links a:hover,
+  .links a[aria-current='page'] {
+    color: var(--text);
+  }
+
+  .links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--gold);
+    transform: translateX(-50%);
+    transition: width 0.3s var(--ease);
+  }
+
+  .links a[aria-current='page']::after {
+    width: 16px;
+  }
+
+  .menu {
+    display: none;
+  }
+
+  summary {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    color: var(--text);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .icon-close,
+  .menu[open] .icon-open {
+    display: none;
+  }
+
+  .menu[open] .icon-close {
+    display: block;
+  }
+
+  .menu-links {
+    position: fixed;
+    inset: var(--nav-h) 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem var(--gutter) 1.5rem;
+    background: rgba(10, 13, 20, 0.98);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .menu-links a {
+    display: block;
+    padding: 0.75rem 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .menu-links a[aria-current='page'] {
+    color: var(--gold);
+  }
+
+  @media (max-width: 1000px) {
+    .links {
+      display: none;
+    }
+
+    .menu {
+      display: block;
+    }
+  }
+</style>

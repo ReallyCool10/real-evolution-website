@@ -1,0 +1,39 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import BarChart from '../../components/charts/BarChart.astro';
+import Citations from '../../components/Citations.astro';
+import { DWELLINGS_PER_1000 } from '../../data/charts';
+---
+
+<ArticleLayout slug="supply-deficit">
+  <p>
+    The UK has far fewer dwellings relative to its population than other developed nations, with just <strong>446 homes per thousand inhabitants</strong>, fewer than France (591), Italy (598), and the OECD average of 487 <sup><a href="#cit-1">[1]</a></sup>. Closing the gap to the OECD average alone would require approximately <strong>2.8 million additional homes</strong> <sup><a href="#cit-2">[2]</a></sup>.
+  </p>
+
+  <blockquote>
+    <p>
+      The persistent undersupply of housing in the UK has created a system built around structural scarcity. Demand keeps growing, from both homeowners seeking stability and investors targeting appreciating assets, but the housing stock hasn't kept pace.
+    </p>
+  </blockquote>
+
+  <BarChart
+    title="Dwellings per 1,000 Inhabitants"
+    subtitle="The UK holds fewer dwellings per head of population than most comparable developed nations."
+    bars={DWELLINGS_PER_1000}
+  />
+
+  <h2>completions and Local Disparities</h2>
+  <p>
+    Completion rates remain modest relative to the size of the existing stock. In 2024-25, new-build completions ran at <strong>33 per 10,000 people in England</strong>, 35 in Scotland, 32 in Northern Ireland and 15 in Wales <sup><a href="#cit-3">[3]</a></sup>. At roughly three homes per thousand people a year, the per-capita gap described above closes over decades rather than years.
+  </p>
+  <p>
+    Commercial real estate points to a parallel structural shift. Central London office vacancy stood at <strong>10.1% in Q3 2024</strong>, above its ten-year average of 9.0%, with the City higher still at 11.8% <sup><a href="#cit-4">[4]</a></sup>. That is a meaningful pool of underused floorspace, some of which could be suitable for conversion to housing.
+  </p>
+
+  <Citations slot="citations">
+    <li id="cit-1">Home Builders Federation, <a href="https://www.hbf.co.uk/news/housing-horizons/" target="_blank" rel="noopener noreferrer">Housing Horizons: Examining UK Housing Stock in an International Context</a> (October 2023), OECD benchmark of 487 (2020 data). The UK figure (446 per 1,000) is a combined calculation across all four nations - see <a href="/articles/four-nations/">Four Nations, Four Markets</a> for the by-nation breakdown and sources.</li>
+    <li id="cit-2">Deficit calculation: (487 − 446) × 68,265,200 ÷ 1,000 ≈ 2,798,873 homes. UK population: <a href="https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/bulletins/annualmidyearpopulationestimates/mid2023" target="_blank" rel="noopener noreferrer">ONS mid-2023 population estimates</a> (68,265,200).</li>
+    <li id="cit-3">Scottish Government, <a href="https://www.gov.scot/publications/quarterly-housing-statistics-december-2025/pages/housing-supply-including-affordable-across-the-uk/" target="_blank" rel="noopener noreferrer">Housing supply across the UK</a>. New-build completions per 10,000 population, financial year 2024-25.</li>
+    <li id="cit-4">BNP Paribas Real Estate, <a href="https://www.realestate.bnpparibas.co.uk/sites/default/files/2024-10/CentralLondonMarketUpdateQ32024.pdf" target="_blank" rel="noopener noreferrer">Central London Offices Update, Q3 2024</a>. Central London vacancy 10.1%; City 11.82%; ten-year average 9.0%.</li>
+  </Citations>
+</ArticleLayout>
