@@ -51,6 +51,31 @@ const Figure1Section = styled.div`
   width: 100%;
 `;
 
+// Map and legend sit side by side on wide screens and stack on narrow ones. The SVG scales
+// to its container (never wider than its natural size) so the whole UK stays in view on phones.
+const SilhouetteFigure = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem 5rem;
+  width: 100%;
+  margin-bottom: 3rem;
+`;
+
+const SilhouetteSvg = styled.svg`
+  display: block;
+  flex: 0 1 588px;
+  min-width: 0;
+  height: auto;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.4));
+`;
+
+const SilhouetteLegend = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 1.25fr 0.75fr;
@@ -276,10 +301,32 @@ const TableRow = styled.div`
     font-weight: 500;
   }
 
+  .bar-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-right: 2rem;
+  }
+
   .value-group {
     display: flex;
     align-items: center;
     gap: 1.5rem;
+  }
+
+  /* On phones the label/bar and the figures stack, so the percentage is never pushed off-screen */
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+
+    .bar-group {
+      margin-right: 0;
+    }
+
+    .value-group {
+      justify-content: space-between;
+    }
   }
 
   .ha-val {
@@ -477,8 +524,8 @@ export const LandUseMap: React.FC = () => {
       <Figure1Section>
         {/* Proportional Fill UK Silhouette - area-proportional bands from real GeoJSON */}
         {ukSvgPaths.length > 0 && bandYPositions.length > 0 && (
-          <div style={{ display: 'flex', gap: '5rem', alignItems: 'center', marginBottom: '3rem', marginTop: '-60px', flexWrap: 'wrap', justifyContent: 'flex-start', marginLeft: '-100px' }}>
-            <svg viewBox={`0 0 ${ukSvgSize.w} ${ukSvgSize.h}`} width="588" style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.4))' }}>
+          <SilhouetteFigure>
+            <SilhouetteSvg viewBox={`0 0 ${ukSvgSize.w} ${ukSvgSize.h}`} role="img" aria-label="Map of the UK filled in bands proportional to each land use category">
               <defs>
                 <clipPath id="uk-silhouette">
                   {ukSvgPaths.map((d, i) => <path key={i} d={d} />)}
@@ -497,10 +544,10 @@ export const LandUseMap: React.FC = () => {
 
               {/* Outline stroke */}
               {ukSvgPaths.map((d, i) => <path key={i} d={d} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" />)}
-            </svg>
+            </SilhouetteSvg>
 
             {/* Legend */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <SilhouetteLegend>
               {[
                 { emoji: '🌾', name: 'Agricultural Land', pct: '49.0%', color: 'hsl(46, 65%, 52%)' },
                 { emoji: '🌿', name: 'Grassland & Natural Open Space', pct: '28.7%', color: '#84cc16' },
@@ -521,14 +568,14 @@ export const LandUseMap: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
+            </SilhouetteLegend>
+          </SilhouetteFigure>
         )}
 
         <TableGrid style={{ width: '100%', maxWidth: '850px' }}>
           {UK_LAND_COVER.map((group, idx) => (
             <TableRow key={idx}>
-              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginRight: '2rem' }}>
+              <div className="bar-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="label">{group.name}</span>
                   <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: group.type === 'Built-Up' ? 'rgba(244,63,94,0.1)' : group.type === 'Agriculture' ? 'rgba(212,175,55,0.1)' : 'rgba(16,185,129,0.1)', color: group.type === 'Built-Up' ? '#f43f5e' : group.type === 'Agriculture' ? 'hsl(46, 65%, 52%)' : '#10b981', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
