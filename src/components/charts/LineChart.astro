@@ -1,9 +1,9 @@
 ---
 // Responsive line chart. Lines and gridlines are an SVG stretched to the plot area
 // (non-scaling strokes keep them crisp); axis labels, series labels and data points are
-// HTML positioned in percentages, so text stays full size at any width. Each point is
-// focusable and reveals its value on hover, focus or tap. A visually hidden table carries
-// the same data for screen readers.
+// HTML positioned in percentages, so text stays full size at any width. Each point reveals
+// its value on hover or tap (tabindex="-1" makes it tappable without putting hidden content
+// in the Tab order). A visually hidden table carries the same data for assistive tech.
 import ChartFrame from './ChartFrame.astro';
 
 type Point = { x: number; y: number; tip: string };
@@ -61,7 +61,7 @@ const edge = (x: number) => (left(x) < 15 ? 'edge-left' : left(x) > 85 ? 'edge-r
             <span
               class:list={['pt', edge(p.x), { emphasis: s.emphasis, below: top(p.y) < 15 }]}
               style={`left: ${fmt(left(p.x))}%; top: ${fmt(top(p.y))}%`}
-              tabindex="0"
+              tabindex="-1"
             >
               <span class="tip">{p.tip}</span>
             </span>
