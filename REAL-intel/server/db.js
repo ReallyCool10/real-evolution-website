@@ -170,30 +170,31 @@ export function queryProperties({ minLat, minLon, maxLat, maxLon, zoom = 15, typ
     return { tier: 'meso', zoom: z, data };
   }
 
-  // Tier 3: Micro Building & Parcel LOD (Street / Block Level - exact address points)
+  // Tier 3: individual properties (street level). Ordering by price then id makes the
+  // returned subset stable, so the same points stay on screen as you pan instead of an
+  // arbitrary sample each time. (An R*Tree index was measured and rejected: at most a few
+  // ms faster here, but it made every coordinate update in geocoding ~10x slower.)
   let sql = `
-    SELECT id, title_number, tenure, property_address, district, county, region,
-           postcode, price_paid, proprietor_name, company_reg_no, country_incorporated,
-           date_added, dataset_type, latitude, longitude,
-           COALESCE(precision_level, 'ESTIMATED') as precision_level
-    FROM properties
-    WHERE latitude IS NOT NULL
-      AND latitude BETWEEN ? AND ?
-      AND longitude BETWEEN ? AND ?
+    SELECT p.id, p.title_number, p.tenure, p.property_address, p.district, p.county, p.region,
+           p.postcode, p.price_paid, p.proprietor_name, p.company_reg_no, p.country_incorporated,
+           p.date_added, p.dataset_type, p.latitude, p.longitude,
+           COALESCE(p.precision_level, 'ESTIMATED') as precision_level
+    FROM properties p
+    WHERE p.latitude BETWEEN ? AND ?
+      AND p.longitude BETWEEN ? AND ?
   `;
   const params = [minLat, maxLat, minLon, maxLon];
 
   if (type && type !== 'ALL') {
-    sql += ` AND dataset_type = ?`;
+    sql += ` AND p.dataset_type = ?`;
     params.push(type);
   }
   if (tenure && tenure !== 'ALL') {
-    sql += ` AND tenure = ?`;
+    sql += ` AND p.tenure = ?`;
     params.push(tenure);
   }
 
-  // Direct fast indexed query at street level
-  sql += ` LIMIT ?`;
+  sql += ` ORDER BY p.price_paid IS NULL, p.price_paid DESC, p.id LIMIT ?`;
   params.push(Number(limit));
 
   const stmt = db.prepare(sql);
@@ -201,44 +202,71 @@ export function queryProperties({ minLat, minLon, maxLat, maxLon, zoom = 15, typ
   return { tier: 'micro', zoom: z, data };
 }
 
-export function searchUnified(query, limit = 15) {
-  if (!query || query.trim().length === 0) return { proprietors: [], properties: [] };
-  const rawQ = query.trim();
-  const qWild = `%${rawQ}%`;
-  const qPrefix = `${rawQ}%`;
+// Turns free text into an FTS5 query: every word must match as a prefix, so "10 down"
+// finds "10 DOWNING STREET". Words are quoted so punctuation and FTS operators in the input
+// ("AND", "-", '"') are treated as text, never as query syntax.
+export function toFtsQuery(text) {
+  const words = String(text).match(/[\p{L}\p{N}]+/gu) ?? [];
+  return words.slice(0, 8).map(w => `"${w}"*`).join(' ');
+}
 
-  // 1. Search Corporate & Overseas Proprietors via indexed summary
+const PROPERTY_SEARCH_COLUMNS = `
+  p.id, p.title_number, p.tenure, p.property_address, p.district, p.postcode,
+  p.price_paid, p.proprietor_name, p.company_reg_no, p.country_incorporated,
+  p.dataset_type, p.latitude, p.longitude,
+  COALESCE(p.precision_level, 'ESTIMATED') as precision_level`;
+
+// Title numbers and postcodes are stored upper case, so a prefix match is an index range
+// scan: [q, q + U+FFFF) under SQLite's default binary collation.
+const searchByTitlePrefix = db.prepare(`
+  SELECT ${PROPERTY_SEARCH_COLUMNS} FROM properties p
+  WHERE p.title_number >= ? AND p.title_number < ? LIMIT ?`);
+const searchByPostcodePrefix = db.prepare(`
+  SELECT ${PROPERTY_SEARCH_COLUMNS} FROM properties p
+  WHERE p.postcode >= ? AND p.postcode < ? LIMIT ?`);
+const searchByAddress = db.prepare(`
+  SELECT ${PROPERTY_SEARCH_COLUMNS} FROM properties_fts f
+  JOIN properties p ON p.id = f.rowid
+  WHERE properties_fts MATCH ? LIMIT ?`);
+// Names that start with the query rank first, then the biggest portfolios.
+const searchProprietors = db.prepare(`
+  SELECT s.proprietor_name, s.dataset_type, s.country_incorporated, s.company_reg_no,
+         s.property_count, s.total_price_paid
+  FROM proprietor_fts f
+  JOIN proprietor_summary s ON s.rowid = f.rowid
+  WHERE proprietor_fts MATCH ?
+  ORDER BY CASE WHEN s.proprietor_name LIKE ? THEN 0 ELSE 1 END, s.property_count DESC
+  LIMIT 6`);
+
+export function searchUnified(query, limit = 15) {
+  const raw = String(query ?? '').trim();
+  const fts = toFtsQuery(raw);
+  if (!fts) return { proprietors: [], properties: [] };
+
   let proprietors = [];
   try {
-    const propStmt = db.prepare(`
-      SELECT proprietor_name, dataset_type, country_incorporated, company_reg_no, property_count, total_price_paid
-      FROM proprietor_summary
-      WHERE proprietor_name LIKE ? OR proprietor_name LIKE ?
-      ORDER BY 
-        CASE WHEN proprietor_name LIKE ? THEN 0 ELSE 1 END,
-        property_count DESC
-      LIMIT 6
-    `);
-    proprietors = propStmt.all(qPrefix, qWild, qPrefix);
+    proprietors = searchProprietors.all(fts, `${raw}%`);
   } catch (err) {
     console.error('Proprietor search error:', err);
   }
 
-  // 2. Search specific addresses, titles, and postcodes
-  let properties = [];
+  // Exact identifiers first (title number, postcode), then address matches; de-duplicated.
+  const properties = [];
+  const seen = new Set();
+  const add = rows => {
+    for (const row of rows) {
+      if (properties.length >= 8) return;
+      if (!seen.has(row.id)) {
+        seen.add(row.id);
+        properties.push(row);
+      }
+    }
+  };
   try {
-    const addrStmt = db.prepare(`
-      SELECT id, title_number, tenure, property_address, district, postcode,
-             price_paid, proprietor_name, company_reg_no, country_incorporated,
-             dataset_type, latitude, longitude,
-             COALESCE(precision_level, 'ESTIMATED') as precision_level
-      FROM properties
-      WHERE property_address LIKE ?
-         OR title_number LIKE ?
-         OR postcode LIKE ?
-      LIMIT 8
-    `);
-    properties = addrStmt.all(qWild, qPrefix, qPrefix);
+    const upper = raw.toUpperCase();
+    add(searchByTitlePrefix.all(upper, `${upper}\uffff`, 8));
+    add(searchByPostcodePrefix.all(upper, `${upper}\uffff`, 8));
+    add(searchByAddress.all(fts, 8));
   } catch (err) {
     console.error('Address/Property search error:', err);
   }
@@ -287,31 +315,23 @@ export function getProprietorPortfolio(name, limit = 500) {
   return { proprietor, assets };
 }
 
-export function searchProperties(query, limit = 25) {
-  if (!query || query.trim().length === 0) return [];
-  const q = `%${query.trim()}%`;
-  const sql = `
-    SELECT id, title_number, tenure, property_address, district, postcode,
-           price_paid, proprietor_name, company_reg_no, country_incorporated,
-           dataset_type, latitude, longitude,
-           COALESCE(precision_level, 'ESTIMATED') as precision_level
-    FROM properties
-    WHERE title_number LIKE ?
-       OR postcode LIKE ?
-       OR proprietor_name LIKE ?
-       OR property_address LIKE ?
-    LIMIT ?
-  `;
-  const stmt = db.prepare(sql);
-  return stmt.all(q, q, q, q, Number(limit));
-}
-
 export function getPropertyById(id) {
   const stmt = db.prepare(`SELECT * FROM properties WHERE id = ?`);
   return stmt.get(Number(id));
 }
 
+// Five full-table counts over millions of rows; the data only changes when an ingest or
+// enrichment script runs, so a minute-old answer is fine.
+const STATS_TTL_MS = 60_000;
+let statsCache = null;
+
 export function getStats() {
+  if (statsCache && Date.now() - statsCache.at < STATS_TTL_MS) return statsCache.value;
+  statsCache = { at: Date.now(), value: computeStats() };
+  return statsCache.value;
+}
+
+function computeStats() {
   const total = db.prepare(`SELECT COUNT(*) as count FROM properties`).get();
   const ocod = db.prepare(`SELECT COUNT(*) as count FROM properties WHERE dataset_type = 'OCOD'`).get();
   const ccod = db.prepare(`SELECT COUNT(*) as count FROM properties WHERE dataset_type = 'CCOD'`).get();

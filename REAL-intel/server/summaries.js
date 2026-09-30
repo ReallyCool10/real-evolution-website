@@ -51,6 +51,8 @@ function rebuild(db, table) {
     db.exec(SUMMARY_TABLES[table]);
     db.exec(POPULATE[table]);
     for (const sql of SUMMARY_INDEXES[table]) db.exec(sql);
+    // proprietor_fts indexes this table's text by rowid, so it must be rebuilt with it.
+    if (table === 'proprietor_summary') db.exec("INSERT INTO proprietor_fts (proprietor_fts) VALUES ('rebuild')");
     db.exec('COMMIT');
   } catch (err) {
     db.exec('ROLLBACK');

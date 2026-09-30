@@ -123,6 +123,27 @@ const BASE_INDEXES = [
 
 const PROPRIETOR_INDEX = 'CREATE INDEX IF NOT EXISTS idx_properties_proprietor ON properties(proprietor_name)';
 
+// Word-prefix search ("10 down" finds "10 DOWNING STREET") without reading every row, which
+// LIKE '%...%' had to. Both are external-content FTS5 tables: they index text stored in
+// the main table rather than keeping a second copy. properties_fts follows `properties` via
+// triggers; proprietor_fts is rebuilt with proprietor_summary (see summaries.js).
+const SEARCH_INDEXES = [
+  `CREATE VIRTUAL TABLE IF NOT EXISTS properties_fts
+   USING fts5(property_address, content='properties', content_rowid='id')`,
+  `CREATE TRIGGER IF NOT EXISTS properties_fts_insert AFTER INSERT ON properties BEGIN
+     INSERT INTO properties_fts (rowid, property_address) VALUES (NEW.id, NEW.property_address);
+   END`,
+  `CREATE TRIGGER IF NOT EXISTS properties_fts_update AFTER UPDATE OF property_address ON properties BEGIN
+     INSERT INTO properties_fts (properties_fts, rowid, property_address) VALUES ('delete', OLD.id, OLD.property_address);
+     INSERT INTO properties_fts (rowid, property_address) VALUES (NEW.id, NEW.property_address);
+   END`,
+  `CREATE TRIGGER IF NOT EXISTS properties_fts_delete AFTER DELETE ON properties BEGIN
+     INSERT INTO properties_fts (properties_fts, rowid, property_address) VALUES ('delete', OLD.id, OLD.property_address);
+   END`,
+  `CREATE VIRTUAL TABLE IF NOT EXISTS proprietor_fts
+   USING fts5(proprietor_name, content='proprietor_summary', content_rowid='rowid')`,
+];
+
 /** Values of properties.precision_level, from least to most exact. */
 export const PRECISION = {
   ESTIMATED: 'ESTIMATED', // postcode or outcode centroid
@@ -176,6 +197,14 @@ const MIGRATIONS = [
     description: 'Index properties by proprietor so opening a portfolio does not scan every row',
     up(db) {
       db.exec(PROPRIETOR_INDEX);
+    },
+  },
+  {
+    description: 'Full-text search over property addresses and proprietor names',
+    up(db) {
+      execAll(db, SEARCH_INDEXES);
+      db.exec("INSERT INTO properties_fts (properties_fts) VALUES ('rebuild')");
+      db.exec("INSERT INTO proprietor_fts (proprietor_fts) VALUES ('rebuild')");
     },
   },
 ];

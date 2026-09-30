@@ -5,7 +5,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   queryProperties,
-  searchProperties,
   searchUnified,
   getProprietorPortfolio,
   getPropertyById,
@@ -327,7 +326,7 @@ const server = http.createServer(async (req, res) => {
   if (pathname.startsWith('/api/proprietor/') && req.method === 'GET') {
     const rawName = pathname.replace('/api/proprietor/', '');
     const name = decodeURIComponent(rawName);
-    const limit = parseInt(searchParams.get('limit'), 10) || 500;
+    const limit = Math.min(parseInt(searchParams.get('limit'), 10) || 500, 2000);
 
     try {
       const portfolio = getProprietorPortfolio(name, limit);
@@ -452,6 +451,13 @@ const server = http.createServer(async (req, res) => {
       });
       res.end(JSON.stringify({ error: 'Failed to fetch HMLR WMS tile', details: err.message }));
     }
+    return;
+  }
+
+  // GET /api/health: cheap readiness check (dev.js polls it while starting up)
+  if (pathname === '/api/health' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
     return;
   }
 

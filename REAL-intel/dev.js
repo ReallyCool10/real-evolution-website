@@ -20,7 +20,7 @@ async function checkService(url) {
 }
 
 async function start() {
-  const backendRunning = await checkService('http://127.0.0.1:3001/api/stats');
+  const backendRunning = await checkService('http://127.0.0.1:3001/api/health');
   if (backendRunning) {
     console.log('[Backend] Already active on http://127.0.0.1:3001');
   } else {
