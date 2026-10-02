@@ -159,9 +159,16 @@ export async function ingestCcod(maxRows = 100000) {
   const fileStream = fs.createReadStream(CCOD_PATH);
   const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
 
+  // Resume rather than re-insert: titles already loaded (e.g. by an earlier, smaller run)
+  // are skipped, so `ingest` followed by `ingest:all` tops up to the new limit instead of
+  // duplicating the first rows. Each CCOD row is one title.
+  const loaded = new Set(
+    db.prepare("SELECT title_number FROM properties WHERE dataset_type = 'CCOD'").all().map(r => r.title_number),
+  );
   let header = true;
   let batch = [];
-  let rowCount = 0;
+  let rowCount = loaded.size;
+  let added = 0;
   let geocodedCount = 0;
 
   for await (const line of rl) {
@@ -171,6 +178,8 @@ export async function ingestCcod(maxRows = 100000) {
     }
     const cols = parseCsvLine(line);
     if (cols.length < 13) continue;
+    if (loaded.has(cols[0])) continue;
+    loaded.add(cols[0]);
 
     const postcode = (cols[6] || '').trim().toUpperCase();
     const coords = findPostcodeCoords(postcode);
@@ -200,6 +209,7 @@ export async function ingestCcod(maxRows = 100000) {
     });
 
     rowCount++;
+    added++;
 
     if (batch.length >= 2500) {
       insertPropertiesBatch(batch);
@@ -218,7 +228,7 @@ export async function ingestCcod(maxRows = 100000) {
     insertPropertiesBatch(batch);
   }
 
-  console.log(`[CCOD] Completed! Ingested ${rowCount.toLocaleString()} rows (${geocodedCount.toLocaleString()} geocoded).`);
+  console.log(`[CCOD] Completed! Added ${added.toLocaleString()} rows (${geocodedCount.toLocaleString()} geocoded); ${rowCount.toLocaleString()} CCOD titles in total.`);
 }
 
 async function run() {

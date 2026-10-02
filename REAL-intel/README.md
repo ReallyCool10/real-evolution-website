@@ -30,7 +30,8 @@ existing database. Run from `REAL-intel`, in this order:
 | 5 | `npm run summaries` | | Rebuilds the map's outcode/sector bubbles and proprietor search. Run after steps 2 and 4. |
 
 For a quick sample instead of step 1, `npm run ingest` loads OCOD plus 100k CCOD rows straight
-into the live database and builds the summaries (run it on an empty database: it appends).
+into the live database and builds the summaries. `npm run ingest:all` tops the same database up
+to 1M CCOD rows; titles already loaded are skipped, so re-running never duplicates.
 
 `npm test` checks the schema, migrations, summaries and geocoding against temporary databases.
 
