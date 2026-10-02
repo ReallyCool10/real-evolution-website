@@ -1,4 +1,5 @@
 import { openDatabase } from './connection.js';
+import { normalisePostcode } from './address.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -62,11 +63,6 @@ function getRegionForOutcode(oc) {
   return 'Custom';
 }
 
-function cleanPostcode(pc) {
-  if (!pc) return '';
-  return pc.trim().toUpperCase();
-}
-
 export function processOutcodePass2(outcode) {
   const lower = outcode + ' ';
   const upper = outcode + ' ~';
@@ -90,7 +86,7 @@ export function processOutcodePass2(outcode) {
 
   for (let i = 0; i < props.length; i++) {
     const prop = props[i];
-    const pc = cleanPostcode(prop.postcode);
+    const pc = normalisePostcode(prop.postcode);
     if (!pc) continue;
 
     let uprns = postcodeCache.get(pc);

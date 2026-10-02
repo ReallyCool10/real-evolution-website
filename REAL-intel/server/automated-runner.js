@@ -16,6 +16,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { openDatabase } from './connection.js';
+import { cleanStreet, expandHouseNumbers, parseLRAddress, postcodeKey } from './address.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,106 +60,6 @@ const getBoundsByOutcodeRange = db.prepare(`
   FROM properties
   WHERE postcode >= ? AND postcode <= ? AND latitude IS NOT NULL
 `);
-
-// 2. Normalization & Address Extraction Logic
-function cleanPostcode(pc) {
-  if (!pc) return '';
-  return pc.replace(/\s+/g, '').toUpperCase();
-}
-
-function cleanStreet(st) {
-  if (!st) return '';
-  return st.toLowerCase()
-    .replace(/\bst\.\s+/g, 'saint ')
-    .replace(/\bst\s+([a-z]+)/g, (m, name) => {
-      const saintNames = ['stephen', 'stephens', 'paul', 'pauls', 'peter', 'peters', 'nicholas', 'john', 'johns', 'mary', 'marys', 'george', 'georges', 'andrew', 'andrews', 'james', 'albans', 'giles', 'jude', 'judes', 'clements', 'thomas'];
-      if (saintNames.includes(name)) return 'saint ' + name;
-      return m;
-    })
-    .replace(/\b(rd|st|ave|ln|dr|cres|pl|sq|ter|ct|bvd|blvd)\b/g, (m) => {
-      const map = { rd: 'road', st: 'street', ave: 'avenue', ln: 'lane', dr: 'drive', cres: 'crescent', pl: 'place', sq: 'square', ter: 'terrace', ct: 'court', bvd: 'boulevard', blvd: 'boulevard' };
-      return map[m] || m;
-    })
-    .replace(/[^a-z0-9]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function cleanHouseNum(num) {
-  if (!num) return '';
-  return num.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-}
-
-function expandNumberRange(rawStr) {
-  if (!rawStr) return [];
-  const str = rawStr.trim();
-
-  // Single number
-  if (/^\d+[a-z]?$/i.test(str)) {
-    return [cleanHouseNum(str)];
-  }
-
-  // Range: 10-14, 10 to 14, 10/14
-  const rangeMatch = str.match(/^(\d+)\s*(?:to|-|\/)\s*(\d+)$/i);
-  if (rangeMatch) {
-    const start = parseInt(rangeMatch[1], 10);
-    const end = parseInt(rangeMatch[2], 10);
-    if (!isNaN(start) && !isNaN(end) && end > start && end - start <= 20) {
-      const step = ((end - start) % 2 === 0) ? 2 : 1;
-      const list = [];
-      for (let n = start; n <= end; n += step) list.push(String(n));
-      return list;
-    }
-    return [String(start), String(end)];
-  }
-
-  // Multiple comma or "and" separated numbers: "16, 18, 20 and 22", "25 and 27"
-  const allNums = str.match(/\b\d+[a-z]?\b/gi);
-  if (allNums && allNums.length > 0) {
-    return allNums.map(n => cleanHouseNum(n));
-  }
-
-  return [cleanHouseNum(str)];
-}
-
-const SUFFIXES = 'road|rd|street|st|avenue|ave|lane|ln|drive|dr|close|gardens|crescent|cres|place|pl|square|sq|terrace|ter|court|ct|grove|mews|row|rise|parade|park|wharf|boulevard|bvd|blvd|gate|broadway|quay|circus|reach|meadow|mead|bank|corner|end|view|green|alley|highway|passage|approach|side|mall|buildings|mansions|chambers';
-const ADDRESS_REGEX = new RegExp(`(\\b\\d+[a-z]?(?:\\s*(?:to|-|\\/|&|and|,)\\s*\\d+[a-z]?)*)\\s+([A-Za-z\\s]+?\\b(?:${SUFFIXES}))\\b`, 'i');
-
-function parseLRAddress(address) {
-  if (!address) return { houseNums: [], street: null };
-
-  let clean = address.replace(/\s+/g, ' ').replace(/\([A-Z0-9\s]+\)$/i, '').trim();
-
-  // Strip common noisy prefix descriptions
-  clean = clean.replace(/^(?:land\s+(?:and\s+buildings\s+)?(?:at\s+the\s+rear\s+of|on\s+the\s+(?:north|south|east|west)\s+side\s+of|lying\s+to\s+the\s+(?:north|south|east|west)\s+of|adjoining)\s+)/i, '');
-  clean = clean.replace(/^(?:(?:ground|first|second|third|fourth|fifth|top)\s+floor(?:\s+flat|\s+suite)?\s*,\s*)/i, '');
-  clean = clean.replace(/^(?:(?:flat|unit|suite|room|apartment|part\s+of|floor)\s+[^,]+,\s*)+/i, '');
-
-  const match = clean.match(ADDRESS_REGEX);
-  if (match) {
-    const rawNum = match[1];
-    const street = cleanStreet(match[2]);
-    const nums = expandNumberRange(rawNum);
-    return { houseNums: nums, street };
-  }
-
-  const parts = clean.split(',').map(s => s.trim());
-  for (const part of parts) {
-    const partMatch = part.match(ADDRESS_REGEX);
-    if (partMatch) {
-      return { houseNums: expandNumberRange(partMatch[1]), street: cleanStreet(partMatch[2]) };
-    }
-    const numMatch = part.match(/^(\d+[a-z]?(?:\s*(?:to|-|\/|&|and|,)\s*\d+[a-z]?)*)\s+(.+)$/i);
-    if (numMatch) {
-      return {
-        houseNums: expandNumberRange(numMatch[1]),
-        street: cleanStreet(numMatch[2])
-      };
-    }
-  }
-
-  return { houseNums: [], street: null };
-}
 
 // 3. Multi-Mirror Address Point Fetching with Timeout & Cache
 const OVERPASS_MIRRORS = [
@@ -275,9 +176,9 @@ export async function processOutcode(outcode, region = 'UK') {
     const rawHNum = el.tags['addr:housenumber'];
     if (!rawHNum) continue;
 
-    const pc = cleanPostcode(el.tags['addr:postcode']);
+    const pc = postcodeKey(el.tags['addr:postcode']);
     const st = cleanStreet(el.tags['addr:street']);
-    const numCandidates = expandNumberRange(rawHNum);
+    const numCandidates = expandHouseNumbers(rawHNum);
 
     for (const num of numCandidates) {
       if (pc) postcodeHouseMap.set(pc + '__' + num, { lat, lon });
@@ -293,7 +194,7 @@ export async function processOutcode(outcode, region = 'UK') {
 
   for (const prop of props) {
     const { houseNums, street } = parseLRAddress(prop.property_address);
-    const pc = cleanPostcode(prop.postcode);
+    const pc = postcodeKey(prop.postcode);
 
     let matchCoord = null;
 

@@ -1,4 +1,5 @@
 import { openDatabase } from './connection.js';
+import { cleanStreet, extractStreet } from './address.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,49 +14,6 @@ const areaArg = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toUpperC
 const outcodeArg = args.find(a => a.startsWith('--outcode='))?.split('=')[1]?.toUpperCase();
 
 const db = openDatabase();
-
-const SUFFIXES = 'road|rd|street|st|avenue|ave|lane|ln|drive|dr|close|gardens|crescent|cres|place|pl|square|sq|terrace|ter|court|ct|grove|mews|row|rise|parade|park|wharf|boulevard|bvd|blvd|gate|broadway|quay|circus|reach|meadow|mead|bank|corner|end|view|green|alley|highway|passage|approach|side|mall|buildings|mansions|chambers';
-
-function cleanStreet(st) {
-  if (!st) return '';
-  return st.toLowerCase()
-    .replace(/\bst\.\s+/g, 'saint ')
-    .replace(/\bst\s+([a-z]+)/g, (m, name) => {
-      const saintNames = ['stephen', 'stephens', 'paul', 'pauls', 'peter', 'peters', 'nicholas', 'john', 'johns', 'mary', 'marys', 'george', 'georges', 'andrew', 'andrews', 'james', 'albans', 'giles', 'jude', 'judes', 'clements', 'thomas'];
-      if (saintNames.includes(name)) return 'saint ' + name;
-      return m;
-    })
-    .replace(/\b(rd|st|ave|ln|dr|cres|pl|sq|ter|ct|bvd|blvd)\b/g, (m) => {
-      const map = { rd: 'road', st: 'street', ave: 'avenue', ln: 'lane', dr: 'drive', cres: 'crescent', pl: 'place', sq: 'square', ter: 'terrace', ct: 'court', bvd: 'boulevard', blvd: 'boulevard' };
-      return map[m] || m;
-    })
-    .replace(/[^a-z0-9]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-const STREET_ONLY_REGEX = new RegExp(`\\b([A-Za-z\\s]+?\\b(?:${SUFFIXES}))\\b`, 'i');
-
-function extractStreet(address) {
-  if (!address) return null;
-  let clean = address.replace(/\s+/g, ' ').replace(/\([A-Z0-9\s]+\)$/i, '').trim();
-  const parts = clean.split(',').map(s => s.trim());
-  for (const part of parts) {
-    const m = part.match(STREET_ONLY_REGEX);
-    if (m) {
-      const st = cleanStreet(m[1]);
-      if (st.length >= 3 && !['bristol', 'london', 'the', 'unit', 'floor', 'ground floor', 'first floor'].includes(st)) {
-        return st;
-      }
-    }
-  }
-  const general = clean.match(STREET_ONLY_REGEX);
-  if (general) {
-    const st = cleanStreet(general[1]);
-    if (st.length >= 3) return st;
-  }
-  return null;
-}
 
 // Outcode selection
 let outcodes = [];

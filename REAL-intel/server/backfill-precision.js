@@ -1,4 +1,5 @@
 import { openDatabase } from './connection.js';
+import { cleanHouseNum, cleanStreet, parseLRAddress, postcodeKey } from './address.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,96 +37,6 @@ if (outcodeArg) {
 }
 
 console.log(`Found ${cacheFiles.length} cached outcode files to evaluate.`);
-
-const cleanPostcode = (pc) => (pc ? pc.replace(/\s+/g, '').toUpperCase() : '');
-
-function cleanStreet(st) {
-  if (!st) return '';
-  return st.toLowerCase()
-    .replace(/\bst\.\s+/g, 'saint ')
-    .replace(/\bst\s+([a-z]+)/g, (m, name) => {
-      const saintNames = ['stephen', 'stephens', 'paul', 'pauls', 'peter', 'peters', 'nicholas', 'john', 'johns', 'mary', 'marys', 'george', 'georges', 'andrew', 'andrews', 'james', 'albans', 'giles', 'jude', 'judes', 'clements', 'thomas'];
-      if (saintNames.includes(name)) return 'saint ' + name;
-      return m;
-    })
-    .replace(/\b(rd|st|ave|ln|dr|cres|pl|sq|ter|ct|bvd|blvd)\b/g, (m) => {
-      const map = { rd: 'road', st: 'street', ave: 'avenue', ln: 'lane', dr: 'drive', cres: 'crescent', pl: 'place', sq: 'square', ter: 'terrace', ct: 'court', bvd: 'boulevard', blvd: 'boulevard' };
-      return map[m] || m;
-    })
-    .replace(/[^a-z0-9]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function cleanHouseNum(num) {
-  if (!num) return '';
-  return num.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-}
-
-function expandNumbers(rawStr) {
-  if (!rawStr) return [];
-  const str = rawStr.trim();
-
-  // Single number (e.g. 12, 12a)
-  if (/^\d+[a-z]?$/i.test(str)) {
-    return [cleanHouseNum(str)];
-  }
-
-  // Range: 10-14, 10 to 14, 10/14
-  const rangeMatch = str.match(/^(\d+)\s*(?:to|-|\/)\s*(\d+)$/i);
-  if (rangeMatch) {
-    const start = parseInt(rangeMatch[1], 10);
-    const end = parseInt(rangeMatch[2], 10);
-    if (!isNaN(start) && !isNaN(end) && end > start && end - start <= 20) {
-      const step = ((end - start) % 2 === 0) ? 2 : 1;
-      const list = [];
-      for (let n = start; n <= end; n += step) list.push(String(n));
-      return list;
-    }
-    return [String(start), String(end)];
-  }
-
-  // Multiple comma or "and" separated numbers: "16, 18, 20 and 22", "25 and 27"
-  const allNums = str.match(/\b\d+[a-z]?\b/gi);
-  if (allNums && allNums.length > 0) {
-    return allNums.map(n => cleanHouseNum(n));
-  }
-
-  return [cleanHouseNum(str)];
-}
-
-const SUFFIXES = 'road|rd|street|st|avenue|ave|lane|ln|drive|dr|close|gardens|crescent|cres|place|pl|square|sq|terrace|ter|court|ct|grove|mews|row|rise|parade|park|wharf|boulevard|bvd|blvd|gate|broadway|quay|circus|reach|meadow|mead|bank|corner|end|view|green|alley|highway|passage|approach|side|mall|buildings|mansions|chambers';
-const ADDRESS_REGEX = new RegExp(`(\\b\\d+[a-z]?(?:\\s*(?:to|-|\\/|&|and|,)\\s*\\d+[a-z]?)*)\\s+([A-Za-z\\s]+?\\b(?:${SUFFIXES}))\\b`, 'i');
-
-function parseLRAddress(address) {
-  if (!address) return { houseNums: [], street: null };
-  let clean = address.replace(/\s+/g, ' ').replace(/\([A-Z0-9\s]+\)$/i, '').trim();
-  clean = clean.replace(/^(?:land\s+(?:and\s+buildings\s+)?(?:at\s+the\s+rear\s+of|on\s+the\s+(?:north|south|east|west)\s+side\s+of|lying\s+to\s+the\s+(?:north|south|east|west)\s+of|adjoining)\s+)/i, '');
-  clean = clean.replace(/^(?:(?:ground|first|second|third|fourth|fifth|top)\s+floor(?:\s+flat|\s+suite)?\s*,\s*)/i, '');
-  clean = clean.replace(/^(?:(?:flat|unit|suite|room|apartment|part\s+of|floor)\s+[^,]+,\s*)+/i, '');
-
-  const match = clean.match(ADDRESS_REGEX);
-  if (match) {
-    const rawNum = match[1];
-    const street = cleanStreet(match[2]);
-    const nums = expandNumbers(rawNum);
-    return { houseNums: nums, street };
-  }
-
-  const parts = clean.split(',').map(s => s.trim());
-  for (const part of parts) {
-    const partMatch = part.match(ADDRESS_REGEX);
-    if (partMatch) {
-      return { houseNums: expandNumbers(partMatch[1]), street: cleanStreet(partMatch[2]) };
-    }
-    const numMatch = part.match(/^(\d+[a-z]?(?:\s*(?:to|-|\/|&|and|,)\s*\d+[a-z]?)*)\s+(.+)$/i);
-    if (numMatch) {
-      return { houseNums: expandNumbers(numMatch[1]), street: cleanStreet(numMatch[2]) };
-    }
-  }
-
-  return { houseNums: [], street: null };
-}
 
 // Queries properties that are NOT currently EXACT_OSM (so ESTIMATED or EXACT_UPRN can be upgraded!)
 const getPropsStmt = db.prepare(`
@@ -193,7 +104,7 @@ for (let i = 0; i < cacheFiles.length; i++) {
 
     const num = cleanHouseNum(tags['addr:housenumber']);
     const street = cleanStreet(tags['addr:street']);
-    const pc = cleanPostcode(tags['addr:postcode']);
+    const pc = postcodeKey(tags['addr:postcode']);
 
     if (num && street && pc) {
       exactMap.set(`${pc}|${street}|${num}`, { lat, lon });
@@ -217,7 +128,7 @@ for (let i = 0; i < cacheFiles.length; i++) {
     const { houseNums, street } = parseLRAddress(p.property_address);
     if (!street || houseNums.length === 0) continue;
 
-    const propPc = cleanPostcode(p.postcode);
+    const propPc = postcodeKey(p.postcode);
     let coords = null;
 
     for (const num of houseNums) {
