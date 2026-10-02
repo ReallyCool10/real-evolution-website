@@ -479,7 +479,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   padding: '14px 16px'
                 }}>
                   <div style={{ fontSize: '0.68rem', color: 'rgba(255, 255, 255, 0.45)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Building Door Matches
+                    Exact Address Matches
                   </div>
                   <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#38bdf8', fontFamily: 'Outfit, sans-serif', marginTop: '4px' }}>
                     {summary ? summary.totalMatched.toLocaleString() : '—'}

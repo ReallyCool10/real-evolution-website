@@ -16,6 +16,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { openDatabase } from './connection.js';
+import { recordOutcodeProgress } from './progress.js';
 import { cleanStreet, expandHouseNumbers, parseLRAddress, postcodeKey } from './address.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,16 +32,6 @@ const db = openDatabase();
 // enrichment_progress and address_points are defined in schema.js.
 
 const getOutcodeProgress = db.prepare('SELECT * FROM enrichment_progress WHERE outcode = ?');
-const upsertProgress = db.prepare(`
-  INSERT INTO enrichment_progress (outcode, region, total_properties, matched_properties, match_percentage, status, last_updated)
-  VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-  ON CONFLICT(outcode) DO UPDATE SET
-    total_properties = excluded.total_properties,
-    matched_properties = excluded.matched_properties,
-    match_percentage = excluded.match_percentage,
-    status = excluded.status,
-    last_updated = datetime('now')
-`);
 
 // Prepared statement for fast indexed outcode property range queries
 const getPropsByOutcodeRange = db.prepare(`
@@ -146,12 +137,12 @@ export async function processOutcode(outcode, region = 'UK') {
 
   if (totalProps === 0) {
     console.log(`No properties found for outcode ${outcode}. Skipping.`);
-    upsertProgress.run(outcode, region, 0, 0, 0, 'COMPLETED');
+    recordOutcodeProgress(db, outcode, region);
     return { outcode, total: 0, matched: 0, pct: 0 };
   }
 
   console.log(`Found ${totalProps.toLocaleString()} commercial properties in ${outcode}.`);
-  upsertProgress.run(outcode, region, totalProps, 0, 0, 'IN_PROGRESS');
+  recordOutcodeProgress(db, outcode, region, 'IN_PROGRESS');
 
   console.log(`Fetching physical building door points for ${outcode}...`);
   let elements = [];
@@ -160,7 +151,7 @@ export async function processOutcode(outcode, region = 'UK') {
     console.log(`Obtained ${elements.length.toLocaleString()} building address nodes.`);
   } catch (err) {
     console.error(`Error fetching address points for ${outcode}:`, err.message);
-    upsertProgress.run(outcode, region, totalProps, 0, 0, 'FAILED');
+    recordOutcodeProgress(db, outcode, region, 'FAILED');
     return { outcode, total: totalProps, matched: 0, pct: 0, error: err.message };
   }
 
@@ -224,15 +215,15 @@ export async function processOutcode(outcode, region = 'UK') {
 
   db.exec('COMMIT');
 
-  const matchPct = totalProps > 0 ? parseFloat(((matchedCount / totalProps) * 100).toFixed(1)) : 0;
-  upsertProgress.run(outcode, region, totalProps, matchedCount, matchPct, 'COMPLETED');
+  // Stored figures cover every pass (OSM and UPRN), not just this run's OSM matches.
+  const stats = recordOutcodeProgress(db, outcode, region);
 
   console.log(`[Result] Outcode ${outcode} Complete:`);
   console.log(` - Total Properties: ${totalProps.toLocaleString()}`);
-  console.log(` - Exact Building Matches: ${matchedCount.toLocaleString()} (${matchPct}%)`);
-  console.log(` - Postcode Centroid Fallbacks: ${(totalProps - matchedCount).toLocaleString()} (${(100 - matchPct).toFixed(1)}%)`);
+  console.log(` - OSM address matches this run: ${matchedCount.toLocaleString()}`);
+  console.log(` - Exact-address rate for the outcode: ${stats.matched.toLocaleString()} (${stats.percentage}%)`);
 
-  return { outcode, total: totalProps, matched: matchedCount, pct: matchPct };
+  return { outcode, total: totalProps, matched: matchedCount, pct: stats.percentage };
 }
 
 // 5. Dynamic Outcode Discovery from Database

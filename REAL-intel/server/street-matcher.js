@@ -1,4 +1,5 @@
 import { openDatabase } from './connection.js';
+import { recordOutcodeProgress } from './progress.js';
 import { cleanStreet, extractStreet } from './address.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -59,27 +60,7 @@ const updateStreetPrecisionStmt = db.prepare(`
   WHERE id = ?
 `);
 
-const getStatsForOutcode = db.prepare(`
-  SELECT 
-    COUNT(*) as total,
-    SUM(CASE WHEN precision_level = 'EXACT_OSM' THEN 1 ELSE 0 END) as exact_osm,
-    SUM(CASE WHEN precision_level = 'EXACT_UPRN' THEN 1 ELSE 0 END) as exact_uprn,
-    SUM(CASE WHEN precision_level = 'STREET_UPRN' THEN 1 ELSE 0 END) as street_uprn,
-    SUM(CASE WHEN precision_level IS NULL OR precision_level = 'ESTIMATED' THEN 1 ELSE 0 END) as estimated
-  FROM properties 
-  WHERE postcode >= ? AND postcode <= ?
-`);
 
-const upsertProgress = db.prepare(`
-  INSERT INTO enrichment_progress (outcode, region, total_properties, matched_properties, match_percentage, status, last_updated)
-  VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-  ON CONFLICT(outcode) DO UPDATE SET
-    total_properties = excluded.total_properties,
-    matched_properties = excluded.matched_properties,
-    match_percentage = excluded.match_percentage,
-    status = excluded.status,
-    last_updated = excluded.last_updated
-`);
 
 let totalMatched = 0;
 let totalChecked = 0;
@@ -151,12 +132,7 @@ for (let i = 0; i < outcodes.length; i++) {
 
   if (matchedThisOutcode > 0) {
     const region = oc.startsWith('BS') ? 'Bristol' : 'London';
-    const s = getStatsForOutcode.get(lower, upper);
-    if (s && s.total > 0) {
-      const precisionCount = (s.exact_osm || 0) + (s.exact_uprn || 0) + (s.street_uprn || 0);
-      const pct = Number(((precisionCount / s.total) * 100).toFixed(1));
-      upsertProgress.run(oc, region, s.total, precisionCount, pct, 'COMPLETED');
-    }
+    recordOutcodeProgress(db, oc, region);
   }
 
   if ((i + 1) % 25 === 0 || i === outcodes.length - 1) {

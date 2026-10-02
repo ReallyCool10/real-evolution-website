@@ -1,4 +1,5 @@
 import { openDatabase } from './connection.js';
+import { recordOutcodeProgress } from './progress.js';
 import { cleanHouseNum, cleanStreet, parseLRAddress, postcodeKey } from './address.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -38,27 +39,7 @@ const updatePrecisionStmt = db.prepare(`
   WHERE id = ?
 `);
 
-const getStatsForOutcode = db.prepare(`
-  SELECT 
-    COUNT(*) as total,
-    SUM(CASE WHEN precision_level = 'EXACT_OSM' THEN 1 ELSE 0 END) as exact_osm,
-    SUM(CASE WHEN precision_level = 'EXACT_UPRN' THEN 1 ELSE 0 END) as exact_uprn,
-    SUM(CASE WHEN precision_level = 'STREET_UPRN' THEN 1 ELSE 0 END) as street_uprn,
-    SUM(CASE WHEN precision_level IS NULL OR precision_level = 'ESTIMATED' THEN 1 ELSE 0 END) as estimated
-  FROM properties 
-  WHERE postcode >= ? AND postcode <= ?
-`);
 
-const upsertProgress = db.prepare(`
-  INSERT INTO enrichment_progress (outcode, region, total_properties, matched_properties, match_percentage, status, last_updated)
-  VALUES (?, 'London', ?, ?, ?, 'COMPLETED', datetime('now'))
-  ON CONFLICT(outcode) DO UPDATE SET
-    total_properties = excluded.total_properties,
-    matched_properties = excluded.matched_properties,
-    match_percentage = excluded.match_percentage,
-    status = excluded.status,
-    last_updated = excluded.last_updated
-`);
 
 async function fetchOutcodeNodes(outcode) {
   const cacheFile = path.join(CACHE_DIR, `addresses_${outcode}.json`);
@@ -167,12 +148,7 @@ export async function processOutcode(outcode) {
   }
   db.exec('COMMIT;');
 
-  const s = getStatsForOutcode.get(lower, upper);
-  if (s && s.total > 0) {
-    const precisionCount = (s.exact_osm || 0) + (s.exact_uprn || 0) + (s.street_uprn || 0);
-    const pct = Number(((precisionCount / s.total) * 100).toFixed(1));
-    upsertProgress.run(outcode, s.total, precisionCount, pct);
-  }
+  recordOutcodeProgress(db, outcode, 'London');
 
   console.log(`[Overpass Completed] Outcode ${outcode}: ${elements.length.toLocaleString()} OSM nodes fetched -> ${newlyUpgraded.toLocaleString()} newly upgraded to EXACT_OSM (Doorway)`);
   return newlyUpgraded;

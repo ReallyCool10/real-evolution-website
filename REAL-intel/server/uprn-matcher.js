@@ -1,9 +1,9 @@
 import { openDatabase } from './connection.js';
 import { normalisePostcode } from './address.js';
+import { outcodeStats, recordOutcodeProgress } from './progress.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { discoverOutcodesForArea } from './automated-runner.js';
 
 console.log('=== REAL Intel: OS Open UPRN Precision Matcher (Pass 2) ===');
@@ -23,9 +23,7 @@ const getUprnsByPostcode = db.prepare(`
 `);
 
 const updatePropPrecision = db.prepare(`
-  UPDATE properties 
-  SET latitude = ?, longitude = ?, precision_level = 'EXACT_UPRN' 
-  WHERE id = ?
+  UPDATE properties SET latitude = ?, longitude = ?, precision_level = ? WHERE id = ?
 `);
 
 const getUnmatchedPropsForRange = db.prepare(`
@@ -35,26 +33,7 @@ const getUnmatchedPropsForRange = db.prepare(`
     AND (precision_level IS NULL OR precision_level = 'ESTIMATED')
 `);
 
-const getStatsForOutcode = db.prepare(`
-  SELECT 
-    COUNT(*) as total,
-    SUM(CASE WHEN precision_level = 'EXACT_OSM' THEN 1 ELSE 0 END) as exact_osm,
-    SUM(CASE WHEN precision_level = 'EXACT_UPRN' THEN 1 ELSE 0 END) as exact_uprn,
-    SUM(CASE WHEN precision_level IS NULL OR precision_level = 'ESTIMATED' THEN 1 ELSE 0 END) as estimated
-  FROM properties 
-  WHERE postcode >= ? AND postcode <= ?
-`);
 
-const upsertProgress = db.prepare(`
-  INSERT INTO enrichment_progress (outcode, region, total_properties, matched_properties, match_percentage, status, last_updated)
-  VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-  ON CONFLICT(outcode) DO UPDATE SET
-    total_properties = excluded.total_properties,
-    matched_properties = excluded.matched_properties,
-    match_percentage = excluded.match_percentage,
-    status = excluded.status,
-    last_updated = excluded.last_updated
-`);
 
 function getRegionForOutcode(oc) {
   if (oc.startsWith('BS')) return 'Bristol';
@@ -69,19 +48,15 @@ export function processOutcodePass2(outcode) {
 
   const props = getUnmatchedPropsForRange.all(lower, upper);
   if (props.length === 0) {
-    const afterStats = getStatsForOutcode.get(lower, upper);
-    if (afterStats && afterStats.total > 0) {
-      const totalPrecision = (afterStats.exact_osm || 0) + (afterStats.exact_uprn || 0);
-      const precisionPct = Number(((totalPrecision / afterStats.total) * 100).toFixed(1));
-      upsertProgress.run(outcode, getRegionForOutcode(outcode), afterStats.total, totalPrecision, precisionPct, 'COMPLETED');
-    }
-    return { outcode, total: 0, matched: 0 };
+    if (outcodeStats(db, outcode).total > 0) recordOutcodeProgress(db, outcode, getRegionForOutcode(outcode));
+    return { outcode, total: 0, matched: 0, exact: 0 };
   }
 
   // Cache UPRN queries per postcode in this outcode
   const postcodeCache = new Map();
 
   let matched = 0;
+  let exactCount = 0;
   db.exec('BEGIN TRANSACTION;');
 
   for (let i = 0; i < props.length; i++) {
@@ -97,34 +72,21 @@ export function processOutcodePass2(outcode) {
 
     if (!uprns || uprns.length === 0) continue;
 
-    let chosenLat = 0;
-    let chosenLon = 0;
-
-    if (uprns.length === 1) {
-      chosenLat = uprns[0].latitude;
-      chosenLon = uprns[0].longitude;
-    } else {
-      // Pick a deterministic building point from the postcode's UPRNs based on property id
-      // This distributes multi-occupancy or adjacent buildings evenly across the actual physical structures!
-      const idx = prop.id % uprns.length;
-      chosenLat = uprns[idx].latitude;
-      chosenLon = uprns[idx].longitude;
-    }
-
-    updatePropPrecision.run(chosenLat, chosenLon, prop.id);
+    // A postcode with one UPRN pins the address exactly. With several, the property is placed
+    // on one of the postcode's real buildings (spread deterministically by id) but we don't
+    // know which one is its own, so it is only postcode-level.
+    const exact = uprns.length === 1;
+    const chosen = exact ? uprns[0] : uprns[prop.id % uprns.length];
+    updatePropPrecision.run(chosen.latitude, chosen.longitude, exact ? 'EXACT_UPRN' : 'POSTCODE_UPRN', prop.id);
     matched++;
+    if (exact) exactCount++;
   }
 
   db.exec('COMMIT;');
 
-  const afterStats = getStatsForOutcode.get(lower, upper);
-  if (afterStats && afterStats.total > 0) {
-    const totalPrecision = (afterStats.exact_osm || 0) + (afterStats.exact_uprn || 0);
-    const precisionPct = Number(((totalPrecision / afterStats.total) * 100).toFixed(1));
-    upsertProgress.run(outcode, getRegionForOutcode(outcode), afterStats.total, totalPrecision, precisionPct, 'COMPLETED');
-  }
+  if (outcodeStats(db, outcode).total > 0) recordOutcodeProgress(db, outcode, getRegionForOutcode(outcode));
 
-  return { outcode, total: props.length, matched };
+  return { outcode, total: props.length, matched, exact: exactCount };
 }
 
 function displayStatus() {
@@ -171,17 +133,15 @@ async function run() {
 
   if (outcodeArg) {
     console.log(`\nTargeting single outcode: ${outcodeArg}`);
-    const beforeStats = getStatsForOutcode.get(outcodeArg + ' ', outcodeArg + ' ~');
-    console.log(`[Before] Total: ${beforeStats.total} | EXACT_OSM: ${beforeStats.exact_osm} | EXACT_UPRN: ${beforeStats.exact_uprn} | ESTIMATED: ${beforeStats.estimated}`);
+    const beforeStats = outcodeStats(db, outcodeArg);
+    console.log(`[Before] Total: ${beforeStats.total} | EXACT_OSM: ${beforeStats.exact_osm} | EXACT_UPRN: ${beforeStats.exact_uprn} | POSTCODE_UPRN: ${beforeStats.postcode_uprn} | ESTIMATED: ${beforeStats.estimated}`);
 
     const res = processOutcodePass2(outcodeArg);
-    console.log(`[Pass 2 Match] Upgraded ${res.matched} / ${res.total} fallback properties to EXACT_UPRN!`);
+    console.log(`[Pass 2] Placed ${res.matched} / ${res.total} estimated properties on a UPRN (${res.exact} exact, ${res.matched - res.exact} postcode-level).`);
 
-    const afterStats = getStatsForOutcode.get(outcodeArg + ' ', outcodeArg + ' ~');
-    const totalPrecision = (afterStats.exact_osm || 0) + (afterStats.exact_uprn || 0);
-    const precisionPct = afterStats.total > 0 ? ((totalPrecision / afterStats.total) * 100).toFixed(1) : 0;
-    console.log(`[After]  Total: ${afterStats.total} | EXACT_OSM: ${afterStats.exact_osm} | EXACT_UPRN: ${afterStats.exact_uprn} | ESTIMATED: ${afterStats.estimated}`);
-    console.log(`===> Final Precision Rate for ${outcodeArg}: ${precisionPct}%!`);
+    const afterStats = outcodeStats(db, outcodeArg);
+    console.log(`[After]  Total: ${afterStats.total} | EXACT_OSM: ${afterStats.exact_osm} | EXACT_UPRN: ${afterStats.exact_uprn} | POSTCODE_UPRN: ${afterStats.postcode_uprn} | ESTIMATED: ${afterStats.estimated}`);
+    console.log(`===> Exact-address rate for ${outcodeArg}: ${afterStats.percentage}%`);
   } else if (areaArg) {
     const regionLabel = (areaArg === 'BS' || areaArg === 'BRISTOL') ? 'Bristol' : areaArg;
     console.log(`\nTargeting area: ${regionLabel}...`);
@@ -203,7 +163,7 @@ async function run() {
     }
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     console.log(`\n========================================================================================`);
-    console.log(`[Complete] Pass 2 upgraded ${totalUpgraded.toLocaleString()} properties in ${regionLabel} to EXACT_UPRN in ${elapsed}s!`);
+    console.log(`[Complete] Pass 2 placed ${totalUpgraded.toLocaleString()} properties in ${regionLabel} on a UPRN (exact or postcode-level) in ${elapsed}s.`);
     console.log(`========================================================================================\n`);
 
     displayStatus();

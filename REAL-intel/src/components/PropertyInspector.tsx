@@ -510,7 +510,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                           padding: '2px 5px',
                           borderRadius: '4px',
                           border: '1px solid rgba(16, 185, 129, 0.3)'
-                        }} title="Doorway coordinates matched from OpenStreetMap building elements">
+                        }} title="Matched to this address in OpenStreetMap (postcode or street plus house number)">
                           ✓ Doorway (OSM)
                         </span>
                       )}
@@ -523,7 +523,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                           padding: '2px 5px',
                           borderRadius: '4px',
                           border: '1px solid rgba(192, 132, 252, 0.3)'
-                        }} title="Government Ordnance Survey / ONS Unique Property Reference Number">
+                        }} title="The only Ordnance Survey UPRN (address point) in this postcode, so this address">
                           ✓ OS UPRN
                         </span>
                       )}
@@ -536,8 +536,21 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                           padding: '2px 5px',
                           borderRadius: '4px',
                           border: '1px solid rgba(56, 189, 248, 0.3)'
-                        }} title="Street-level physical building cluster match">
-                          ✓ Street (Cluster)
+                        }} title="Placed at a known address point on the same street, not necessarily this property's own building">
+                          ≈ Street
+                        </span>
+                      )}
+                      {p.precision_level === 'POSTCODE_UPRN' && (
+                        <span style={{
+                          fontSize: '0.62rem',
+                          fontWeight: 600,
+                          color: '#fbbf24',
+                          background: 'rgba(251, 191, 36, 0.12)',
+                          padding: '2px 5px',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(251, 191, 36, 0.3)'
+                        }} title="Placed on a real building (OS UPRN) in the correct postcode, not necessarily this property's own building">
+                          ≈ Postcode (UPRN)
                         </span>
                       )}
                       {(!p.precision_level || p.precision_level === 'ESTIMATED') && (

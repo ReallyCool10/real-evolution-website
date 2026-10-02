@@ -147,9 +147,10 @@ const SEARCH_INDEXES = [
 /** Values of properties.precision_level, from least to most exact. */
 export const PRECISION = {
   ESTIMATED: 'ESTIMATED', // postcode or outcode centroid
-  STREET_UPRN: 'STREET_UPRN', // centre of the matched street's UPRNs
-  EXACT_UPRN: 'EXACT_UPRN', // matched OS Open UPRN address point
-  EXACT_OSM: 'EXACT_OSM', // matched OpenStreetMap address point
+  POSTCODE_UPRN: 'POSTCODE_UPRN', // a real building (UPRN) in the right postcode, not necessarily this address
+  STREET_UPRN: 'STREET_UPRN', // a known address point on the right street, not necessarily this address
+  EXACT_UPRN: 'EXACT_UPRN', // the only UPRN in its postcode, so this address
+  EXACT_OSM: 'EXACT_OSM', // matched OpenStreetMap address point (postcode or street + house number)
 };
 
 function execAll(db, statements) {
@@ -205,6 +206,32 @@ const MIGRATIONS = [
       execAll(db, SEARCH_INDEXES);
       db.exec("INSERT INTO properties_fts (properties_fts) VALUES ('rebuild')");
       db.exec("INSERT INTO proprietor_fts (proprietor_fts) VALUES ('rebuild')");
+    },
+  },
+  {
+    description: 'Relabel non-exact UPRN matches as POSTCODE_UPRN and recount match rates as exact-only',
+    up(db) {
+      // uprn-matcher gave every property in a multi-address postcode an arbitrary one of that
+      // postcode's UPRNs and called it EXACT_UPRN. Only a postcode with a single UPRN pins
+      // the address, so everything else becomes POSTCODE_UPRN (coordinates are unchanged).
+      // Rows that can't be verified (no lookup data for the postcode) get the weaker label.
+      db.exec(`
+        UPDATE properties SET precision_level = 'POSTCODE_UPRN'
+        WHERE precision_level = 'EXACT_UPRN'
+          AND UPPER(TRIM(postcode)) NOT IN (
+            SELECT postcode FROM uprn_lookup GROUP BY postcode HAVING COUNT(*) = 1)`);
+      // Stored match rates used each script's own definition; recount them as exact-address
+      // matches only (see server/progress.js, which every script now uses).
+      db.exec(`
+        UPDATE enrichment_progress SET
+          total_properties = (SELECT COUNT(*) FROM properties p
+            WHERE p.postcode >= enrichment_progress.outcode || ' ' AND p.postcode <= enrichment_progress.outcode || ' ~'),
+          matched_properties = (SELECT COUNT(*) FROM properties p
+            WHERE p.postcode >= enrichment_progress.outcode || ' ' AND p.postcode <= enrichment_progress.outcode || ' ~'
+              AND p.precision_level IN ('EXACT_OSM', 'EXACT_UPRN'))`);
+      db.exec(`
+        UPDATE enrichment_progress SET match_percentage =
+          CASE WHEN total_properties > 0 THEN ROUND(100.0 * matched_properties / total_properties, 1) ELSE 0 END`);
     },
   },
 ];

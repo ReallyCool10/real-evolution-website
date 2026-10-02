@@ -1,4 +1,5 @@
 import { openDatabase } from './connection.js';
+import { recordOutcodeProgress } from './progress.js';
 import { cleanHouseNum, cleanStreet, parseLRAddress, postcodeKey } from './address.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,26 +53,7 @@ const updatePrecisionStmt = db.prepare(`
   WHERE id = ?
 `);
 
-const getStatsForOutcode = db.prepare(`
-  SELECT 
-    COUNT(*) as total,
-    SUM(CASE WHEN precision_level = 'EXACT_OSM' THEN 1 ELSE 0 END) as exact_osm,
-    SUM(CASE WHEN precision_level = 'EXACT_UPRN' THEN 1 ELSE 0 END) as exact_uprn,
-    SUM(CASE WHEN precision_level IS NULL OR precision_level = 'ESTIMATED' THEN 1 ELSE 0 END) as estimated
-  FROM properties 
-  WHERE postcode >= ? AND postcode <= ?
-`);
 
-const upsertProgress = db.prepare(`
-  INSERT INTO enrichment_progress (outcode, region, total_properties, matched_properties, match_percentage, status, last_updated)
-  VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-  ON CONFLICT(outcode) DO UPDATE SET
-    total_properties = excluded.total_properties,
-    matched_properties = excluded.matched_properties,
-    match_percentage = excluded.match_percentage,
-    status = excluded.status,
-    last_updated = excluded.last_updated
-`);
 
 let totalMarked = 0;
 const t0 = Date.now();
@@ -150,13 +132,7 @@ for (let i = 0; i < cacheFiles.length; i++) {
   db.exec('COMMIT;');
 
   // Update progress record
-  const afterStats = getStatsForOutcode.get(lower, upper);
-  if (afterStats && afterStats.total > 0) {
-    const totalPrecision = (afterStats.exact_osm || 0) + (afterStats.exact_uprn || 0);
-    const precisionPct = Number(((totalPrecision / afterStats.total) * 100).toFixed(1));
-    const region = outcode.startsWith('BS') ? 'Bristol' : 'London';
-    upsertProgress.run(outcode, region, afterStats.total, totalPrecision, precisionPct, 'COMPLETED');
-  }
+  recordOutcodeProgress(db, outcode, outcode.startsWith('BS') ? 'Bristol' : 'London');
 
   if ((i + 1) % 15 === 0 || i === cacheFiles.length - 1) {
     console.log(`[Backfill ${i + 1}/${cacheFiles.length}] Outcode ${outcode}: newly marked ${markedThisOutcode} EXACT_OSM (Total newly upgraded so far: ${totalMarked.toLocaleString()})`);
